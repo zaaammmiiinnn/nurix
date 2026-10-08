@@ -1,0 +1,171 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { motion, useScroll, useMotionValueEvent } from "framer-motion";
+import { Menu, X, ArrowUpRight } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ScrollProgressBar } from "@/components/ui/scroll-progress";
+
+const NAV_LINKS = [
+  { href: "/services", label: "Services" },
+  { href: "/work", label: "Work" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
+];
+
+const WA_URL =
+  "https://wa.me/971000000000?text=Hi%20Nurix%2C%20I%20need%20help%20with%20automation";
+
+export function Nav() {
+  const pathname = usePathname();
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const { scrollY } = useScroll();
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    setScrolled(latest > 40);
+  });
+
+  // Close mobile nav on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  if (pathname?.startsWith("/admin")) return null;
+
+  return (
+    <>
+      <ScrollProgressBar />
+      <header
+        className={cn(
+          "fixed top-0 left-0 right-0 z-40 transition-all duration-300",
+          scrolled
+            ? "bg-[#07070A]/80 backdrop-blur-xl border-b border-white/[0.08] shadow-[0_4px_30px_rgba(0,0,0,0.5)] py-0"
+            : "bg-transparent border-b border-transparent py-2"
+        )}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div
+            className={cn(
+              "flex items-center justify-between transition-all duration-300",
+              scrolled ? "h-14" : "h-18"
+            )}
+          >
+            {/* Wordmark */}
+            <Link
+              href="/"
+              className="flex items-center gap-0.5 font-bold text-xl tracking-[-0.04em] text-white select-none group"
+              aria-label="Nurix home"
+            >
+              nur
+              <span className="relative inline-flex items-center justify-center text-violet-400 group-hover:text-cyan-400 transition-colors">
+                i
+                <span
+                  className="absolute bottom-[3px] left-1/2 -translate-x-1/2 w-[5px] h-[5px] rounded-full bg-violet-400 group-hover:bg-cyan-400 transition-colors shadow-[0_0_8px_rgba(139,92,246,0.8)]"
+                  aria-hidden="true"
+                />
+              </span>
+              x
+            </Link>
+
+            {/* Desktop nav links */}
+            <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "px-3.5 py-1.5 text-sm rounded-lg transition-all duration-150 font-normal",
+                    pathname === link.href || pathname.startsWith(link.href + "/")
+                      ? "text-white bg-white/[0.08]"
+                      : "text-zinc-400 hover:text-white hover:bg-white/[0.04]"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+
+            {/* Desktop CTA */}
+            <div className="hidden md:flex items-center gap-4">
+              <Link
+                href={WA_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-mono uppercase tracking-wider text-zinc-400 hover:text-white transition-colors duration-150 flex items-center gap-1"
+              >
+                WhatsApp
+                <ArrowUpRight size={12} className="opacity-70" />
+              </Link>
+              <Link
+                href="/contact"
+                className="btn-glow px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white rounded-lg"
+              >
+                Book a call
+              </Link>
+            </div>
+
+            {/* Mobile hamburger */}
+            <button
+              className="md:hidden p-2 text-zinc-400 hover:text-white transition-colors"
+              onClick={() => setMobileOpen((v) => !v)}
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-nav"
+            >
+              {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile nav drawer */}
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            id="mobile-nav"
+            className="md:hidden bg-[#0F0F14]/95 backdrop-blur-2xl border-t border-white/[0.08] px-4 pb-6 pt-4 space-y-1 shadow-2xl"
+            role="dialog"
+            aria-label="Mobile navigation"
+          >
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "block px-3 py-2.5 text-sm rounded-lg transition-colors duration-150",
+                  pathname === link.href
+                    ? "text-white bg-white/10"
+                    : "text-zinc-400 hover:text-white"
+                )}
+              >
+                {link.label}
+              </Link>
+            ))}
+            <div className="pt-4 flex flex-col gap-3">
+              <Link
+                href={WA_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-ghost-border w-full text-center px-4 py-2.5 text-sm font-medium text-white rounded-lg"
+              >
+                WhatsApp us
+              </Link>
+              <Link
+                href="/contact"
+                className="btn-glow w-full text-center px-4 py-2.5 text-sm font-medium text-white rounded-lg"
+              >
+                Book a call
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </header>
+    </>
+  );
+}
