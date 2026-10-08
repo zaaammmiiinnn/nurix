@@ -1,39 +1,16 @@
 "use server";
 
-import { z } from "zod";
 import { Resend } from "resend";
 import { supabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
-
-// UAE Phone Regex: accepts +9715XXXXXXXX, 05XXXXXXXX, 9715XXXXXXXX with optional spaces and dashes
-const uaePhoneRegex = /^(?:\+?971|0)?5[0-9]{8}$/;
-
-export const contactSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters").max(100),
-  email: z.string().email("Please enter a valid email address"),
-  phone: z
-    .string()
-    .transform((val) => val.replace(/[\s\-\(\)]/g, ""))
-    .refine((val) => uaePhoneRegex.test(val), {
-      message: "Please enter a valid UAE mobile number (e.g., +971 50 123 4567 or 050 123 4567)",
-    }),
-  company: z.string().max(100).optional().or(z.literal("")),
-  service: z.enum(["chatbots", "dashboards", "agents", "not_sure"], {
-    errorMap: () => ({ message: "Please select a service" }),
-  }),
-  message: z.string().min(10, "Please provide a brief description (at least 10 characters)").max(2000),
-  honeypot: z.string().optional(),
-});
-
-export type ContactFormData = z.infer<typeof contactSchema>;
+import { contactSchema, type ContactFormData } from "@/lib/schemas/contact";
 
 // Simple in-memory rate limiting map: ip -> last timestamp
 const rateLimitMap = new Map<string, number>();
 
 export async function submitContactForm(data: ContactFormData) {
   try {
-    // 1. Honeypot check
+    // 1. Honeypot check (silent drop for spam bots)
     if (data.honeypot && data.honeypot.trim().length > 0) {
-      // Bot trapped
       return { success: true, message: "Got it. We'll reply within 4 hours." };
     }
 
@@ -96,8 +73,8 @@ export async function submitContactForm(data: ContactFormData) {
     }
 
     // 5. Send notification email via Resend if API key is present
-    const resendKey = process.env.RESEND_API_KEY;
-    if (resendKey && !resendKey.includes("YOUR_KEY")) {
+    const resendKey = process.env.RESEND_API_KEY?.trim();
+    if (resendKey && !resendKey.includes("YOUR_KEY") && !resendKey.includes("re_example")) {
       try {
         const resend = new Resend(resendKey);
         const fromEmail = process.env.RESEND_FROM_EMAIL || "leads@nurix.ae";

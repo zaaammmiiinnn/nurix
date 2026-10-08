@@ -16,7 +16,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
-import { submitContactForm, type ContactFormData } from "./actions";
+import { submitContactForm } from "./actions";
+import { type ContactFormData } from "@/lib/schemas/contact";
 import { SITE_CONFIG } from "@/lib/data/site-data";
 
 const WA_NUMBER = "971501234567";
