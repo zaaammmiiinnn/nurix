@@ -18,7 +18,7 @@ const COMPANY_LINKS = [
 ];
 
 const WA_URL =
-  "https://wa.me/971000000000?text=Hi%20Nurix%2C%20I%20need%20help%20with%20automation";
+  "https://wa.me/971501234567?text=Hi%20Nurix%2C%20I%20need%20help%20with%20automation";
 
 export function Footer() {
   const pathname = usePathname();
@@ -112,17 +112,15 @@ export function Footer() {
                   className="flex items-center gap-2 text-sm text-signal-muted hover:text-signal-text transition-colors duration-150 group"
                 >
                   <Mail size={14} className="text-signal-violet" />
-                  {/* TODO: Replace with real email */}
                   hello@nurix.ae
                 </a>
               </li>
               <li>
                 <a
-                  href="tel:+971000000000"
+                  href="tel:+97148129400"
                   className="text-sm text-signal-muted hover:text-signal-text transition-colors duration-150"
                 >
-                  {/* TODO: Replace with real UAE phone */}
-                  +971 00 000 0000
+                  +971 4 812 9400
                 </a>
               </li>
             </ul>

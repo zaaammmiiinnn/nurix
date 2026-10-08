@@ -653,7 +653,7 @@ INSERT INTO public.site_settings (key, value, description)
 VALUES
 ('whatsapp_number', '+971500000000', 'Primary WhatsApp contact number in E.164 format'),
 ('contact_email', 'hello@nurix.ae', 'Official contact & inbound lead notification email'),
-('contact_phone', '+971 00 000 0000', 'Official UAE phone line'),
+('contact_phone', '+971 4 812 9400', 'Official UAE phone line'),
 ('calendar_url', 'https://cal.com/nurix/15min', 'Cal.com or Calendly scope booking link'),
 ('social_linkedin', 'https://linkedin.com/company/nurix-ae', 'Company LinkedIn page'),
 ('social_instagram', 'https://instagram.com/nurix.ae', 'Company Instagram handle')
