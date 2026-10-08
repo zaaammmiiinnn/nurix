@@ -77,8 +77,8 @@ export async function submitContactForm(data: ContactFormData) {
     if (resendKey && !resendKey.includes("YOUR_KEY") && !resendKey.includes("re_example")) {
       try {
         const resend = new Resend(resendKey);
-        const fromEmail = process.env.RESEND_FROM_EMAIL || "leads@nurix.ae";
-        const toEmail = process.env.RESEND_TO_EMAIL || "hello@nurix.ae";
+        const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+        const toEmail = process.env.RESEND_TO_EMAIL || process.env.ADMIN_EMAIL || "askarizamin110@gmail.com";
 
         await resend.emails.send({
           from: fromEmail,
