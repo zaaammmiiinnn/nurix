@@ -2,7 +2,6 @@ import dynamic from "next/dynamic";
 import { HeroSection } from "@/components/sections/hero";
 import { TrustStrip } from "@/components/sections/trust-strip";
 import { LocalBusinessJsonLd, FaqJsonLd } from "@/components/seo/json-ld";
-import { FAQS_DATA } from "@/lib/data/site-data";
 
 // Dynamically import below-the-fold sections for optimized initial hydration & TBT
 const ServicesSection = dynamic(
@@ -40,12 +39,30 @@ const FinalCta = dynamic(
   { ssr: true }
 );
 
-export default function HomePage() {
+import { getFaqs, getPricingTiers } from "@/lib/data/db-queries";
+
+export default async function HomePage() {
+  const [faqs, pricingTiers] = await Promise.all([
+    getFaqs(),
+    getPricingTiers(),
+  ]);
+
+  const mappedFaqs = faqs.map((f) => ({ q: f.question, a: f.answer }));
+  const mappedTiers = pricingTiers.map((t) => ({
+    name: t.name,
+    price: t.price.replace(/[^0-9,]/g, "") || t.price,
+    description: t.description,
+    delivery: t.deliveryTimeframe,
+    features: t.features,
+    popular: t.isFeatured,
+    cta: `Start with ${t.name}`,
+  }));
+
   return (
     <>
       {/* Structured SEO Data for Google Rich Results */}
       <LocalBusinessJsonLd />
-      <FaqJsonLd faqs={FAQS_DATA} />
+      <FaqJsonLd faqs={faqs} />
 
       {/* Hero & Social Proof - Above the Fold */}
       <HeroSection />
@@ -55,9 +72,9 @@ export default function HomePage() {
       <ServicesSection />
       <HowItWorks />
       <FeaturedWork />
-      <PricingTeaser />
+      <PricingTeaser tiers={mappedTiers} />
       <WhyNeuralWaves />
-      <FaqSection />
+      <FaqSection faqs={mappedFaqs} />
       <FinalCta />
     </>
   );

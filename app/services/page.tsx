@@ -33,73 +33,23 @@ export const metadata: Metadata = {
     description: "Three things. Done properly. Chatbots, dashboards, and AI agents for UAE businesses.",
   },
 };
+import { getServices, getSiteSettings } from "@/lib/data/db-queries";
 
-const WA_BASE = "https://wa.me/918840936715";
+const ICON_MAP: Record<string, typeof MessageSquare> = {
+  chatbots: MessageSquare,
+  dashboards: LayoutDashboard,
+  agents: Bot,
+};
 
-const SERVICES_DATA = [
-  {
-    number: "01",
-    slug: "chatbots",
-    icon: MessageSquare,
-    title: "AI Chatbots & WhatsApp Automation",
-    tagline: "Menu bots, AI replies, and human handoff — on the app your customers already use.",
-    description:
-      "Customer communication in the UAE happens on WhatsApp. We engineer verified Meta Cloud API bots and website assistants capable of instant lead capture, catalog browsing, and reservation bookings in fluent Arabic and English.",
-    deliverables: [
-      "Custom WhatsApp Cloud API verification & setup",
-      "Menu flows + natural language AI replies (OpenAI / Claude)",
-      "Instant calendar booking & reservation engine",
-      "Seamless human agent takeover & escalation desk",
-      "CRM & Google Sheets real-time lead sync",
-      "Arabic (MSA & Gulf) + English dual-language fluency",
-    ],
-    pricing: "From AED 1,500",
-    delivery: "3–5 days",
-    waText: "Hi NeuralWaves, I want to discuss WhatsApp & AI Chatbots",
-  },
-  {
-    number: "02",
-    slug: "dashboards",
-    icon: LayoutDashboard,
-    title: "Web & Admin Dashboards",
-    tagline: "Custom dashboards for the operations you're running on spreadsheets.",
-    description:
-      "Replace fragile, slow spreadsheets with secure, blazingly fast internal portals. We build tailored admin panels, client viewing portals, and KPI consoles with real-time permissions and sub-second load times.",
-    deliverables: [
-      "Custom Next.js & React UI tailored to your ops workflow",
-      "Role-based access control (RBAC) & secure auth",
-      "Real-time database sync (Postgres / Supabase / Firebase)",
-      "Instant multi-column search, filtering & CSV/PDF exports",
-      "Live activity logs, audit trails & team permissioning",
-      "Fully responsive mobile & tablet layouts for field teams",
-    ],
-    pricing: "From AED 2,500",
-    delivery: "5–7 days",
-    waText: "Hi NeuralWaves, I want to discuss Web & Admin Dashboards",
-  },
-  {
-    number: "03",
-    slug: "agents",
-    icon: Bot,
-    title: "AI Agents for Business",
-    tagline: "Lead gen, scraping, reporting. Agents that work while you sleep.",
-    description:
-      "Autonomous software workers designed to execute multi-step operations without human babysitting. Scrape market data, qualify incoming leads, parse messy vendor invoices, and push formatted briefings to your phone each morning.",
-    deliverables: [
-      "Autonomous scheduled scrapers & market intel collectors",
-      "Automated lead qualification and enrichment pipelines",
-      "OCR invoice, receipt, and PDF data extraction",
-      "Daily executive summary briefings sent via WhatsApp or Email",
-      "Multi-system glue connecting disparate APIs and webhooks",
-      "Error recovery queues and audit monitoring",
-    ],
-    pricing: "From AED 7,500",
-    delivery: "7–10 days",
-    waText: "Hi NeuralWaves, I want to discuss AI Agents for Business",
-  },
-];
+export default async function ServicesPage() {
+  const [servicesData, siteSettings] = await Promise.all([
+    getServices(),
+    getSiteSettings(),
+  ]);
 
-export default function ServicesPage() {
+  const waNumber = (siteSettings.whatsapp_number || "918840936715").replace(/[^0-9]/g, "");
+  const waBase = `https://wa.me/${waNumber}`;
+
   return (
     <div className="pt-28 pb-32 min-h-screen relative overflow-hidden select-none">
       <BreadcrumbJsonLd
@@ -147,9 +97,9 @@ export default function ServicesPage() {
 
         {/* 3 Large Service Blocks — Full-width alternating layout with sticky left title */}
         <div className="space-y-28 md:space-y-40">
-          {SERVICES_DATA.map((service) => {
-            const Icon = service.icon;
-            const waUrl = `${WA_BASE}?text=${encodeURIComponent(service.waText)}`;
+          {servicesData.map((service) => {
+            const Icon = ICON_MAP[service.slug] || MessageSquare;
+            const waUrl = `${waBase}?text=${encodeURIComponent(service.waText)}`;
 
             return (
               <section
@@ -276,7 +226,7 @@ export default function ServicesPage() {
                 Book a 15-min call
               </Link>
               <a
-                href={WA_BASE}
+                href={waBase}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-ghost-border px-8 py-3.5 rounded-xl text-sm font-medium text-zinc-300 hover:text-white w-full sm:w-auto flex items-center justify-center gap-2"

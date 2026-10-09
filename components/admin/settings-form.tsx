@@ -15,9 +15,12 @@ import {
   Save,
   Loader2,
   Share2,
+  Plus,
+  Trash2,
+  Database,
 } from "lucide-react";
 import { toast } from "sonner";
-import { updateAdminSettings } from "@/app/admin/settings/actions";
+import { updateAdminSettings, deleteAdminSetting } from "@/app/admin/settings/actions";
 
 interface SettingsFormProps {
   initialSettings: Record<string, string>;
@@ -32,9 +35,46 @@ export function SettingsForm({
 }: SettingsFormProps) {
   const [settings, setSettings] = useState<Record<string, string>>(initialSettings);
   const [saving, setSaving] = useState(false);
+  const [newKey, setNewKey] = useState("");
+  const [newValue, setNewValue] = useState("");
 
   const handleChange = (key: string, value: string) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleAddCustomRow = () => {
+    const formattedKey = newKey.trim().toLowerCase().replace(/[^a-z0-9_]/g, "_");
+    if (!formattedKey) {
+      toast.error("Please provide a valid setting key name.");
+      return;
+    }
+    if (settings[formattedKey] !== undefined) {
+      toast.error("This key already exists. You can edit its value directly.");
+      return;
+    }
+    setSettings((prev) => ({ ...prev, [formattedKey]: newValue.trim() }));
+    setNewKey("");
+    setNewValue("");
+    toast.success(`Key '${formattedKey}' added to pending changes. Click Save.`);
+  };
+
+  const handleDeleteRow = async (key: string) => {
+    if (!window.confirm(`Delete setting '${key}'?`)) return;
+    try {
+      const res = await deleteAdminSetting(key);
+      if (res.success) {
+        setSettings((prev) => {
+          const next = { ...prev };
+          delete next[key];
+          return next;
+        });
+        toast.success(`Setting '${key}' removed`);
+      } else {
+        toast.error(res.message || "Failed to delete setting");
+      }
+    } catch {
+      toast.error("Failed to delete setting");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -309,6 +349,94 @@ export function SettingsForm({
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-white/[0.04] text-zinc-400 border border-white/[0.08]">
                   Admin
                 </span>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Dynamic site_settings Key-Value Store ── */}
+          <div className="rounded-2xl border border-white/[0.08] bg-[#0A0A0F] p-6 space-y-6">
+            <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
+              <div className="flex items-center gap-2">
+                <Database size={16} className="text-cyan-400" />
+                <h2 className="text-sm font-semibold text-white">
+                  Database Key-Value Store (<code>site_settings</code>)
+                </h2>
+              </div>
+              <span className="font-mono text-xs text-zinc-500">
+                {Object.keys(settings).length} parameters
+              </span>
+            </div>
+
+            <p className="text-xs font-mono text-zinc-400">
+              Live configuration attributes retrieved dynamically across public pages and backend webhooks.
+            </p>
+
+            {/* Existing rows table */}
+            <div className="space-y-3">
+              <div className="grid grid-cols-12 gap-3 text-[10px] font-mono uppercase tracking-wider text-zinc-500 pb-1 border-b border-white/[0.06]">
+                <div className="col-span-4">Setting Key</div>
+                <div className="col-span-7">Configured Value</div>
+                <div className="col-span-1 text-right">Action</div>
+              </div>
+
+              {Object.entries(settings).map(([key, value]) => (
+                <div
+                  key={key}
+                  className="grid grid-cols-12 gap-3 items-center py-1.5 hover:bg-white/[0.02] rounded-lg px-1 transition-colors"
+                >
+                  <div className="col-span-4 font-mono text-xs text-violet-300 truncate">
+                    {key}
+                  </div>
+                  <div className="col-span-7">
+                    <input
+                      type="text"
+                      value={value}
+                      onChange={(e) => handleChange(key, e.target.value)}
+                      className="w-full px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.08] text-xs text-zinc-200 focus:outline-none focus:border-violet-500 font-mono"
+                    />
+                  </div>
+                  <div className="col-span-1 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteRow(key)}
+                      className="p-1.5 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-md transition-colors"
+                      title={`Delete ${key}`}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Add new key/value row */}
+            <div className="pt-4 border-t border-white/[0.06] space-y-3">
+              <span className="text-xs font-semibold text-white block">
+                Add New Configuration Key
+              </span>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <input
+                  type="text"
+                  placeholder="key_name (e.g. hero_notice)"
+                  value={newKey}
+                  onChange={(e) => setNewKey(e.target.value)}
+                  className="sm:w-1/3 px-3.5 py-2 rounded-xl bg-white/[0.03] border border-white/[0.08] text-xs text-white font-mono placeholder-zinc-500 focus:outline-none focus:border-violet-500"
+                />
+                <input
+                  type="text"
+                  placeholder="value (e.g. Q4 booking slots available)"
+                  value={newValue}
+                  onChange={(e) => setNewValue(e.target.value)}
+                  className="flex-1 px-3.5 py-2 rounded-xl bg-white/[0.03] border border-white/[0.08] text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-violet-500"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddCustomRow}
+                  className="btn-ghost-border px-4 py-2 rounded-xl text-xs font-mono text-zinc-200 hover:text-white flex items-center justify-center gap-1.5 shrink-0"
+                >
+                  <Plus size={13} />
+                  Add Row
+                </button>
               </div>
             </div>
           </div>

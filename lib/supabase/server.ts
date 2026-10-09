@@ -3,7 +3,11 @@ import { cookies } from "next/headers";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder";
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder";
 
+/**
+ * Standard server-side Supabase client using authenticated cookies (RLS respected)
+ */
 export function createClient() {
   const cookieStore = cookies();
 
@@ -26,6 +30,22 @@ export function createClient() {
           // The `delete` method was called from a Server Component.
         }
       },
+    },
+  });
+}
+
+/**
+ * Privileged server-side Supabase client using SUPABASE_SERVICE_ROLE_KEY
+ * for administrative operations and server actions.
+ */
+export function createAdminClient() {
+  return createServerClient(supabaseUrl, serviceRoleKey, {
+    cookies: {
+      get() {
+        return undefined;
+      },
+      set() {},
+      remove() {},
     },
   });
 }

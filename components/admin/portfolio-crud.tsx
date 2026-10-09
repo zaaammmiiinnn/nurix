@@ -16,6 +16,8 @@ import {
   X,
   Check,
   Loader2,
+  Upload,
+  Image as ImageIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -23,6 +25,7 @@ import {
   createAdminProject,
   updateAdminProject,
   deleteAdminProject,
+  uploadProjectImage,
 } from "@/app/admin/portfolio/actions";
 
 interface PortfolioCrudProps {
@@ -38,6 +41,7 @@ export function PortfolioCrud({ initialProjects }: PortfolioCrudProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<AdminProject | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   // Form Fields
   const [formData, setFormData] = useState({
@@ -51,6 +55,7 @@ export function PortfolioCrud({ initialProjects }: PortfolioCrudProps) {
     problem: "",
     solution: "",
     tech_stack_raw: "Next.js 14, Meta WhatsApp Cloud API, OpenAI GPT-4o, Supabase",
+    image_url: "",
     is_demo: false,
     is_featured: false,
     delivery_days: "5 days",
@@ -68,6 +73,7 @@ export function PortfolioCrud({ initialProjects }: PortfolioCrudProps) {
       problem: "",
       solution: "",
       tech_stack_raw: "Next.js 14, Meta WhatsApp Cloud API, OpenAI GPT-4o, Supabase",
+      image_url: "",
       is_demo: false,
       is_featured: false,
       delivery_days: "5 days",
@@ -93,11 +99,34 @@ export function PortfolioCrud({ initialProjects }: PortfolioCrudProps) {
       problem: project.problem,
       solution: project.solution,
       tech_stack_raw: project.tech_stack.join(", "),
+      image_url: project.image_url || "",
       is_demo: project.is_demo,
       is_featured: project.is_featured,
       delivery_days: project.delivery_days,
     });
     setIsModalOpen(true);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    try {
+      const data = new FormData();
+      data.append("file", file);
+      const res = await uploadProjectImage(data);
+      if (res.success && res.url) {
+        setFormData((prev) => ({ ...prev, image_url: res.url! }));
+        toast.success("Screenshot uploaded to 'projects' bucket");
+      } else {
+        toast.error(res.message || "Failed to upload image");
+      }
+    } catch {
+      toast.error("Image upload failed");
+    } finally {
+      setIsUploadingImage(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -126,6 +155,7 @@ export function PortfolioCrud({ initialProjects }: PortfolioCrudProps) {
           problem: formData.problem,
           solution: formData.solution,
           tech_stack: techStack,
+          image_url: formData.image_url,
           is_demo: formData.is_demo,
           is_featured: formData.is_featured,
           delivery_days: formData.delivery_days,
@@ -161,6 +191,7 @@ export function PortfolioCrud({ initialProjects }: PortfolioCrudProps) {
           problem: formData.problem,
           solution: formData.solution,
           tech_stack: techStack,
+          image_url: formData.image_url,
           is_demo: formData.is_demo,
           is_featured: formData.is_featured,
           delivery_days: formData.delivery_days,
@@ -612,6 +643,63 @@ export function PortfolioCrud({ initialProjects }: PortfolioCrudProps) {
                   placeholder="Next.js 14, Meta WhatsApp Cloud API, OpenAI GPT-4o, Supabase"
                   className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-xs text-white focus:outline-none focus:border-violet-500"
                 />
+              </div>
+
+              {/* ── Project Screenshot / Image (Supabase Storage 'projects') ── */}
+              <div className="space-y-2 p-3.5 rounded-xl border border-white/[0.08] bg-white/[0.02]">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-mono uppercase text-zinc-400 flex items-center gap-1.5">
+                    <ImageIcon size={13} className="text-violet-400" />
+                    Project Screenshot / Cover (Supabase Storage: &apos;projects&apos;)
+                  </label>
+                  {isUploadingImage && (
+                    <span className="text-[10px] font-mono text-violet-400 flex items-center gap-1">
+                      <Loader2 size={10} className="animate-spin" /> Uploading to bucket...
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <label className="relative flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg border border-dashed border-white/[0.15] hover:border-violet-500/50 hover:bg-violet-500/[0.05] cursor-pointer text-xs font-mono text-zinc-300 transition-colors">
+                    <Upload size={13} className="text-zinc-400" />
+                    <span>Upload Image</span>
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                      onChange={handleImageUpload}
+                      disabled={isUploadingImage}
+                      className="sr-only"
+                    />
+                  </label>
+
+                  <div className="flex-1 w-full">
+                    <input
+                      type="text"
+                      value={formData.image_url}
+                      onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                      placeholder="Or enter direct image URL (https://...)"
+                      className="w-full px-3 py-1.5 rounded-lg bg-black/40 border border-white/[0.08] text-[11px] font-mono text-zinc-300 focus:outline-none focus:border-violet-500"
+                    />
+                  </div>
+                </div>
+
+                {formData.image_url && (
+                  <div className="relative mt-2 rounded-lg overflow-hidden border border-white/[0.1] bg-black/50 max-h-36 flex items-center justify-center group">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={formData.image_url}
+                      alt="Project Preview"
+                      className="object-contain max-h-32 rounded"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, image_url: "" })}
+                      className="absolute top-2 right-2 p-1 rounded-md bg-black/80 text-zinc-400 hover:text-white border border-white/[0.1] text-[10px] font-mono flex items-center gap-1"
+                    >
+                      <X size={10} /> Remove
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-6 pt-2">

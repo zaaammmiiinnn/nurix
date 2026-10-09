@@ -3,6 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { supabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 
+function safeRevalidate(path: string) {
+  try {
+    revalidatePath(path);
+  } catch {
+    // Graceful fallback when invoked outside Next.js request context (tests/scripts)
+  }
+}
+
 export interface Lead {
   id: string;
   name: string;
@@ -150,8 +158,8 @@ export async function updateLeadStatus(
       : l
   );
 
-  revalidatePath("/admin");
-  revalidatePath("/admin/leads");
+  safeRevalidate("/admin");
+  safeRevalidate("/admin/leads");
   return { success: true };
 }
 
@@ -171,8 +179,8 @@ export async function bulkUpdateLeads(leadIds: string[], status: Lead["status"])
     leadIds.includes(l.id) ? { ...l, status } : l
   );
 
-  revalidatePath("/admin");
-  revalidatePath("/admin/leads");
+  safeRevalidate("/admin");
+  safeRevalidate("/admin/leads");
   return { success: true };
 }
 
@@ -187,8 +195,8 @@ export async function bulkDeleteLeads(leadIds: string[]) {
 
   memoryLeads = memoryLeads.filter((l) => !leadIds.includes(l.id));
 
-  revalidatePath("/admin");
-  revalidatePath("/admin/leads");
+  safeRevalidate("/admin");
+  safeRevalidate("/admin/leads");
   return { success: true };
 }
 
@@ -220,7 +228,7 @@ export async function createManualLead(leadData: Omit<Lead, "id" | "created_at">
 
   memoryLeads = [newLead, ...memoryLeads];
 
-  revalidatePath("/admin");
-  revalidatePath("/admin/leads");
+  safeRevalidate("/admin");
+  safeRevalidate("/admin/leads");
   return { success: true, lead: newLead };
 }

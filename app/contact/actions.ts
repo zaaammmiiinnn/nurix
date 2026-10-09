@@ -1,7 +1,7 @@
 "use server";
 
 import { Resend } from "resend";
-import { supabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
+import { createManualLead } from "@/app/admin/leads/actions";
 import { contactSchema, type ContactFormData } from "@/lib/schemas/contact";
 
 // Simple in-memory rate limiting map: ip -> last timestamp
@@ -39,38 +39,16 @@ export async function submitContactForm(data: ContactFormData) {
     }
     rateLimitMap.set(key, now);
 
-    // 4. Save to Supabase `leads` if configured
-    if (isSupabaseConfigured && supabaseAdmin) {
-      try {
-        const { error: dbError } = await supabaseAdmin.from("leads").insert([
-          {
-            name,
-            email,
-            phone,
-            company: company || null,
-            service,
-            message,
-            source: "website_contact_form",
-            created_at: new Date().toISOString(),
-          },
-        ]);
-
-        if (dbError) {
-          console.error("Supabase leads insert error:", dbError);
-        }
-      } catch (err) {
-        console.error("Supabase insert exception:", err);
-      }
-    } else {
-      console.log("Mock lead captured (Supabase not yet configured):", {
-        name,
-        email,
-        phone,
-        company,
-        service,
-        message,
-      });
-    }
+    // 4. Save to Supabase `leads` (or fallback store) and revalidate admin
+    await createManualLead({
+      name,
+      email,
+      phone,
+      company: company || null,
+      service,
+      message,
+      status: "new",
+    });
 
     // 5. Send notification email via Resend if API key is present
     const resendKey = process.env.RESEND_API_KEY?.trim();

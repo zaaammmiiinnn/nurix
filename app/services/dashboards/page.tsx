@@ -35,18 +35,26 @@ export const metadata: Metadata = {
   },
 };
 
-export default function DashboardsPage() {
-  const waUrl = `https://wa.me/918840936715?text=${encodeURIComponent(service.waText)}`;
+import { getServiceBySlug, getSiteSettings } from "@/lib/data/db-queries";
+
+export default async function DashboardsPage() {
+  const [dbService, siteSettings] = await Promise.all([
+    getServiceBySlug("dashboards"),
+    getSiteSettings(),
+  ]);
+  const activeService = dbService || service;
+  const waNumber = (siteSettings.whatsapp_number || "918840936715").replace(/[^0-9]/g, "");
+  const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(activeService.waText)}`;
 
   return (
     <div className="pt-28 pb-32 min-h-screen relative overflow-hidden">
       {/* Structured SEO */}
-      <ServiceJsonLd service={service} />
+      <ServiceJsonLd service={activeService} />
       <BreadcrumbJsonLd
         items={[
           { name: "Home", url: "/" },
           { name: "Services", url: "/services" },
-          { name: service.title, url: `/services/${service.slug}` },
+          { name: activeService.title, url: `/services/${activeService.slug}` },
         ]}
       />
 

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Check, MessageCircle, ShieldCheck, Zap } from "lucide-react";
-import { PRICING_TIERS_DATA, FAQS_DATA } from "@/lib/data/site-data";
 import { BreadcrumbJsonLd, FaqJsonLd } from "@/components/seo/json-ld";
+import { getPricingTiers, getFaqs, getSiteSettings } from "@/lib/data/db-queries";
 
 export const metadata: Metadata = {
   title: "Pricing — Fixed Price AI & Automation",
@@ -34,10 +34,16 @@ export const metadata: Metadata = {
   },
 };
 
-const WA_BASE = "https://wa.me/918840936715";
+export default async function PricingPage() {
+  const [pricingTiers, allFaqs, siteSettings] = await Promise.all([
+    getPricingTiers(),
+    getFaqs(),
+    getSiteSettings(),
+  ]);
 
-export default function PricingPage() {
-  const pricingFaqs = FAQS_DATA.filter((f) => f.category === "pricing" || f.category === "general");
+  const pricingFaqs = allFaqs.filter((f) => f.category === "pricing" || f.category === "general");
+  const waNumber = (siteSettings.whatsapp_number || "918840936715").replace(/[^0-9]/g, "");
+  const waBase = `https://wa.me/${waNumber}`;
 
   return (
     <div className="pt-28 pb-32 min-h-screen relative overflow-hidden">
@@ -100,7 +106,7 @@ export default function PricingPage() {
 
         {/* Pricing Tiers Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-28">
-          {PRICING_TIERS_DATA.map((tier) => (
+          {pricingTiers.map((tier) => (
             <div
               key={tier.name}
               className={`rounded-2xl p-6 sm:p-7 flex flex-col justify-between border transition-all duration-200 relative ${
@@ -204,7 +210,7 @@ export default function PricingPage() {
               Book Scope Call
             </Link>
             <a
-              href={`${WA_BASE}?text=Hi%20NeuralWaves%2C%20I%20have%20a%20custom%20AI%20project%20scope`}
+              href={`${waBase}?text=Hi%20NeuralWaves%2C%20I%20have%20a%20custom%20AI%20project%20scope`}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-ghost-border px-6 py-3 rounded-xl text-xs font-mono uppercase tracking-wider text-zinc-300 hover:text-white w-full sm:w-auto flex items-center justify-center gap-2"

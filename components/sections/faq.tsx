@@ -32,7 +32,12 @@ const FAQS = [
   },
 ];
 
-export function FaqSection() {
+interface FaqSectionProps {
+  faqs?: { q: string; a: string }[];
+}
+
+export function FaqSection({ faqs }: FaqSectionProps = {}) {
+  const items = faqs && faqs.length > 0 ? faqs : FAQS;
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   const toggle = (idx: number) => {
@@ -52,7 +57,7 @@ export function FaqSection() {
       />
 
       <div className="space-y-3">
-        {FAQS.map((faq, idx) => {
+        {items.map((faq, idx) => {
           const isOpen = openIndex === idx;
 
           return (

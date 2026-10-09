@@ -33,7 +33,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function AboutPage() {
+import { getSiteSettings } from "@/lib/data/db-queries";
+
+export default async function AboutPage() {
+  const siteSettings = await getSiteSettings();
   return (
     <div className="pt-28 pb-32 min-h-screen relative overflow-hidden">
       {/* Structured SEO */}
@@ -132,7 +135,7 @@ export default function AboutPage() {
 
             <div className="pt-4 border-t border-white/[0.06] flex items-center gap-3 text-xs font-mono text-zinc-400">
               <MapPin size={14} className="text-violet-400" />
-              <span>DIFC Gate Precinct, Dubai, United Arab Emirates</span>
+              <span>{siteSettings.studio_address || "DIFC Gate Precinct, Dubai, United Arab Emirates"}</span>
             </div>
           </div>
         </div>

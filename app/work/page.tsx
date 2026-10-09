@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { PROJECTS_DATA } from "@/lib/data/site-data";
 import { BreadcrumbJsonLd } from "@/components/seo/json-ld";
 
 export const metadata: Metadata = {
@@ -34,7 +33,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function WorkPage() {
+import { getProjects } from "@/lib/data/db-queries";
+
+export default async function WorkPage() {
+  const projects = await getProjects();
   return (
     <div className="pt-28 pb-32 min-h-screen relative overflow-hidden">
       {/* Structured SEO */}
@@ -92,7 +94,7 @@ export default function WorkPage() {
 
         {/* Projects Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-28">
-          {PROJECTS_DATA.map((project) => (
+          {projects.map((project) => (
             <article
               key={project.slug}
               className="rounded-2xl border border-white/[0.08] bg-[#0A0A0F] hover:border-violet-500/40 transition-all duration-200 p-8 flex flex-col justify-between group shadow-xl hover:shadow-violet-900/10"

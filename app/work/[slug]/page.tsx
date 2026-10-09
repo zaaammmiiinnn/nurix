@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Clock, ShieldCheck, Building, Sparkles } from "lucide-react";
-import { PROJECTS_DATA } from "@/lib/data/site-data";
+import { getProjects, getProjectBySlug } from "@/lib/data/db-queries";
 import { BreadcrumbJsonLd } from "@/components/seo/json-ld";
 
 interface Props {
@@ -10,13 +10,14 @@ interface Props {
 }
 
 export async function generateStaticParams() {
-  return PROJECTS_DATA.map((p) => ({
+  const projects = await getProjects();
+  return projects.map((p) => ({
     slug: p.slug,
   }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const project = PROJECTS_DATA.find((p) => p.slug === params.slug);
+  const project = await getProjectBySlug(params.slug);
   if (!project) return { title: "Project Not Found" };
 
   return {
@@ -49,8 +50,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function WorkSlugPage({ params }: Props) {
-  const project = PROJECTS_DATA.find((p) => p.slug === params.slug);
+export default async function WorkSlugPage({ params }: Props) {
+  const project = await getProjectBySlug(params.slug);
   if (!project) notFound();
 
   return (

@@ -4,6 +4,14 @@ import { revalidatePath } from "next/cache";
 import { supabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import { PROJECTS_DATA } from "@/lib/data/site-data";
 
+function safeRevalidate(path: string) {
+  try {
+    revalidatePath(path);
+  } catch {
+    // Graceful fallback when invoked outside Next.js request context (tests/scripts)
+  }
+}
+
 export interface AdminProject {
   id?: string;
   slug: string;
@@ -16,6 +24,7 @@ export interface AdminProject {
   problem: string;
   solution: string;
   tech_stack: string[];
+  image_url?: string;
   is_demo: boolean;
   is_featured: boolean;
   delivery_days: string;
@@ -64,6 +73,7 @@ export async function getAdminProjects(): Promise<AdminProject[]> {
           problem: item.problem || "",
           solution: item.solution || "",
           tech_stack: Array.isArray(item.tech_stack) ? item.tech_stack : [],
+          image_url: item.image_url || "",
           is_demo: Boolean(item.is_demo),
           is_featured: Boolean(item.is_featured),
           delivery_days: item.delivery_days || "",
@@ -105,8 +115,10 @@ export async function createAdminProject(
             problem: project.problem,
             solution: project.solution,
             tech_stack: project.tech_stack,
+            image_url: project.image_url,
             is_demo: project.is_demo,
             is_featured: project.is_featured,
+            is_published: true,
             delivery_days: project.delivery_days,
           },
         ])
@@ -117,9 +129,9 @@ export async function createAdminProject(
         return { success: false, message: error.message };
       }
 
-      revalidatePath("/admin/portfolio");
-      revalidatePath("/work");
-      revalidatePath("/");
+      safeRevalidate("/admin/portfolio");
+      safeRevalidate("/work");
+      safeRevalidate("/");
       return { success: true, project: data };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to create project";
@@ -129,9 +141,9 @@ export async function createAdminProject(
 
   // Fallback in-memory
   localProjectsCache = [newProject, ...localProjectsCache];
-  revalidatePath("/admin/portfolio");
-  revalidatePath("/work");
-  revalidatePath("/");
+  safeRevalidate("/admin/portfolio");
+  safeRevalidate("/work");
+  safeRevalidate("/");
   return { success: true, project: newProject };
 }
 
@@ -153,9 +165,9 @@ export async function updateAdminProject(
         return { success: false, message: error.message };
       }
 
-      revalidatePath("/admin/portfolio");
-      revalidatePath("/work");
-      revalidatePath("/");
+      safeRevalidate("/admin/portfolio");
+      safeRevalidate("/work");
+      safeRevalidate("/");
       return { success: true };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to update project";
@@ -170,9 +182,9 @@ export async function updateAdminProject(
       : p
   );
 
-  revalidatePath("/admin/portfolio");
-  revalidatePath("/work");
-  revalidatePath("/");
+  safeRevalidate("/admin/portfolio");
+  safeRevalidate("/work");
+  safeRevalidate("/");
   return { success: true };
 }
 
@@ -186,9 +198,9 @@ export async function deleteAdminProject(
         return { success: false, message: error.message };
       }
 
-      revalidatePath("/admin/portfolio");
-      revalidatePath("/work");
-      revalidatePath("/");
+      safeRevalidate("/admin/portfolio");
+      safeRevalidate("/work");
+      safeRevalidate("/");
       return { success: true };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to delete project";
@@ -197,8 +209,68 @@ export async function deleteAdminProject(
   }
 
   localProjectsCache = localProjectsCache.filter((p) => p.id !== id);
-  revalidatePath("/admin/portfolio");
-  revalidatePath("/work");
-  revalidatePath("/");
+  safeRevalidate("/admin/portfolio");
+  safeRevalidate("/work");
+  safeRevalidate("/");
   return { success: true };
+}
+
+/**
+ * Uploads a project screenshot or mock image to Supabase Storage bucket 'projects'.
+ */
+export async function uploadProjectImage(
+  formData: FormData
+): Promise<{ success: boolean; url?: string; message?: string }> {
+  try {
+    const file = formData.get("file") as File | null;
+    if (!file) {
+      return { success: false, message: "No file provided" };
+    }
+
+    // Check size limit: 5MB
+    if (file.size > 5 * 1024 * 1024) {
+      return { success: false, message: "File exceeds 5MB size limit" };
+    }
+
+    // Check mime type
+    const validTypes = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"];
+    if (!validTypes.includes(file.type)) {
+      return { success: false, message: "Invalid image format. Supported: PNG, JPG, WebP, SVG" };
+    }
+
+    const fileExt = file.name.split(".").pop() || "png";
+    const fileName = `project-${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+    const fileBuffer = Buffer.from(await file.arrayBuffer());
+
+    if (isSupabaseConfigured && supabaseAdmin) {
+      try {
+        const { error: uploadError } = await supabaseAdmin.storage
+          .from("projects")
+          .upload(fileName, fileBuffer, {
+            contentType: file.type,
+            upsert: true,
+          });
+
+        if (uploadError) {
+          console.warn("Storage upload error (fallback to local data URL):", uploadError);
+        } else {
+          const { data: publicUrlData } = supabaseAdmin.storage
+            .from("projects")
+            .getPublicUrl(fileName);
+
+          return { success: true, url: publicUrlData.publicUrl };
+        }
+      } catch (storageErr) {
+        console.warn("Storage exception:", storageErr);
+      }
+    }
+
+    // Fallback: Generate Base64 Data URL for local preview
+    const base64 = fileBuffer.toString("base64");
+    const dataUrl = `data:${file.type};base64,${base64}`;
+    return { success: true, url: dataUrl };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to upload image";
+    return { success: false, message };
+  }
 }

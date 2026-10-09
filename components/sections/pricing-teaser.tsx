@@ -51,7 +51,21 @@ const TIERS = [
   },
 ];
 
-export function PricingTeaser() {
+interface PricingTeaserProps {
+  tiers?: {
+    name: string;
+    price: string;
+    description: string;
+    delivery: string;
+    features: string[];
+    popular: boolean;
+    cta: string;
+  }[];
+}
+
+export function PricingTeaser({ tiers }: PricingTeaserProps = {}) {
+  const items = tiers && tiers.length > 0 ? tiers : TIERS;
+
   return (
     <section
       id="pricing"
@@ -80,7 +94,7 @@ export function PricingTeaser() {
 
       {/* 3 Tiers side-by-side with middle elevated */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center pt-4">
-        {TIERS.map((tier) => (
+        {items.map((tier) => (
           <div
             key={tier.name}
             className={`rounded-2xl transition-all duration-300 relative flex flex-col justify-between p-8 md:p-9 ${

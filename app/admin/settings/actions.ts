@@ -75,3 +75,35 @@ export async function updateAdminSettings(
   revalidatePath("/contact");
   return { success: true };
 }
+
+export async function deleteAdminSetting(
+  key: string
+): Promise<{ success: boolean; message?: string }> {
+  if (isSupabaseConfigured && supabaseAdmin) {
+    try {
+      const { error } = await supabaseAdmin
+        .from("site_settings")
+        .delete()
+        .eq("key", key);
+
+      if (error) {
+        return { success: false, message: error.message };
+      }
+
+      revalidatePath("/admin/settings");
+      revalidatePath("/");
+      revalidatePath("/contact");
+      return { success: true };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to delete setting";
+      return { success: false, message };
+    }
+  }
+
+  delete localSettingsCache[key];
+  revalidatePath("/admin/settings");
+  revalidatePath("/");
+  revalidatePath("/contact");
+  return { success: true };
+}
+
