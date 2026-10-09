@@ -138,7 +138,21 @@ export function Footer() {
           <p className="text-xs text-signal-muted">
             © {new Date().getFullYear()} NeuralWaves. All rights reserved.
           </p>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-5">
+            {/* Required disclosures: the site collects enquiry and chat data and
+                sets a chat identifier, so these must be reachable from every page. */}
+            <Link
+              href="/privacy"
+              className="mono-label text-[0.65rem] text-zinc-500 hover:text-zinc-300 transition-colors"
+            >
+              Privacy
+            </Link>
+            <Link
+              href="/terms"
+              className="mono-label text-[0.65rem] text-zinc-500 hover:text-zinc-300 transition-colors"
+            >
+              Terms
+            </Link>
             <Link
               href="/admin"
               className="mono-label text-[0.65rem] text-zinc-500 hover:text-zinc-300 transition-colors flex items-center gap-1"
@@ -146,7 +160,12 @@ export function Footer() {
               <ShieldCheck size={11} className="text-violet-400" />
               <span>Admin Ops</span>
             </Link>
-            <p className="mono-label text-[0.6rem]">Made in Dubai 🇦🇪</p>
+            <p className="mono-label text-[0.6rem]">
+              {/* Positioning agreed with the operator: engineering delivered from
+                  India for clients across the UAE — stated plainly rather than
+                  implied by a "Made in Dubai" badge contradicted by a +91 number. */}
+              Engineered in India · Serving the UAE
+            </p>
           </div>
         </div>
       </div>

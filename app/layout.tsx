@@ -1,8 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { Nav } from "@/components/layout/nav";
 import { Footer } from "@/components/layout/footer";
@@ -165,9 +163,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
           </TooltipProvider>
         </ClerkProvider>
 
-        {/* Real-time Web Vitals and Page Traffic Insights */}
-        <Analytics />
-        <SpeedInsights />
+        {/* Vercel Analytics and Speed Insights were mounted here, but this app is
+            deployed to Cloudflare Workers where both are inert: they POST to
+            Vercel endpoints that are not present, so they collected nothing while
+            still loading third-party scripts on every page. Removed rather than
+            disclosed in the privacy policy as if they worked. If you want
+            analytics, add a provider that supports Workers (e.g. Cloudflare Web
+            Analytics) and disclose it in /privacy. */}
       </body>
     </html>
   );
