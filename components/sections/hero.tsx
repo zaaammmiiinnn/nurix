@@ -11,7 +11,12 @@ import { CountUp } from "@/components/ui/reveal";
 // admin panel take effect. This was a hardcoded literal in seven files.
 const FALLBACK_WA_NUMBER = "918840936715";
 
-export function HeroSection() {
+/**
+ * `shippedCount` is passed from the server page so the hero states the real
+ * number of shipped builds. It previously hardcoded "12+" while the site showed
+ * four case studies, two of them demos.
+ */
+export function HeroSection({ shippedCount = 0 }: { shippedCount?: number } = {}) {
   const siteConfig = useSiteConfig({
     whatsappNumber: FALLBACK_WA_NUMBER,
     email: "",
@@ -214,7 +219,7 @@ export function HeroSection() {
         >
           <div className="flex flex-col items-center">
             <span className="font-mono text-xl sm:text-2xl font-semibold text-white">
-              <CountUp value={12} suffix="+" />
+              <CountUp value={shippedCount} suffix="" />
             </span>
             <span className="font-mono text-[11px] uppercase tracking-wider text-zinc-500 mt-1">
               projects shipped
@@ -223,10 +228,10 @@ export function HeroSection() {
 
           <div className="flex flex-col items-center border-x border-white/[0.06] px-2 sm:px-4">
             <span className="font-mono text-xl sm:text-2xl font-semibold text-white">
-              <CountUp value={5} suffix="-day" />
+              Fixed
             </span>
             <span className="font-mono text-[11px] uppercase tracking-wider text-zinc-500 mt-1">
-              avg delivery
+              price, no hourly
             </span>
           </div>
 
@@ -235,7 +240,7 @@ export function HeroSection() {
               UAE
             </span>
             <span className="font-mono text-[11px] uppercase tracking-wider text-zinc-500 mt-1">
-              based
+              market focus
             </span>
           </div>
         </motion.div>

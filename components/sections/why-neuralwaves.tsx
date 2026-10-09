@@ -1,5 +1,6 @@
-"use client";
-
+// Server Component: static markup with no state, hooks or event handlers.
+// It was marked "use client", which pulled it and its imports into the
+// client bundle for no benefit.
 import { Zap, DollarSign, MapPin, Brain } from "lucide-react";
 import { SectionHeader } from "@/components/ui/section-header";
 

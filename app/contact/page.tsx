@@ -182,6 +182,16 @@ export default function ContactPage() {
       } else {
         if (result.fieldErrors) {
           setErrors(result.fieldErrors);
+          // Move focus to the first invalid field so keyboard and screen-reader
+          // users land on the problem instead of being left at the submit button.
+          const firstInvalid = ["name", "email", "phone", "message"].find(
+            (field) => result.fieldErrors?.[field]?.length
+          );
+          if (firstInvalid) {
+            requestAnimationFrame(() => {
+              document.getElementById(firstInvalid)?.focus();
+            });
+          }
         }
         toast.error(result.error || "Please fix the highlighted fields.");
       }
@@ -515,6 +525,8 @@ export default function ContactPage() {
                     </label>
                     <input
                       id="name"
+                      aria-describedby={errors.name ? "name-error" : undefined}
+                      aria-invalid={errors.name ? true : undefined}
                       name="name"
                       type="text"
                       required
@@ -526,7 +538,9 @@ export default function ContactPage() {
                       className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none transition-colors"
                     />
                     {errors.name && (
-                      <p className="text-xs text-red-400">{errors.name[0]}</p>
+                      <p id="name-error" role="alert" className="text-xs text-red-400">
+                        {errors.name[0]}
+                      </p>
                     )}
                   </div>
 
@@ -537,6 +551,8 @@ export default function ContactPage() {
                     </label>
                     <input
                       id="email"
+                      aria-describedby={errors.email ? "email-error" : undefined}
+                      aria-invalid={errors.email ? true : undefined}
                       name="email"
                       type="email"
                       required
@@ -548,7 +564,9 @@ export default function ContactPage() {
                       className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none transition-colors"
                     />
                     {errors.email && (
-                      <p className="text-xs text-red-400">{errors.email[0]}</p>
+                      <p id="email-error" role="alert" className="text-xs text-red-400">
+                        {errors.email[0]}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -561,6 +579,8 @@ export default function ContactPage() {
                     </label>
                     <input
                       id="phone"
+                      aria-describedby={errors.phone ? "phone-error" : undefined}
+                      aria-invalid={errors.phone ? true : undefined}
                       name="phone"
                       type="tel"
                       required
@@ -572,7 +592,9 @@ export default function ContactPage() {
                       className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none transition-colors"
                     />
                     {errors.phone && (
-                      <p className="text-xs text-red-400">{errors.phone[0]}</p>
+                      <p id="phone-error" role="alert" className="text-xs text-red-400">
+                        {errors.phone[0]}
+                      </p>
                     )}
                   </div>
 
@@ -630,6 +652,8 @@ export default function ContactPage() {
                   </label>
                   <textarea
                     id="message"
+                    aria-describedby={errors.message ? "message-error" : undefined}
+                    aria-invalid={errors.message ? true : undefined}
                     name="message"
                     required
                     rows={4}
@@ -641,7 +665,9 @@ export default function ContactPage() {
                     className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none transition-colors resize-none"
                   />
                   {errors.message && (
-                    <p className="text-xs text-red-400">{errors.message[0]}</p>
+                    <p id="message-error" role="alert" className="text-xs text-red-400">
+                      {errors.message[0]}
+                    </p>
                   )}
                 </div>
 

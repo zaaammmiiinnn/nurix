@@ -113,6 +113,25 @@ export function ChatWidget() {
     }
   }, [messages, isOpen, scrollToBottom]);
 
+  // Escape closes the panel, and the background must not scroll behind it.
+  // Neither was handled: the dialog could only be dismissed by clicking the X.
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
+
   // 4. Focus input when chat opened
   useEffect(() => {
     if (isOpen) {

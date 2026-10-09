@@ -117,5 +117,18 @@ export function CountUp({
     });
   }, [rounded, prefix, suffix]);
 
-  return <span ref={ref}>{prefix}0{suffix}</span>;
+  // Render the FINAL value in the server output.
+  //
+  // This previously rendered `${prefix}0${suffix}`, so crawlers and visitors
+  // without JS saw "0+ projects shipped / 0-day avg delivery" in the hero. The
+  // animation still starts from 0 on the client (motionValue is initialised to 0),
+  // so the count-up plays for anyone with JS, but the no-JS fallback is now the
+  // real figure rather than a zero.
+  return (
+    <span ref={ref}>
+      {prefix}
+      {value}
+      {suffix}
+    </span>
+  );
 }

@@ -40,7 +40,7 @@ const FinalCta = dynamic(
   { ssr: true }
 );
 
-import { getFaqs, getPricingTiers } from "@/lib/data/db-queries";
+import { getFaqs, getPricingTiers, getProjects } from "@/lib/data/db-queries";
 import { SITE_URL } from "@/lib/config";
 
 // The homepage owns its canonical explicitly, now that the root layout no longer
@@ -56,10 +56,14 @@ export const metadata = {
 };
 
 export default async function HomePage() {
-  const [faqs, pricingTiers] = await Promise.all([
+  const [faqs, pricingTiers, projects] = await Promise.all([
     getFaqs(),
     getPricingTiers(),
+    getProjects(),
   ]);
+
+  // Real count of shipped builds for the hero (excluding demo builds).
+  const shippedCount = projects.filter((p) => !p.isDemo).length;
 
   const mappedFaqs = faqs.map((f) => ({ q: f.question, a: f.answer }));
 
@@ -88,7 +92,7 @@ export default async function HomePage() {
       <FaqJsonLd faqs={faqs} />
 
       {/* Hero & Social Proof - Above the Fold */}
-      <HeroSection />
+      <HeroSection shippedCount={shippedCount} />
       <TrustStrip />
 
       {/* Below the Fold Components */}
