@@ -9,15 +9,20 @@ import {
   TrendingUp,
   Plus,
   ArrowUpRight,
+  MessageSquare,
 } from "lucide-react";
 import { getLeads } from "@/app/admin/leads/actions";
 import { getAdminProjects } from "@/app/admin/portfolio/actions";
+import { getAdminChatSessions } from "@/app/admin/chats/actions";
 
 export default async function AdminDashboardPage() {
-  const [leads, projects] = await Promise.all([
+  const [leads, projects, chatSessions] = await Promise.all([
     getLeads(),
     getAdminProjects(),
+    getAdminChatSessions(),
   ]);
+
+  const unreadChats = chatSessions.reduce((acc, s) => acc + (s.unread_admin_count || 0), 0);
 
   // Metrics computation
   const totalLeads = leads.length;
@@ -64,6 +69,18 @@ export default async function AdminDashboardPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          <Link
+            href="/admin/chats"
+            className="btn-ghost-border px-3.5 py-2 rounded-xl text-xs font-mono text-zinc-300 hover:text-white flex items-center gap-1.5 transition-colors"
+          >
+            <MessageSquare size={14} className="text-violet-400" />
+            <span>Live Chats</span>
+            {unreadChats > 0 && (
+              <span className="ml-1 px-1.5 py-0.2 rounded-full bg-violet-600 text-[10px] font-bold text-white">
+                {unreadChats}
+              </span>
+            )}
+          </Link>
           <Link
             href="/admin/leads?create=true"
             className="btn-ghost-border px-3.5 py-2 rounded-xl text-xs font-mono text-zinc-300 hover:text-white flex items-center gap-1.5 transition-colors"

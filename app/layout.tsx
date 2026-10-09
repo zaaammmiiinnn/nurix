@@ -9,6 +9,7 @@ import { Footer } from "@/components/layout/footer";
 import { CursorGlow } from "@/components/ui/cursor-glow";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ChatWidget } from "@/components/ChatWidget";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 
@@ -145,6 +146,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             {children}
           </main>
           <Footer />
+          <ChatWidget />
           <Toaster />
         </TooltipProvider>
 

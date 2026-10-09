@@ -9,6 +9,7 @@ import {
   FolderKanban,
   Cpu,
   Tag,
+  MessageSquare,
   MessageSquareQuote,
   HelpCircle,
   Settings,
@@ -28,6 +29,7 @@ interface AdminShellProps {
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/admin/chats", label: "Chats", icon: MessageSquare },
   { href: "/admin/leads", label: "Leads", icon: Inbox },
   { href: "/admin/portfolio", label: "Portfolio", icon: FolderKanban },
   { href: "/admin/services", label: "Services", icon: Cpu },
