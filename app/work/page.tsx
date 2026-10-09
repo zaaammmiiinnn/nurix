@@ -37,6 +37,12 @@ import { SITE_URL } from "@/lib/config";
 
 export default async function WorkPage() {
   const projects = await getProjects();
+
+  // Derive the counts from the actual data. The page previously claimed
+  // "12+ Projects Shipped" while showing four, two of which are labelled demos —
+  // an easily-checked claim that undermines trust rather than building it.
+  const shipped = projects.filter((p) => !p.isDemo).length;
+  const demos = projects.filter((p) => p.isDemo).length;
   return (
     <div className="pt-28 pb-32 min-h-screen relative overflow-hidden">
       {/* Structured SEO */}
@@ -80,15 +86,21 @@ export default async function WorkPage() {
           </h1>
 
           <p className="text-lg sm:text-xl text-zinc-400 font-normal leading-relaxed">
-            No speculative pitch decks or vaporware. Every system below was architected, coded, and deployed for UAE SMEs in under 10 days.
+            No speculative pitch decks or vaporware. Every case study below documents what we replaced, what we built, and what changed as a result.
           </p>
 
-          <div className="flex items-center gap-6 pt-4 text-xs font-mono text-zinc-400">
-            <span>12+ Projects Shipped</span>
-            <span>•</span>
-            <span>5-Day Average Turnaround</span>
-            <span>•</span>
-            <span>100% Fixed Quotes</span>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-4 text-xs font-mono text-zinc-400">
+            <span>
+              {shipped} shipped {shipped === 1 ? "build" : "builds"}
+            </span>
+            {demos > 0 && (
+              <>
+                <span aria-hidden="true">•</span>
+                <span>{demos} interactive {demos === 1 ? "demo" : "demos"}</span>
+              </>
+            )}
+            <span aria-hidden="true">•</span>
+            <span>100% fixed quotes</span>
           </div>
         </div>
 

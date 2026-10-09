@@ -129,22 +129,42 @@ export default async function WorkSlugPage({ params }: Props) {
 
           <div className="flex items-center gap-3 text-sm text-zinc-400 font-mono">
             <Building size={16} className="text-zinc-500" />
-            <span>Client: {project.client}</span>
+            <span>
+              {project.isDemo ? "Reference build" : "Client"}: {project.client}
+            </span>
           </div>
 
-          {/* Big Result Metric Box */}
-          <div className="p-6 sm:p-8 rounded-2xl border border-emerald-500/30 bg-emerald-950/10 backdrop-blur-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          {/* Big Result Metric Box.
+              Demo builds used to be stamped "Verified Outcome / Production
+              Deployed", which claimed production verification for a build that
+              was never deployed for a client. */}
+          <div
+            className={`p-6 sm:p-8 rounded-2xl border backdrop-blur-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+              project.isDemo
+                ? "border-amber-500/30 bg-amber-950/10"
+                : "border-emerald-500/30 bg-emerald-950/10"
+            }`}
+          >
             <div>
-              <span className="font-mono text-[11px] uppercase tracking-wider text-emerald-400 block mb-1">
-                Verified Outcome
+              <span
+                className={`font-mono text-[11px] uppercase tracking-wider block mb-1 ${
+                  project.isDemo ? "text-amber-400" : "text-emerald-400"
+                }`}
+              >
+                {project.isDemo ? "Demonstration build — not a client deployment" : "Outcome"}
               </span>
               <p className="text-2xl sm:text-3xl font-bold text-white font-mono">
                 {project.resultMetric}
               </p>
             </div>
             <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
-              <ShieldCheck size={16} className="text-emerald-400" />
-              <span>Production Deployed</span>
+              <ShieldCheck
+                size={16}
+                className={project.isDemo ? "text-amber-400" : "text-emerald-400"}
+              />
+              <span>
+                {project.isDemo ? "Interactive demo" : `Delivered in ${project.deliveryDays}`}
+              </span>
             </div>
           </div>
         </div>

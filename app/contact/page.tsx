@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   MessageCircle,
@@ -32,6 +33,8 @@ const TIME_SLOTS = [
 ];
 
 export default function ContactPage() {
+  const searchParams = useSearchParams();
+
   const [formData, setFormData] = useState<ContactFormData>({
     name: "",
     email: "",
@@ -41,6 +44,40 @@ export default function ContactPage() {
     message: "",
     honeypot: "",
   });
+
+  /**
+   * Honour the ?tier= / ?service= params used by the pricing page CTAs.
+   * Previously /pricing linked to /contact?tier=Growth but this page never read
+   * search params, so a buyer who clicked "Get started" on a tier arrived at a
+   * blank, unselected form and had to start over.
+   */
+  useEffect(() => {
+    const rawTier = searchParams.get("tier");
+    const rawService = searchParams.get("service");
+
+    const validServices = ["chatbots", "dashboards", "agents", "not_sure"] as const;
+    type ServiceValue = (typeof validServices)[number];
+    const isService = (v: string | null): v is ServiceValue =>
+      !!v && (validServices as readonly string[]).includes(v);
+
+    setFormData((prev) => {
+      let service = prev.service;
+      if (isService(rawService)) {
+        service = rawService;
+      } else if (rawTier) {
+        // Tier names (Starter / Growth / Business / …) are not service slugs;
+        // record the intent in the brief and leave the choice explicit.
+        service = "not_sure";
+      }
+
+      const tierNote =
+        rawTier && !prev.message
+          ? `I'd like to start with the ${rawTier} package.`
+          : prev.message;
+
+      return { ...prev, service, message: tierNote };
+    });
+  }, [searchParams]);
 
   const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -364,7 +401,11 @@ export default function ContactPage() {
                       </div>
                       <div className="flex items-center gap-1.5 text-xs text-zinc-400">
                         <Sparkles size={14} className="text-violet-400" />
-                        <span>Google Meet link generated</span>
+                        {/* There is no calendar integration: the chosen slot is
+                            passed along with the enquiry and a meeting link is
+                            sent by a human. The previous "Google Meet link
+                            generated" text claimed automation that does not exist. */}
+                        <span>We&apos;ll confirm this slot by email</span>
                       </div>
                     </div>
 
@@ -554,9 +595,13 @@ export default function ContactPage() {
                     }
                     className="w-full bg-[#0F0F14] border border-white/[0.08] focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none transition-colors"
                   >
-                    <option value="chatbots">AI Chatbots &amp; WhatsApp Automation (from AED 1,500)</option>
-                    <option value="dashboards">Web &amp; Admin Dashboards (from AED 2,500)</option>
-                    <option value="agents">AI Agents for Business (from AED 7,500)</option>
+                    {/* Prices intentionally omitted: this list was a third,
+                        drifting copy of the price list (it said "from AED 2,500"
+                        for dashboards while the pricing page said 3,500).
+                        /pricing is the single source of truth for figures. */}
+                    <option value="chatbots">AI Chatbots &amp; WhatsApp Automation</option>
+                    <option value="dashboards">Web &amp; Admin Dashboards</option>
+                    <option value="agents">AI Agents for Business</option>
                     <option value="not_sure">Not Sure / Multi-System Architecture</option>
                   </select>
                 </div>

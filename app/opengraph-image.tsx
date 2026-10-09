@@ -147,11 +147,13 @@ export default async function OpenGraphImage() {
           }}
         >
           <div style={{ display: "flex", gap: "24px", fontSize: "16px", color: "#71717A" }}>
-            <span>12+ Projects Shipped</span>
+            {/* Was "12+ Projects Shipped" — unverifiable against the four case
+                studies on the site. */}
+            <span>Fixed-Price Builds</span>
             <span>•</span>
-            <span>5-Day Delivery</span>
+            <span>Delivered in Days</span>
             <span>•</span>
-            <span>UAE-Based</span>
+            <span>UAE-Focused</span>
           </div>
 
           <div

@@ -52,7 +52,7 @@ export function FaqSection({ faqs }: FaqSectionProps = {}) {
     >
       <SectionHeader
           id="faq-heading"
-        label="06 / FAQ"
+        label="07 / FAQ"
         title="Questions. Answered."
         description="Everything you need to know about our sprints, pricing, contracts, and IP ownership."
       />

@@ -39,7 +39,7 @@ export function WhyNeuralWaves() {
     >
       <SectionHeader
           id="why-heading"
-        label="05 / WHY NEURALWAVES"
+        label="06 / WHY NEURALWAVES"
         title="Why teams pick us over agencies."
         description="We replaced traditional agency fluff with high-speed engineering sprints tailored for UAE business owners."
       />

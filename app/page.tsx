@@ -2,6 +2,7 @@ import dynamic from "next/dynamic";
 import { HeroSection } from "@/components/sections/hero";
 import { TrustStrip } from "@/components/sections/trust-strip";
 import { FeaturedWork } from "@/components/sections/featured-work";
+import { TestimonialsSection } from "@/components/sections/testimonials";
 import { LocalBusinessJsonLd, FaqJsonLd } from "@/components/seo/json-ld";
 
 // Dynamically import below-the-fold sections for optimized initial hydration & TBT
@@ -95,6 +96,8 @@ export default async function HomePage() {
       <HowItWorks />
       <FeaturedWork />
       <PricingTeaser tiers={mappedTiers} />
+      {/* Previously rendered nowhere on the public site. */}
+      <TestimonialsSection />
       <WhyNeuralWaves />
       <FaqSection faqs={mappedFaqs} />
       <FinalCta />
