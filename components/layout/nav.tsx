@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
-import { Menu, X, ArrowUpRight } from "lucide-react";
+import { Menu, X, ArrowUpRight, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollProgressBar } from "@/components/ui/scroll-progress";
 import { Logo } from "@/components/ui/logo";
@@ -78,7 +78,15 @@ export function Nav() {
             </nav>
 
             {/* Desktop CTA */}
-            <div className="hidden md:flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-3">
+              <Link
+                href="/admin"
+                title="Admin Ops Portal"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono text-zinc-400 hover:text-white border border-white/[0.06] hover:border-violet-500/30 hover:bg-white/[0.04] transition-all"
+              >
+                <Shield size={12} className="text-violet-400" />
+                <span>Admin</span>
+              </Link>
               <Link
                 href={WA_URL}
                 target="_blank"
@@ -134,6 +142,13 @@ export function Nav() {
                 {link.label}
               </Link>
             ))}
+            <Link
+              href="/admin"
+              className="flex items-center gap-2 px-3 py-2.5 text-sm rounded-lg transition-colors duration-150 text-zinc-400 hover:text-white font-mono"
+            >
+              <Shield size={14} className="text-violet-400" />
+              <span>Admin Ops</span>
+            </Link>
             <div className="pt-4 flex flex-col gap-3">
               <Link
                 href={WA_URL}

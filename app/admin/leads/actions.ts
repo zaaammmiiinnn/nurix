@@ -11,6 +11,19 @@ function safeRevalidate(path: string) {
   }
 }
 
+function isSupabaseConfigured(): boolean {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)?.trim();
+  return Boolean(
+    url &&
+      key &&
+      !url.includes("placeholder") &&
+      !url.includes("YOUR_") &&
+      !url.includes("xxxxxxxx") &&
+      url.startsWith("https://")
+  );
+}
+
 export interface Lead {
   id: string;
   name: string;
@@ -113,14 +126,15 @@ let memoryLeads: Lead[] = [
 ];
 
 export async function getLeads(): Promise<Lead[]> {
-  try {
-    const supabase = createAdminClient();
-    const { data, error } = await supabase
-      .from("leads")
-      .select("*")
-      .order("created_at", { ascending: false });
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = createAdminClient();
+      const { data, error } = await supabase
+        .from("leads")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-    if (!error && data && data.length > 0) {
+      if (!error && data && data.length > 0) {
       interface SupabaseLeadRow {
         id: string | number;
         name?: string;
@@ -151,6 +165,7 @@ export async function getLeads(): Promise<Lead[]> {
   } catch (e) {
     console.warn("Supabase getLeads fetch fell back to memory store:", e);
   }
+}
 
   return memoryLeads;
 }
@@ -160,18 +175,20 @@ export async function updateLeadStatus(
   status: Lead["status"],
   notes?: string
 ) {
-  try {
-    const supabase = createAdminClient();
-    await supabase
-      .from("leads")
-      .update({
-        status,
-        metadata: notes ? { notes } : undefined,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", leadId);
-  } catch (e) {
-    console.warn("Supabase update error:", e);
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = createAdminClient();
+      await supabase
+        .from("leads")
+        .update({
+          status,
+          metadata: notes ? { notes } : undefined,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", leadId);
+    } catch (e) {
+      console.warn("Supabase update error:", e);
+    }
   }
 
   // Update memory
@@ -187,14 +204,16 @@ export async function updateLeadStatus(
 }
 
 export async function bulkUpdateLeads(leadIds: string[], status: Lead["status"]) {
-  try {
-    const supabase = createAdminClient();
-    await supabase
-      .from("leads")
-      .update({ status, updated_at: new Date().toISOString() })
-      .in("id", leadIds);
-  } catch (e) {
-    console.warn("Supabase bulk update error:", e);
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = createAdminClient();
+      await supabase
+        .from("leads")
+        .update({ status, updated_at: new Date().toISOString() })
+        .in("id", leadIds);
+    } catch (e) {
+      console.warn("Supabase bulk update error:", e);
+    }
   }
 
   memoryLeads = memoryLeads.map((l) =>
@@ -207,11 +226,13 @@ export async function bulkUpdateLeads(leadIds: string[], status: Lead["status"])
 }
 
 export async function bulkDeleteLeads(leadIds: string[]) {
-  try {
-    const supabase = createAdminClient();
-    await supabase.from("leads").delete().in("id", leadIds);
-  } catch (e) {
-    console.warn("Supabase bulk delete error:", e);
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = createAdminClient();
+      await supabase.from("leads").delete().in("id", leadIds);
+    } catch (e) {
+      console.warn("Supabase bulk delete error:", e);
+    }
   }
 
   memoryLeads = memoryLeads.filter((l) => !leadIds.includes(l.id));
@@ -228,22 +249,24 @@ export async function createManualLead(leadData: Omit<Lead, "id" | "created_at">
     created_at: new Date().toISOString(),
   };
 
-  try {
-    const supabase = createAdminClient();
-    await supabase.from("leads").insert([
-      {
-        name: leadData.name,
-        email: leadData.email,
-        phone: leadData.phone,
-        company: leadData.company,
-        service: leadData.service,
-        message: leadData.message,
-        status: leadData.status,
-        metadata: leadData.notes ? { notes: leadData.notes } : {},
-      },
-    ]);
-  } catch (e) {
-    console.warn("Supabase manual lead create error:", e);
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = createAdminClient();
+      await supabase.from("leads").insert([
+        {
+          name: leadData.name,
+          email: leadData.email,
+          phone: leadData.phone,
+          company: leadData.company,
+          service: leadData.service,
+          message: leadData.message,
+          status: leadData.status,
+          metadata: leadData.notes ? { notes: leadData.notes } : {},
+        },
+      ]);
+    } catch (e) {
+      console.warn("Supabase manual lead create error:", e);
+    }
   }
 
   memoryLeads = [newLead, ...memoryLeads];

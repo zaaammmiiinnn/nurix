@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { Resend } from "resend";
-import { createAdminClient } from "@/lib/supabase/server";
 import { createManualLead } from "@/app/admin/leads/actions";
 
 const leadSchema = z.object({
@@ -19,87 +18,71 @@ const leadSchema = z.object({
 export type SubmitLeadResult = {
   success: boolean;
   error?: string;
+  fieldErrors?: Record<string, string[]>;
 };
 
 /**
  * Server Action to submit a lead from the contact form:
- * 1. Reads Form Data
+ * 1. Reads Form Data or Object
  * 2. Honeypot check (hidden field 'website')
- * 3. Zod validation
- * 4. Inserts into Supabase `leads` table
+ * 3. Zod validation with fieldErrors
+ * 4. Inserts into Supabase `leads` table and backup memory store
  * 5. Sends notification email via Resend to process.env.ADMIN_EMAIL
- * 6. Returns { success: true } or { success: false, error }
+ * 6. Returns { success: true } or { success: false, error, fieldErrors }
  */
-export async function submitLead(formData: FormData): Promise<SubmitLeadResult> {
+export async function submitLead(
+  input: FormData | Record<string, unknown>
+): Promise<SubmitLeadResult> {
   try {
+    const isFormData = typeof FormData !== "undefined" && input instanceof FormData;
+
+    const getValue = (key: string): string => {
+      if (isFormData) {
+        const val = (input as FormData).get(key);
+        return typeof val === "string" ? val : "";
+      }
+      const val = (input as Record<string, unknown>)[key];
+      return typeof val === "string" ? val : "";
+    };
+
     // 1. Honeypot check for spam bots
-    const website = (formData.get("website") as string) || "";
-    if (website && website.trim().length > 0) {
+    const website = getValue("website").trim();
+    if (website && website.length > 0) {
       // Silently succeed to trick automated spam bots
       return { success: true };
     }
 
-    // 2. Extract values from FormData
+    // 2. Extract values
     const rawData = {
-      name: (formData.get("name") as string) || "",
-      email: (formData.get("email") as string) || "",
-      phone: (formData.get("phone") as string) || "",
-      company: (formData.get("company") as string) || undefined,
-      service: (formData.get("service") as string) || "chatbots",
-      message: (formData.get("message") as string) || "",
+      name: getValue("name").trim(),
+      email: getValue("email").trim(),
+      phone: getValue("phone").trim(),
+      company: getValue("company").trim() || undefined,
+      service: getValue("service").trim() || "chatbots",
+      message: getValue("message").trim(),
       website,
     };
 
     // 3. Validate with Zod
     const validated = leadSchema.safeParse(rawData);
     if (!validated.success) {
+      const fieldErrors = validated.error.flatten().fieldErrors;
       const firstError = validated.error.errors[0]?.message || "Validation failed";
-      return { success: false, error: firstError };
+      return { success: false, error: firstError, fieldErrors };
     }
 
     const { name, email, phone, company, service, message } = validated.data;
 
-    // 4. Insert into Supabase `leads` table
-    let insertedSuccessfully = false;
-    try {
-      const supabase = createAdminClient();
-      const { data, error: dbError } = await supabase
-        .from("leads")
-        .insert([
-          {
-            name,
-            email,
-            phone,
-            company: company || null,
-            service,
-            message,
-            status: "new",
-          },
-        ])
-        .select()
-        .single();
-
-      if (!dbError && data) {
-        insertedSuccessfully = true;
-      } else if (dbError) {
-        console.warn("[Supabase] Insert lead error, recording via backup store:", dbError.message);
-      }
-    } catch (dbException) {
-      console.warn("[Supabase] Exception connecting to leads table:", dbException);
-    }
-
-    // Backup local/fallback store ensure lead is never lost in dev environments
-    if (!insertedSuccessfully) {
-      await createManualLead({
-        name,
-        email,
-        phone,
-        company: company || null,
-        service,
-        message,
-        status: "new",
-      });
-    }
+    // 4. Save lead (persists to Supabase if configured and backup store for instant UI updates)
+    await createManualLead({
+      name,
+      email,
+      phone,
+      company: company || null,
+      service,
+      message,
+      status: "new",
+    });
 
     // 5. Send notification email via Resend
     const resendApiKey = process.env.RESEND_API_KEY?.trim();

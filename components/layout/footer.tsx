@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MessageCircle, Mail, MapPin } from "lucide-react";
+import { MessageCircle, Mail, MapPin, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 
 const SERVICES_LINKS = [
@@ -16,6 +16,7 @@ const COMPANY_LINKS = [
   { href: "/pricing", label: "Pricing" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
+  { href: "/admin", label: "Admin Portal" },
 ];
 
 const WA_URL =
@@ -123,7 +124,16 @@ export function Footer() {
           <p className="text-xs text-signal-muted">
             © {new Date().getFullYear()} NeuralWaves. All rights reserved.
           </p>
-          <p className="mono-label text-[0.6rem]">Made in Dubai 🇦🇪</p>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/admin"
+              className="mono-label text-[0.65rem] text-zinc-500 hover:text-zinc-300 transition-colors flex items-center gap-1"
+            >
+              <ShieldCheck size={11} className="text-violet-400" />
+              <span>Admin Ops</span>
+            </Link>
+            <p className="mono-label text-[0.6rem]">Made in Dubai 🇦🇪</p>
+          </div>
         </div>
       </div>
     </footer>

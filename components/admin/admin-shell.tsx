@@ -15,6 +15,7 @@ import {
   Menu,
   X,
   ExternalLink,
+  ArrowLeft,
 } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { AdminUserNav } from "@/components/admin/admin-user-nav";
@@ -150,7 +151,15 @@ export function AdminShell({ children, adminEmail, isClerkAuth }: AdminShellProp
             })}
           </nav>
 
-          <div className="pt-4 border-t border-white/[0.08]">
+          <div className="pt-4 border-t border-white/[0.08] space-y-3">
+            <Link
+              href="/"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-mono text-zinc-300 hover:text-white bg-white/[0.04] border border-white/[0.08] transition-colors"
+            >
+              <ArrowLeft size={14} className="text-violet-400" />
+              <span>Back to Live Website</span>
+            </Link>
             <AdminUserNav adminEmail={adminEmail} isClerkAuth={isClerkAuth} />
           </div>
         </div>
@@ -171,11 +180,10 @@ export function AdminShell({ children, adminEmail, isClerkAuth }: AdminShellProp
             </span>
             <Link
               href="/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs font-mono text-zinc-400 hover:text-white flex items-center gap-1 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono text-zinc-300 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] hover:border-violet-500/30 transition-all shadow-sm"
             >
-              Live Site <ExternalLink size={12} />
+              <ArrowLeft size={13} className="text-violet-400" />
+              <span>Live Website</span>
             </Link>
           </div>
         </header>

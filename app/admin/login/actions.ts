@@ -48,46 +48,23 @@ export async function sendMagicLink(email: string, redirectToOrigin: string) {
         }
 
         console.warn("[Supabase Auth] signInWithOtp returned error:", error.message);
+        return {
+          success: false,
+          message: error.message || "Failed to send magic link.",
+        };
       } catch (sbErr) {
         console.warn("[Supabase Auth] network error sending magic link:", sbErr);
+        return {
+          success: false,
+          message: "Unable to connect to Supabase auth service.",
+        };
       }
     }
 
-    // Direct verified admin login fallback when Supabase OTP/SMTP is unconfigured or unavailable
-    try {
-      const cookieStore = cookies();
-      cookieStore.set("nurix_admin_demo_session", "1", {
-        path: "/",
-        httpOnly: true,
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7,
-      });
-      cookieStore.set("nurix_admin_email", normalized, {
-        path: "/",
-        httpOnly: true,
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7,
-      });
-      cookieStore.set("neuralwaves_admin_demo_session", "1", {
-        path: "/",
-        httpOnly: true,
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7,
-      });
-      cookieStore.set("neuralwaves_admin_email", normalized, {
-        path: "/",
-        httpOnly: true,
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7,
-      });
-    } catch {
-      // Graceful fallback outside request scope
-    }
-
     return {
-      success: true,
-      directLogin: true,
-      message: "Admin verified! Redirecting to dashboard...",
+      success: false,
+      message:
+        "Supabase is not configured for Magic Links. Please sign in via Clerk or configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local.",
     };
   } catch (err: unknown) {
     console.error("sendMagicLink unexpected error:", err);
@@ -96,37 +73,6 @@ export async function sendMagicLink(email: string, redirectToOrigin: string) {
       message: err instanceof Error ? err.message : "Authentication temporarily unavailable.",
     };
   }
-}
-
-export async function loginAsDemoAdmin() {
-  const cookieStore = cookies();
-  const targetEmail = "zaminaskari.work@gmail.com";
-  cookieStore.set("nurix_admin_demo_session", "1", {
-    path: "/",
-    httpOnly: true,
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-  });
-  cookieStore.set("nurix_admin_email", targetEmail, {
-    path: "/",
-    httpOnly: true,
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7,
-  });
-  cookieStore.set("neuralwaves_admin_demo_session", "1", {
-    path: "/",
-    httpOnly: true,
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7,
-  });
-  cookieStore.set("neuralwaves_admin_email", targetEmail, {
-    path: "/",
-    httpOnly: true,
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7,
-  });
-
-  redirect("/admin");
 }
 
 export async function signOutAdmin() {

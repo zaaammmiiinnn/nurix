@@ -1,12 +1,11 @@
 import { currentUser } from "@clerk/nextjs/server";
-import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 
 export type AdminAuthResult =
   | {
       status: "authorized";
       email: string;
-      authProvider: "clerk" | "supabase" | "demo";
+      authProvider: "clerk" | "supabase";
       user?: unknown;
     }
   | {
@@ -73,7 +72,12 @@ export async function isEmailAuthorizedAdmin(email: string): Promise<boolean> {
 
   // Check Supabase admins table if available
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (supabaseUrl && !supabaseUrl.includes("YOUR_PROJECT")) {
+  if (
+    supabaseUrl &&
+    !supabaseUrl.includes("YOUR_PROJECT") &&
+    !supabaseUrl.includes("placeholder") &&
+    supabaseUrl.startsWith("https://")
+  ) {
     try {
       const supabase = createClient();
       const { data } = await supabase
@@ -114,36 +118,49 @@ export async function verifyAdminAccess(): Promise<AdminAuthResult> {
         user.emailAddresses[0]?.emailAddress ||
         "";
 
-      // 1. Verify that user has at least one verified email
+      // 1. Collect verified email addresses
       const verifiedEmails = emailObjects
         .filter((e) => e.verification?.status === "verified")
         .map((e) => e.emailAddress.toLowerCase());
 
-      if (verifiedEmails.length === 0) {
-        return {
-          status: "unverified",
-          email: primaryEmail,
-          authProvider: "clerk",
-          user,
-          message:
-            "Your email address is not verified in Clerk. Please verify your email before accessing the admin portal.",
-        };
-      }
+      // Candidate emails for admin whitelist check
+      const candidateEmails = [
+        ...verifiedEmails,
+        primaryEmail.toLowerCase(),
+        ...emailObjects.map((e) => e.emailAddress.toLowerCase()),
+      ].filter(Boolean);
 
-      // 2. Check if any verified email is in the admin whitelist
-      for (const verifiedEmail of verifiedEmails) {
-        const isAuthorized = await isEmailAuthorizedAdmin(verifiedEmail);
+      // 2. Check if any candidate email matches authorized admin whitelist
+      for (const candidateEmail of candidateEmails) {
+        const isAuthorized = await isEmailAuthorizedAdmin(candidateEmail);
         if (isAuthorized) {
+          // If the user has unverified emails only, prompt verification
+          const isVerified =
+            verifiedEmails.includes(candidateEmail) ||
+            emailObjects.find((e) => e.emailAddress.toLowerCase() === candidateEmail)
+              ?.verification?.status === "verified";
+
+          if (!isVerified && verifiedEmails.length === 0) {
+            return {
+              status: "unverified",
+              email: candidateEmail,
+              authProvider: "clerk",
+              user,
+              message:
+                "Your email address is not yet verified in Clerk. Please verify your email before entering the admin portal.",
+            };
+          }
+
           return {
             status: "authorized",
-            email: verifiedEmail,
+            email: candidateEmail,
             authProvider: "clerk",
             user,
           };
         }
       }
 
-      // User is verified, but not on the admin whitelist
+      // User signed into Clerk, but neither primary nor attached emails are on admin whitelist
       return {
         status: "unauthorized",
         email: verifiedEmails[0] || primaryEmail,
@@ -157,16 +174,7 @@ export async function verifyAdminAccess(): Promise<AdminAuthResult> {
     }
   }
 
-  // Fallback to Supabase / Demo Cookie when Clerk is not configured or fails
-  const cookieStore = cookies();
-  const hasDemoCookie =
-    cookieStore.get("neuralwaves_admin_demo_session")?.value === "1" ||
-    cookieStore.get("nurix_admin_demo_session")?.value === "1";
-  const demoEmail =
-    cookieStore.get("nurix_admin_email")?.value ||
-    cookieStore.get("neuralwaves_admin_email")?.value ||
-    "zaminaskari.work@gmail.com";
-
+  // Fallback to Supabase authentication when Clerk is not active
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const isSupabaseConfigured = Boolean(
     supabaseUrl &&
@@ -202,16 +210,8 @@ export async function verifyAdminAccess(): Promise<AdminAuthResult> {
         };
       }
     } catch {
-      // Continue to check demo session
+      // Continue to unauthenticated
     }
-  }
-
-  if (hasDemoCookie) {
-    return {
-      status: "authorized",
-      email: demoEmail,
-      authProvider: "demo",
-    };
   }
 
   return { status: "unauthenticated" };

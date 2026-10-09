@@ -16,8 +16,12 @@ const isAuthRoute = createRouteMatcher(["/admin/login(.*)", "/admin/auth(.*)"]);
 const clerkAuthHandler = isClerkConfigured
   ? clerkMiddleware((auth, req) => {
       if (isAdminRoute(req) && !isAuthRoute(req)) {
-        const loginUrl = new URL("/admin/login", req.url).toString();
-        auth().protect({ unauthenticatedUrl: loginUrl });
+        const { userId } = auth();
+        if (!userId) {
+          const loginUrl = new URL("/admin/login", req.url);
+          loginUrl.searchParams.set("redirectedFrom", req.nextUrl.pathname);
+          return NextResponse.redirect(loginUrl);
+        }
       }
     })
   : null;
@@ -28,7 +32,7 @@ export default async function middleware(request: NextRequest, event: NextFetchE
     return clerkAuthHandler(request, event);
   }
 
-  // Fallback protection for local development and Supabase auth
+  // Fallback protection when Clerk is not configured
   const { pathname } = request.nextUrl;
 
   if (
@@ -36,10 +40,6 @@ export default async function middleware(request: NextRequest, event: NextFetchE
     !pathname.startsWith("/admin/login") &&
     !pathname.startsWith("/admin/auth")
   ) {
-    const hasDemoCookie =
-      request.cookies.get("nurix_admin_demo_session")?.value === "1" ||
-      request.cookies.get("neuralwaves_admin_demo_session")?.value === "1";
-
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     const isSupabaseConfigured = Boolean(
@@ -78,7 +78,7 @@ export default async function middleware(request: NextRequest, event: NextFetchE
           data: { session },
         } = await supabase.auth.getSession();
 
-        if (!session && !hasDemoCookie) {
+        if (!session) {
           const redirectUrl = request.nextUrl.clone();
           redirectUrl.pathname = "/admin/login";
           redirectUrl.searchParams.set("redirectedFrom", pathname);
@@ -87,19 +87,15 @@ export default async function middleware(request: NextRequest, event: NextFetchE
 
         return response;
       } catch {
-        if (!hasDemoCookie) {
-          const redirectUrl = request.nextUrl.clone();
-          redirectUrl.pathname = "/admin/login";
-          return NextResponse.redirect(redirectUrl);
-        }
-      }
-    } else {
-      // Unconfigured local dev mode: require demo session
-      if (!hasDemoCookie) {
         const redirectUrl = request.nextUrl.clone();
         redirectUrl.pathname = "/admin/login";
         return NextResponse.redirect(redirectUrl);
       }
+    } else {
+      // Unconfigured or non-session access is redirected to login
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/admin/login";
+      return NextResponse.redirect(redirectUrl);
     }
   }
 

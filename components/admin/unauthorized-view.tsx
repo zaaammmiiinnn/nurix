@@ -10,7 +10,7 @@ import { Logo } from "@/components/ui/logo";
 interface UnauthorizedViewProps {
   status: "unverified" | "unauthorized";
   email: string;
-  authProvider: "clerk" | "supabase" | "demo";
+  authProvider: "clerk" | "supabase";
   message?: string;
 }
 

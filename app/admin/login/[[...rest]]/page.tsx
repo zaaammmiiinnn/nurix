@@ -8,15 +8,15 @@ import {
   ArrowRight,
   Loader2,
   ShieldAlert,
-  Sparkles,
   CheckCircle2,
   Lock,
   ShieldCheck,
+  KeyRound,
 } from "lucide-react";
 import { toast } from "sonner";
 import { SignIn } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
-import { sendMagicLink, loginAsDemoAdmin } from "./actions";
+import { sendMagicLink } from "../actions";
 import { Logo } from "@/components/ui/logo";
 
 export default function AdminLoginPage() {
@@ -27,11 +27,13 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
-  const [showDemoBypass, setShowDemoBypass] = useState(false);
 
   const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
   const isClerkEnabled = Boolean(
-    clerkKey && !clerkKey.includes("YOUR_") && clerkKey.startsWith("pk_")
+    clerkKey &&
+      !clerkKey.includes("YOUR_") &&
+      !clerkKey.includes("placeholder") &&
+      clerkKey.startsWith("pk_")
   );
 
   const handleMagicLink = async (e: React.FormEvent) => {
@@ -43,13 +45,7 @@ export default function AdminLoginPage() {
       const res = await sendMagicLink(email, window.location.origin);
       if (res.success) {
         toast.success(res.message);
-        if (res.directLogin) {
-          setTimeout(() => {
-            window.location.href = "/admin";
-          }, 600);
-        } else {
-          setMagicLinkSent(true);
-        }
+        setMagicLinkSent(true);
       } else {
         toast.error(res.message || "Failed to send magic link");
       }
@@ -104,7 +100,7 @@ export default function AdminLoginPage() {
           </div>
         )}
 
-        {/* Card: Clerk or Magic Link */}
+        {/* Card: Clerk or Fallback */}
         <div className="rounded-2xl border border-white/[0.08] bg-gradient-to-br from-white/[0.04] to-white/[0.01] p-6 shadow-2xl space-y-6">
           {isClerkEnabled ? (
             <div className="space-y-4">
@@ -115,7 +111,8 @@ export default function AdminLoginPage() {
 
               <div className="flex justify-center w-full">
                 <SignIn
-                  routing="hash"
+                  path="/admin/login"
+                  routing="path"
                   fallbackRedirectUrl="/admin"
                   forceRedirectUrl="/admin"
                   appearance={{
@@ -149,93 +146,86 @@ export default function AdminLoginPage() {
               </div>
             </div>
           ) : (
-            /* Fallback Magic Link */
-            magicLinkSent ? (
-              <div className="text-center space-y-4 py-4">
-                <div className="w-12 h-12 rounded-full bg-violet-500/10 border border-violet-500/30 flex items-center justify-center mx-auto text-violet-400">
-                  <CheckCircle2 size={24} />
+            /* Clerk Not Configured Banner + Magic Link Alternative */
+            <div className="space-y-5">
+              <div className="rounded-xl border border-violet-500/20 bg-violet-950/20 p-4 text-xs space-y-2 text-zinc-300">
+                <div className="flex items-center gap-2 font-semibold text-white">
+                  <KeyRound size={15} className="text-violet-400" />
+                  Clerk Authentication Setup
                 </div>
-                <div className="space-y-1">
-                  <h3 className="text-lg font-medium text-white">Check your email</h3>
-                  <p className="text-xs text-zinc-400 max-w-xs mx-auto">
-                    We sent a magic sign-in link to <span className="text-white font-mono">{email}</span>. Click the link to log in.
-                  </p>
+                <p className="text-zinc-400 leading-relaxed text-[11px]">
+                  Clerk is configured for admin access. To sign in with Clerk, add your API keys to <code className="text-violet-300 font-mono">.env.local</code>:
+                </p>
+                <div className="p-2.5 rounded-lg bg-black/60 border border-white/[0.08] text-[10px] font-mono text-violet-300 leading-relaxed">
+                  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...<br />
+                  CLERK_SECRET_KEY=sk_test_...
                 </div>
-                <button
-                  onClick={() => setMagicLinkSent(false)}
-                  className="text-xs font-mono text-violet-400 hover:underline pt-2 block mx-auto"
-                >
-                  Use another email
-                </button>
+                <p className="text-[10px] text-zinc-500 font-mono">
+                  Authorized admins: zaminaskari.work@gmail.com, askarizamin110@gmail.com
+                </p>
               </div>
-            ) : (
-              <form onSubmit={handleMagicLink} className="space-y-5">
-                <div className="space-y-2">
-                  <label className="block text-xs font-mono uppercase tracking-wider text-zinc-400">
-                    Admin Email
-                  </label>
-                  <div className="relative">
-                    <Mail
-                      size={16}
-                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"
-                    />
-                    <input
-                      type="email"
-                      required
-                      placeholder="zaminaskari.work@gmail.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/60 transition-colors"
-                    />
+
+              {magicLinkSent ? (
+                <div className="text-center space-y-4 py-4">
+                  <div className="w-12 h-12 rounded-full bg-violet-500/10 border border-violet-500/30 flex items-center justify-center mx-auto text-violet-400">
+                    <CheckCircle2 size={24} />
                   </div>
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-medium text-white">Check your email</h3>
+                    <p className="text-xs text-zinc-400 max-w-xs mx-auto">
+                      We sent a magic sign-in link to <span className="text-white font-mono">{email}</span>. Click the link to log in.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setMagicLinkSent(false)}
+                    className="text-xs font-mono text-violet-400 hover:underline pt-2 block mx-auto"
+                  >
+                    Use another email
+                  </button>
                 </div>
+              ) : (
+                <form onSubmit={handleMagicLink} className="space-y-4 pt-2 border-t border-white/[0.06]">
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-400">
+                      Supabase Admin Email Magic Link
+                    </label>
+                    <div className="relative">
+                      <Mail
+                        size={16}
+                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"
+                      />
+                      <input
+                        type="email"
+                        required
+                        placeholder="zaminaskari.work@gmail.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/60 transition-colors"
+                      />
+                    </div>
+                  </div>
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3.5 px-4 rounded-xl text-xs font-semibold uppercase tracking-wider text-white btn-glow flex items-center justify-center gap-2 disabled:opacity-50 transition-all"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" />
-                      Sending Magic Link...
-                    </>
-                  ) : (
-                    <>
-                      Send Magic Link
-                      <ArrowRight size={16} />
-                    </>
-                  )}
-                </button>
-              </form>
-            )
-          )}
-
-          {/* Dev demo bypass button */}
-          <div className="pt-4 border-t border-white/[0.06] text-center space-y-3">
-            <div className="flex items-center justify-between text-[11px] font-mono text-zinc-500">
-              <span>Developer Preview Mode</span>
-              <button
-                type="button"
-                onClick={() => setShowDemoBypass((v) => !v)}
-                className="text-violet-400 hover:underline"
-              >
-                {showDemoBypass ? "Hide" : "Show Option"}
-              </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-3 px-4 rounded-xl text-xs font-semibold uppercase tracking-wider text-white btn-glow flex items-center justify-center gap-2 disabled:opacity-50 transition-all"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 size={15} className="animate-spin" />
+                        Sending Magic Link...
+                      </>
+                    ) : (
+                      <>
+                        Send Magic Link
+                        <ArrowRight size={15} />
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
             </div>
-
-            {(showDemoBypass || !isClerkEnabled) && (
-              <form action={loginAsDemoAdmin}>
-                <button
-                  type="submit"
-                  className="w-full py-2.5 px-3 rounded-lg bg-white/[0.04] border border-white/[0.08] hover:border-violet-500/30 text-xs font-mono text-zinc-300 hover:text-white flex items-center justify-center gap-2 transition-colors"
-                >
-                  <Sparkles size={14} className="text-violet-400" />
-                  1-Click Demo Login (zaminaskari.work@gmail.com)
-                </button>
-              </form>
-            )}
-          </div>
+          )}
         </div>
 
         {/* Back to site */}

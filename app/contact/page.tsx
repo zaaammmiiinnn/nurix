@@ -111,13 +111,24 @@ export default function ContactPage() {
     setErrors({});
 
     try {
-      const dataPayload = new FormData(e.currentTarget);
+      const dataPayload = new FormData();
+      dataPayload.append("name", formData.name.trim());
+      dataPayload.append("email", formData.email.trim());
+      dataPayload.append("phone", formData.phone.trim());
+      if (formData.company) dataPayload.append("company", formData.company.trim());
+      dataPayload.append("service", formData.service);
+      dataPayload.append("message", formData.message.trim());
+      dataPayload.append("website", "");
+
       const result = await submitLead(dataPayload);
 
       if (result.success) {
         toast.success("Got it. We'll reply within 4 hours with a scope and fixed quote.");
         setSubmitted(true);
       } else {
+        if (result.fieldErrors) {
+          setErrors(result.fieldErrors);
+        }
         toast.error(result.error || "Please fix the highlighted fields.");
       }
     } catch {
