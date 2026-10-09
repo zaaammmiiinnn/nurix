@@ -50,6 +50,9 @@
     "wrangler": "^4.149.0"
   },
   "overrides": {
-    "next": "$next"
+    "next": "$next",
+    "@opennextjs/cloudflare": {
+      "next": "$next"
+    }
   }
 }
