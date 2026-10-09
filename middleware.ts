@@ -46,7 +46,10 @@ export default async function middleware(request: NextRequest, event: NextFetchE
       supabaseUrl &&
         supabaseAnonKey &&
         !supabaseUrl.includes("YOUR_PROJECT") &&
-        !supabaseUrl.includes("placeholder")
+        !supabaseUrl.includes("placeholder") &&
+        !supabaseUrl.includes("xxxxxxxx") &&
+        !supabaseUrl.includes("your-project") &&
+        supabaseUrl.startsWith("https://")
     );
 
     if (isSupabaseConfigured) {

@@ -42,8 +42,14 @@ export default function AdminLoginPage() {
     try {
       const res = await sendMagicLink(email, window.location.origin);
       if (res.success) {
-        setMagicLinkSent(true);
         toast.success(res.message);
+        if (res.directLogin) {
+          setTimeout(() => {
+            window.location.href = "/admin";
+          }, 600);
+        } else {
+          setMagicLinkSent(true);
+        }
       } else {
         toast.error(res.message || "Failed to send magic link");
       }
@@ -219,14 +225,15 @@ export default function AdminLoginPage() {
             </div>
 
             {(showDemoBypass || !isClerkEnabled) && (
-              <button
-                type="button"
-                onClick={() => loginAsDemoAdmin()}
-                className="w-full py-2.5 px-3 rounded-lg bg-white/[0.04] border border-white/[0.08] hover:border-violet-500/30 text-xs font-mono text-zinc-300 hover:text-white flex items-center justify-center gap-2 transition-colors"
-              >
-                <Sparkles size={14} className="text-violet-400" />
-                1-Click Demo Login (zaminaskari.work@gmail.com)
-              </button>
+              <form action={loginAsDemoAdmin}>
+                <button
+                  type="submit"
+                  className="w-full py-2.5 px-3 rounded-lg bg-white/[0.04] border border-white/[0.08] hover:border-violet-500/30 text-xs font-mono text-zinc-300 hover:text-white flex items-center justify-center gap-2 transition-colors"
+                >
+                  <Sparkles size={14} className="text-violet-400" />
+                  1-Click Demo Login (zaminaskari.work@gmail.com)
+                </button>
+              </form>
             )}
           </div>
         </div>

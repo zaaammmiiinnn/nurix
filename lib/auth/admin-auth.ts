@@ -163,6 +163,7 @@ export async function verifyAdminAccess(): Promise<AdminAuthResult> {
     cookieStore.get("neuralwaves_admin_demo_session")?.value === "1" ||
     cookieStore.get("nurix_admin_demo_session")?.value === "1";
   const demoEmail =
+    cookieStore.get("nurix_admin_email")?.value ||
     cookieStore.get("neuralwaves_admin_email")?.value ||
     "zaminaskari.work@gmail.com";
 
@@ -170,7 +171,10 @@ export async function verifyAdminAccess(): Promise<AdminAuthResult> {
   const isSupabaseConfigured = Boolean(
     supabaseUrl &&
       !supabaseUrl.includes("YOUR_PROJECT") &&
-      !supabaseUrl.includes("placeholder")
+      !supabaseUrl.includes("placeholder") &&
+      !supabaseUrl.includes("xxxxxxxx") &&
+      !supabaseUrl.includes("your-project") &&
+      supabaseUrl.startsWith("https://")
   );
 
   if (isSupabaseConfigured) {
