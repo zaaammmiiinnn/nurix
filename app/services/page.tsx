@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   },
 };
 
-const WA_BASE = "https://wa.me/971501234567";
+const WA_BASE = "https://wa.me/918840936715";
 
 const SERVICES_DATA = [
   {

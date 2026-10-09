@@ -15,13 +15,13 @@ Add the following environment variables to your Vercel Project under **Settings 
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJhbGciOi...` | Supabase public anonymous key. |
 | `SUPABASE_SERVICE_ROLE_KEY` | `eyJhbGciOi...` | Supabase elevated admin key (kept secret, server-only). |
 | `RESEND_API_KEY` | `re_abc123...` | API key from Resend for sending email notifications. |
-| `NEXT_PUBLIC_WHATSAPP_NUMBER` | `971501234567` | Public E.164 phone number without `+` sign. |
+| `NEXT_PUBLIC_WHATSAPP_NUMBER` | `918840936715` | Public E.164 phone number without `+` sign. |
 | `WHATSAPP_TOKEN` | `EAAG...` | Meta WhatsApp Cloud API permanent system user token. |
 | `PHONE_NUMBER_ID` | `102938475610293` | Meta WhatsApp Cloud API Phone Number ID. |
 | `VERIFY_TOKEN` | `neuralwaves_wa_secret_verify_2026` | Custom secret string for webhook handshake verification. |
 | `NEXT_PUBLIC_SITE_URL` | `https://neuralwaves.in` | Canonical production URL (used for Auth redirects and OG tags). |
 | `NEXT_PUBLIC_CAL_COM_URL` | `https://cal.com/neuralwaves/15min` | Cal.com scheduling URL. |
-| `ADMIN_EMAIL` | `admin@neuralwaves.in` | Primary admin email for lead alerts and digests. |
+| `ADMIN_EMAIL` | `zaminaskari.work@gmail.com` | Primary admin email for lead alerts and digests. |
 | `CRON_SECRET` *(Optional)* | `cr_secret_token_...` | Protects `/api/cron/lead-digest` from unauthorized invocations. |
 
 ---
@@ -121,7 +121,7 @@ curl -i "https://neuralwaves.in/api/whatsapp/webhook?hub.mode=subscribe&hub.chal
 2. In the Supabase SQL Editor, run:
 ```sql
 INSERT INTO public.admins (email, role)
-VALUES ('your-email@neuralwaves.in', 'superadmin')
+VALUES ('zaminaskari.work@gmail.com', 'superadmin')
 ON CONFLICT (email) DO UPDATE SET role = 'superadmin';
 ```
 3. Refresh `https://neuralwaves.in/admin` — full access to Dashboard and Leads is unlocked.

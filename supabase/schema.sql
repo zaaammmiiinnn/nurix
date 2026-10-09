@@ -651,9 +651,9 @@ VALUES
 -- 5.6 Site Settings (6 global rows)
 INSERT INTO public.site_settings (key, value, description)
 VALUES
-('whatsapp_number', '+971500000000', 'Primary WhatsApp contact number in E.164 format'),
-('contact_email', 'hello@neuralwaves.in', 'Official contact & inbound lead notification email'),
-('contact_phone', '+971 4 812 9400', 'Official UAE phone line'),
+('whatsapp_number', '+918840936715', 'Primary WhatsApp contact number in E.164 format'),
+('contact_email', 'zaminaskari.work@gmail.com', 'Official contact & inbound lead notification email'),
+('contact_phone', '+91-8840936715', 'Official contact phone line'),
 ('calendar_url', 'https://cal.com/neuralwaves/15min', 'Cal.com or Calendly scope booking link'),
 ('social_linkedin', 'https://linkedin.com/company/neuralwaves', 'Company LinkedIn page'),
 ('social_instagram', 'https://instagram.com/neuralwaves.in', 'Company Instagram handle')

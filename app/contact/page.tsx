@@ -20,7 +20,7 @@ import { submitContactForm } from "./actions";
 import { type ContactFormData } from "@/lib/schemas/contact";
 import { SITE_CONFIG } from "@/lib/data/site-data";
 
-const WA_NUMBER = "971501234567";
+const WA_NUMBER = "918840936715";
 const WA_BASE_URL = `https://wa.me/${WA_NUMBER}?text=Hi%20NeuralWaves%2C%20I%20want%20to%20discuss%20an%20AI%20project`;
 
 const TIME_SLOTS = [
@@ -498,7 +498,7 @@ export default function ContactPage() {
                       id="phone"
                       type="tel"
                       required
-                      placeholder="+971 50 000 0000"
+                      placeholder="+91-8840936715"
                       value={formData.phone}
                       onChange={(e) =>
                         setFormData((prev) => ({ ...prev, phone: e.target.value }))

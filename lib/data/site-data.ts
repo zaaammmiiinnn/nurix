@@ -65,10 +65,10 @@ export const SITE_CONFIG = {
     longitude: 55.2708,
   },
   contact: {
-    email: "hello@neuralwaves.in",
-    phone: "+971 4 812 9400",
-    whatsapp: "+971 50 123 4567",
-    whatsappDisplay: "+971 50 123 4567",
+    email: "zaminaskari.work@gmail.com",
+    phone: "+91-8840936715",
+    whatsapp: "+91-8840936715",
+    whatsappDisplay: "+91-8840936715",
     calUrl: "https://cal.com/neuralwaves/15min",
   },
   socials: {

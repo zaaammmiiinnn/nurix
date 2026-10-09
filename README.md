@@ -102,7 +102,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
    - Run the promotion query in Supabase SQL Editor:
      ```sql
      INSERT INTO public.admins (email, role)
-     VALUES ('your-email@neuralwaves.in', 'superadmin')
+     VALUES ('zaminaskari.work@gmail.com', 'superadmin')
      ON CONFLICT (email) DO UPDATE SET role = 'superadmin';
      ```
 

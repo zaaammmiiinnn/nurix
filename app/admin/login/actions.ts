@@ -50,7 +50,7 @@ export async function loginAsDemoAdmin() {
     sameSite: "lax",
     maxAge: 60 * 60 * 24 * 7, // 7 days
   });
-  cookieStore.set("neuralwaves_admin_email", "admin@neuralwaves.in", {
+  cookieStore.set("neuralwaves_admin_email", "zaminaskari.work@gmail.com", {
     path: "/",
     httpOnly: true,
     sameSite: "lax",

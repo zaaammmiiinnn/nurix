@@ -19,7 +19,7 @@ const COMPANY_LINKS = [
 ];
 
 const WA_URL =
-  "https://wa.me/971501234567?text=Hi%20NeuralWaves%2C%20I%20need%20help%20with%20automation";
+  "https://wa.me/918840936715?text=Hi%20NeuralWaves%2C%20I%20need%20help%20with%20automation";
 
 export function Footer() {
   const pathname = usePathname();
@@ -99,19 +99,19 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="mailto:hello@neuralwaves.in"
+                  href="mailto:zaminaskari.work@gmail.com"
                   className="flex items-center gap-2 text-sm text-signal-muted hover:text-signal-text transition-colors duration-150 group"
                 >
                   <Mail size={14} className="text-signal-violet" />
-                  hello@neuralwaves.in
+                  zaminaskari.work@gmail.com
                 </a>
               </li>
               <li>
                 <a
-                  href="tel:+97148129400"
+                  href="tel:+918840936715"
                   className="text-sm text-signal-muted hover:text-signal-text transition-colors duration-150"
                 >
-                  +971 4 812 9400
+                  +91-8840936715
                 </a>
               </li>
             </ul>

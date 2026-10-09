@@ -120,7 +120,7 @@ export default function AdminSettingsPage() {
                       Zamin Askari Rizvi
                     </span>
                     <span className="text-[11px] font-mono text-zinc-400">
-                      askarizamin110@gmail.com
+                      zaminaskari.work@gmail.com
                     </span>
                   </div>
                 </div>
@@ -139,7 +139,7 @@ export default function AdminSettingsPage() {
                       NeuralWaves Operations
                     </span>
                     <span className="text-[11px] font-mono text-zinc-400">
-                      admin@neuralwaves.in
+                      zaminaskari.work@gmail.com
                     </span>
                   </div>
                 </div>

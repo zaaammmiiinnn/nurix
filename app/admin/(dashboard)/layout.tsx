@@ -16,7 +16,7 @@ export default async function AdminLayout({
 }) {
   const cookieStore = cookies();
   const hasDemoCookie = cookieStore.get("neuralwaves_admin_demo_session")?.value === "1";
-  const demoEmail = cookieStore.get("neuralwaves_admin_email")?.value || "admin@neuralwaves.in";
+  const demoEmail = cookieStore.get("neuralwaves_admin_email")?.value || "zaminaskari.work@gmail.com";
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const isConfigured = Boolean(
@@ -36,7 +36,7 @@ export default async function AdminLayout({
     }
 
     if (user) {
-      adminEmail = user.email || "admin@neuralwaves.in";
+      adminEmail = user.email || "zaminaskari.work@gmail.com";
 
       // Verify user ID in admins table
       const { data: adminRow } = await supabase

@@ -78,7 +78,7 @@ export async function submitContactForm(data: ContactFormData) {
       try {
         const resend = new Resend(resendKey);
         const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
-        const toEmail = process.env.RESEND_TO_EMAIL || process.env.ADMIN_EMAIL || "askarizamin110@gmail.com";
+        const toEmail = process.env.RESEND_TO_EMAIL || process.env.ADMIN_EMAIL || "zaminaskari.work@gmail.com";
 
         await resend.emails.send({
           from: fromEmail,

@@ -69,7 +69,7 @@ export default function RootError({ error, reset }: ErrorProps) {
         <div className="pt-6 border-t border-white/[0.06] text-xs text-zinc-500 font-mono">
           Need immediate assistance?{" "}
           <a
-            href="https://wa.me/971501234567"
+            href="https://wa.me/918840936715"
             target="_blank"
             rel="noopener noreferrer"
             className="text-violet-400 hover:underline"

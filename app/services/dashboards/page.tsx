@@ -36,7 +36,7 @@ export const metadata: Metadata = {
 };
 
 export default function DashboardsPage() {
-  const waUrl = `https://wa.me/971501234567?text=${encodeURIComponent(service.waText)}`;
+  const waUrl = `https://wa.me/918840936715?text=${encodeURIComponent(service.waText)}`;
 
   return (
     <div className="pt-28 pb-32 min-h-screen relative overflow-hidden">

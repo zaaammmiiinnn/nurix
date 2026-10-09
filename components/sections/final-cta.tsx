@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { MessageCircle, ArrowRight } from "lucide-react";
 
 const WA_URL =
-  "https://wa.me/971501234567?text=Hi%20NeuralWaves%2C%20I%20need%20help%20with%20automation";
+  "https://wa.me/918840936715?text=Hi%20NeuralWaves%2C%20I%20need%20help%20with%20automation";
 
 export function FinalCta() {
   return (
