@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { supabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import { FAQS_DATA } from "@/lib/data/site-data";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 export interface AdminFaq {
   id?: string;
@@ -25,6 +26,8 @@ let localFaqsCache: AdminFaq[] = FAQS_DATA.map((f, idx) => ({
 }));
 
 export async function getAdminFaqs(): Promise<AdminFaq[]> {
+  await requireAdmin();
+
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const { data, error } = await supabaseAdmin
@@ -54,6 +57,8 @@ export async function getAdminFaqs(): Promise<AdminFaq[]> {
 export async function createAdminFaq(
   faq: Omit<AdminFaq, "id" | "created_at">
 ): Promise<{ success: boolean; faq?: AdminFaq; message?: string }> {
+  await requireAdmin();
+
   const newFaq: AdminFaq = {
     ...faq,
     id: `faq-${Date.now()}`,
@@ -101,6 +106,8 @@ export async function updateAdminFaq(
   id: string,
   faq: Partial<AdminFaq>
 ): Promise<{ success: boolean; message?: string }> {
+  await requireAdmin();
+
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const updatePayload: Record<string, unknown> = {};
@@ -142,6 +149,8 @@ export async function updateAdminFaq(
 export async function deleteAdminFaq(
   id: string
 ): Promise<{ success: boolean; message?: string }> {
+  await requireAdmin();
+
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const { error } = await supabaseAdmin

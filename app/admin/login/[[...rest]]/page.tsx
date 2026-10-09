@@ -28,7 +28,9 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
 
-  const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  const clerkKey =
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+    "pk_test_c3Ryb25nLWRvZ2Zpc2gtMzU0Ni5jbGVyay5hY2NvdW50cy5kZXYk";
   const isClerkEnabled = Boolean(
     clerkKey &&
       !clerkKey.includes("YOUR_") &&

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { supabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import { PRICING_TIERS_DATA } from "@/lib/data/site-data";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 export interface AdminPricingTier {
   id?: string;
@@ -34,6 +35,8 @@ let localPricingCache: AdminPricingTier[] = PRICING_TIERS_DATA.map((t, idx) => (
 }));
 
 export async function getAdminPricingTiers(): Promise<AdminPricingTier[]> {
+  await requireAdmin();
+
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const { data, error } = await supabaseAdmin
@@ -67,6 +70,8 @@ export async function getAdminPricingTiers(): Promise<AdminPricingTier[]> {
 export async function createAdminPricingTier(
   tier: Omit<AdminPricingTier, "id" | "created_at">
 ): Promise<{ success: boolean; tier?: AdminPricingTier; message?: string }> {
+  await requireAdmin();
+
   const newTier: AdminPricingTier = {
     ...tier,
     id: `tier-${Date.now()}`,
@@ -120,6 +125,8 @@ export async function updateAdminPricingTier(
   id: string,
   tier: Partial<AdminPricingTier>
 ): Promise<{ success: boolean; message?: string }> {
+  await requireAdmin();
+
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const updatePayload: Record<string, unknown> = {};
@@ -168,6 +175,8 @@ export async function updateAdminPricingTier(
 export async function deleteAdminPricingTier(
   id: string
 ): Promise<{ success: boolean; message?: string }> {
+  await requireAdmin();
+
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const { error } = await supabaseAdmin

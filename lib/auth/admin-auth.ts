@@ -30,29 +30,41 @@ export type AdminAuthResult =
  * Returns true if Clerk publishable key is present in environment
  */
 export function isClerkConfigured(): boolean {
-  const key = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  const key =
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+    "pk_test_c3Ryb25nLWRvZ2Zpc2gtMzU0Ni5jbGVyay5hY2NvdW50cy5kZXYk";
   return Boolean(key && !key.includes("YOUR_") && !key.includes("placeholder") && key.startsWith("pk_"));
 }
 
 /**
- * Whitelist of authorized administrator emails.
- * Loaded from ADMIN_EMAILS, ADMIN_EMAIL, and default owners.
+ * Whitelist of authorized administrator emails, read ONLY from the environment.
+ *
+ * These addresses were previously hardcoded here, which published the admin
+ * allowlist to everyone with repository access (`.env.example`,
+ * DEPLOYMENT_CHECKLIST.md and README.md also contained them — those have been
+ * scrubbed to placeholders).
+ *
+ * Fails closed: if no allowlist is configured, nobody is an admin.
  */
 export function getAuthorizedAdminEmails(): Set<string> {
-  const allowed = new Set<string>([
-    "zaminaskari.work@gmail.com",
-    "askarizamin110@gmail.com",
-  ]);
+  const allowed = new Set<string>();
 
-  if (process.env.ADMIN_EMAIL) {
-    allowed.add(process.env.ADMIN_EMAIL.trim().toLowerCase());
-  }
-
-  if (process.env.ADMIN_EMAILS) {
-    process.env.ADMIN_EMAILS.split(",")
+  const add = (raw: string | undefined) => {
+    if (!raw) return;
+    raw
+      .split(",")
       .map((e) => e.trim().toLowerCase())
       .filter(Boolean)
       .forEach((e) => allowed.add(e));
+  };
+
+  add(process.env.ADMIN_EMAILS);
+  add(process.env.ADMIN_EMAIL);
+
+  if (allowed.size === 0) {
+    console.error(
+      "[auth] ADMIN_EMAILS is not configured — no administrator can sign in. Set it to a comma-separated list of verified admin email addresses."
+    );
   }
 
   return allowed;
@@ -110,7 +122,7 @@ export async function verifyAdminAccess(): Promise<AdminAuthResult> {
         return { status: "unauthenticated" };
       }
 
-      // Check user's verified email addresses
+      // Resolve the account's email addresses.
       const emailObjects = user.emailAddresses || [];
       const primaryEmail =
         user.emailAddresses.find((e) => e.id === user.primaryEmailAddressId)
@@ -118,52 +130,45 @@ export async function verifyAdminAccess(): Promise<AdminAuthResult> {
         user.emailAddresses[0]?.emailAddress ||
         "";
 
-      // 1. Collect verified email addresses
+      // 1. Collect VERIFIED email addresses only.
+      //
+      // SECURITY: this list must never include unverified addresses. Previously
+      // the candidate list included every attached address and the verification
+      // requirement was only applied when the account had zero verified
+      // addresses — so a user holding one verified email of their own plus any
+      // unverified address matching an admin whitelist entry was granted access.
       const verifiedEmails = emailObjects
         .filter((e) => e.verification?.status === "verified")
         .map((e) => e.emailAddress.toLowerCase());
 
-      // Candidate emails for admin whitelist check
-      const candidateEmails = [
-        ...verifiedEmails,
-        primaryEmail.toLowerCase(),
-        ...emailObjects.map((e) => e.emailAddress.toLowerCase()),
-      ].filter(Boolean);
+      // 2. Unverified accounts cannot be admins. Prompt them to verify.
+      if (verifiedEmails.length === 0) {
+        return {
+          status: "unverified",
+          email: primaryEmail,
+          authProvider: "clerk",
+          user,
+          message:
+            "Your email address is not yet verified in Clerk. Please verify your email before entering the admin portal.",
+        };
+      }
 
-      // 2. Check if any candidate email matches authorized admin whitelist
-      for (const candidateEmail of candidateEmails) {
-        const isAuthorized = await isEmailAuthorizedAdmin(candidateEmail);
-        if (isAuthorized) {
-          // If the user has unverified emails only, prompt verification
-          const isVerified =
-            verifiedEmails.includes(candidateEmail) ||
-            emailObjects.find((e) => e.emailAddress.toLowerCase() === candidateEmail)
-              ?.verification?.status === "verified";
-
-          if (!isVerified && verifiedEmails.length === 0) {
-            return {
-              status: "unverified",
-              email: candidateEmail,
-              authProvider: "clerk",
-              user,
-              message:
-                "Your email address is not yet verified in Clerk. Please verify your email before entering the admin portal.",
-            };
-          }
-
+      // 3. Authorize only against a VERIFIED address on the whitelist.
+      for (const verifiedEmail of verifiedEmails) {
+        if (await isEmailAuthorizedAdmin(verifiedEmail)) {
           return {
             status: "authorized",
-            email: candidateEmail,
+            email: verifiedEmail,
             authProvider: "clerk",
             user,
           };
         }
       }
 
-      // User signed into Clerk, but neither primary nor attached emails are on admin whitelist
+      // Signed into Clerk, but no verified address is on the admin whitelist.
       return {
         status: "unauthorized",
-        email: verifiedEmails[0] || primaryEmail,
+        email: verifiedEmails[0],
         authProvider: "clerk",
         user,
         message:

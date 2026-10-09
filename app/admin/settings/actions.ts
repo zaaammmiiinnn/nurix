@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { supabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import { SITE_CONFIG } from "@/lib/data/site-data";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 export interface SettingRecord {
   key: string;
@@ -22,6 +23,8 @@ let localSettingsCache: Record<string, string> = {
 };
 
 export async function getAdminSettings(): Promise<Record<string, string>> {
+  await requireAdmin();
+
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const { data, error } = await supabaseAdmin.from("site_settings").select("key, value");
@@ -43,6 +46,8 @@ export async function getAdminSettings(): Promise<Record<string, string>> {
 export async function updateAdminSettings(
   settings: Record<string, string>
 ): Promise<{ success: boolean; message?: string }> {
+  await requireAdmin();
+
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const upsertRows = Object.entries(settings).map(([key, value]) => ({
@@ -79,6 +84,8 @@ export async function updateAdminSettings(
 export async function deleteAdminSetting(
   key: string
 ): Promise<{ success: boolean; message?: string }> {
+  await requireAdmin();
+
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const { error } = await supabaseAdmin

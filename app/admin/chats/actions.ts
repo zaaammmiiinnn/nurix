@@ -11,12 +11,14 @@ import {
   InMemoryChatSession,
   InMemoryChatMessage,
 } from "@/lib/chat-store";
-import { verifyAdminAccess } from "@/lib/auth/admin-auth";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 export type AdminChatSession = InMemoryChatSession;
 export type AdminChatMessage = InMemoryChatMessage;
 
 export async function getAdminChatSessions(): Promise<AdminChatSession[]> {
+  await requireAdmin();
+
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const { data, error } = await supabaseAdmin
@@ -28,17 +30,22 @@ export async function getAdminChatSessions(): Promise<AdminChatSession[]> {
         return data as AdminChatSession[];
       }
       console.warn("Supabase chat_sessions query error:", error?.message);
+      return [];
     } catch (err) {
       console.warn("Supabase network error fetching sessions:", err);
+      return [];
     }
   }
 
+  // In-memory store is only meaningful when Supabase is not configured (local dev).
   return getMemorySessions();
 }
 
 export async function getAdminChatSessionWithMessages(
   id: string
 ): Promise<{ session: AdminChatSession | null; messages: AdminChatMessage[] }> {
+  await requireAdmin();
+
   let session: AdminChatSession | null = null;
   let messages: AdminChatMessage[] = [];
 
@@ -68,9 +75,12 @@ export async function getAdminChatSessionWithMessages(
     } catch (err) {
       console.warn("Supabase fetch chat session error:", err);
     }
+    // Configured but the read failed: never serve isolate-local memory state as
+    // if it were the database.
+    return { session: null, messages: [] };
   }
 
-  // Fallback to in-memory store
+  // In-memory store is only meaningful when Supabase is not configured (local dev).
   const memSession = getMemorySessionById(id);
   if (memSession) {
     return {
@@ -86,10 +96,10 @@ export async function updateChatStatusAction(
   sessionId: string,
   status: "bot" | "human" | "resolved"
 ): Promise<{ success: boolean; message?: string }> {
-  const auth = await verifyAdminAccess();
-  if (auth.status !== "authorized" && process.env.NODE_ENV === "production") {
-    return { success: false, message: "Unauthorized" };
-  }
+  // Fails closed. The previous check only enforced auth when
+  // NODE_ENV === "production", which is not a reliable signal on Cloudflare
+  // Workers and therefore allowed unauthenticated mutation in production.
+  await requireAdmin();
 
   const now = new Date().toISOString();
 
@@ -124,10 +134,8 @@ export async function sendAdminReplyAction(
   sessionId: string,
   content: string
 ): Promise<{ success: boolean; message?: AdminChatMessage; error?: string }> {
-  const auth = await verifyAdminAccess();
-  if (auth.status !== "authorized" && process.env.NODE_ENV === "production") {
-    return { success: false, error: "Unauthorized" };
-  }
+  // Fails closed — see updateChatStatusAction above.
+  const auth = await requireAdmin();
 
   const now = new Date().toISOString();
   const adminMsg: AdminChatMessage = {
@@ -136,7 +144,7 @@ export async function sendAdminReplyAction(
     sender: "admin",
     content: content.trim(),
     metadata: {
-      adminEmail: auth.status === "authorized" ? auth.email : "Dubai Engineer",
+      adminEmail: auth.email,
     },
     created_at: now,
   };

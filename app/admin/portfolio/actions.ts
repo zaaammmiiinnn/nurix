@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { supabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import { PROJECTS_DATA } from "@/lib/data/site-data";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 function safeRevalidate(path: string) {
   try {
@@ -53,6 +54,8 @@ let localProjectsCache: AdminProject[] = PROJECTS_DATA.map((p, idx) => ({
 }));
 
 export async function getAdminProjects(): Promise<AdminProject[]> {
+  await requireAdmin();
+
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const { data, error } = await supabaseAdmin
@@ -92,6 +95,8 @@ export async function getAdminProjects(): Promise<AdminProject[]> {
 export async function createAdminProject(
   project: Omit<AdminProject, "id" | "created_at" | "updated_at">
 ): Promise<{ success: boolean; project?: AdminProject; message?: string }> {
+  await requireAdmin();
+
   const newProject: AdminProject = {
     ...project,
     id: `proj-${Date.now()}`,
@@ -149,6 +154,8 @@ export async function updateAdminProject(
   id: string,
   project: Partial<AdminProject>
 ): Promise<{ success: boolean; message?: string }> {
+  await requireAdmin();
+
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const { error } = await supabaseAdmin
@@ -187,6 +194,8 @@ export async function updateAdminProject(
 export async function deleteAdminProject(
   id: string
 ): Promise<{ success: boolean; message?: string }> {
+  await requireAdmin();
+
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const { error } = await supabaseAdmin.from("projects").delete().eq("id", id);
@@ -215,6 +224,8 @@ export async function deleteAdminProject(
 export async function uploadProjectImage(
   formData: FormData
 ): Promise<{ success: boolean; url?: string; message?: string }> {
+  await requireAdmin();
+
   try {
     const file = formData.get("file") as File | null;
     if (!file) {

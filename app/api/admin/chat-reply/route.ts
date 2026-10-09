@@ -12,14 +12,16 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Verify admin access
+    // Require an authorized administrator. Fails closed.
+    //
+    // SECURITY: this previously fell through to the handler whenever *any*
+    // non-empty `admin_session` or `__session` cookie was present — the value was
+    // never validated — so an unauthenticated caller could reach this
+    // service-role endpoint with `Cookie: __session=1`.
     const authResult = await verifyAdminAccess();
     if (authResult.status !== "authorized") {
-      // Allow fallback if running in development or verified session cookie exists
-      const adminCookie = req.cookies.get("admin_session")?.value || req.cookies.get("__session")?.value;
-      if (!adminCookie && process.env.NODE_ENV === "production") {
-        return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-      }
+      const status = authResult.status === "unauthenticated" ? 401 : 403;
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status });
     }
 
     const body = await req.json();

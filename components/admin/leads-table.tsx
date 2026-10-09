@@ -222,7 +222,8 @@ export function LeadsTable({
       });
 
       if (res.success && res.lead) {
-        setLeads((prev) => [res.lead, ...prev]);
+        const createdLead = res.lead;
+        setLeads((prev) => [createdLead, ...prev]);
         setCreateOpen(false);
         setNewLeadName("");
         setNewLeadEmail("");
@@ -230,6 +231,8 @@ export function LeadsTable({
         setNewLeadCompany("");
         setNewLeadMessage("");
         toast.success("Lead created manually");
+      } else {
+        toast.error(res.message || "Failed to create lead");
       }
     } catch {
       toast.error("Failed to create lead");
@@ -357,6 +360,7 @@ export function LeadsTable({
                   const statusStyles = {
                     new: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30",
                     contacted: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+                    qualified: "bg-violet-500/10 text-violet-400 border-violet-500/30",
                     won: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
                     lost: "bg-rose-500/10 text-rose-400 border-rose-500/30",
                     archived: "bg-zinc-500/10 text-zinc-400 border-zinc-500/30",

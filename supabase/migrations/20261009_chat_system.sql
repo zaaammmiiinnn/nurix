@@ -43,45 +43,27 @@ ALTER TABLE public.chat_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.chat_messages ENABLE ROW LEVEL SECURITY;
 
 -- chat_sessions RLS policies
+-- SECURITY: no anon policy. Visitor chat data (name/email/phone + transcripts)
+-- must never be readable or writable with the browser-exposed publishable key.
+-- Visitor traffic is proxied server-side via app/api/chat/* using the service role.
 DROP POLICY IF EXISTS "Public can view chat sessions" ON public.chat_sessions;
-CREATE POLICY "Public can view chat sessions" ON public.chat_sessions
-    FOR SELECT USING (true);
-
 DROP POLICY IF EXISTS "Public can insert chat sessions" ON public.chat_sessions;
-CREATE POLICY "Public can insert chat sessions" ON public.chat_sessions
-    FOR INSERT WITH CHECK (true);
-
 DROP POLICY IF EXISTS "Public can update chat sessions" ON public.chat_sessions;
-CREATE POLICY "Public can update chat sessions" ON public.chat_sessions
-    FOR UPDATE USING (true);
-
--- chat_messages RLS policies
 DROP POLICY IF EXISTS "Public can view chat messages" ON public.chat_messages;
-CREATE POLICY "Public can view chat messages" ON public.chat_messages
-    FOR SELECT USING (true);
-
 DROP POLICY IF EXISTS "Public can insert chat messages" ON public.chat_messages;
-CREATE POLICY "Public can insert chat messages" ON public.chat_messages
-    FOR INSERT WITH CHECK (true);
 
 -- Admin full access policies
 DROP POLICY IF EXISTS "Admins have full access to chat_sessions" ON public.chat_sessions;
 CREATE POLICY "Admins have full access to chat_sessions" ON public.chat_sessions
-    FOR ALL USING (
-        EXISTS (
-            SELECT 1 FROM public.admins
-            WHERE admins.user_id = auth.uid() OR admins.email = auth.jwt() ->> 'email'
-        )
-    );
+    FOR ALL TO authenticated
+    USING (public.is_admin())
+    WITH CHECK (public.is_admin());
 
 DROP POLICY IF EXISTS "Admins have full access to chat_messages" ON public.chat_messages;
 CREATE POLICY "Admins have full access to chat_messages" ON public.chat_messages
-    FOR ALL USING (
-        EXISTS (
-            SELECT 1 FROM public.admins
-            WHERE admins.user_id = auth.uid() OR admins.email = auth.jwt() ->> 'email'
-        )
-    );
+    FOR ALL TO authenticated
+    USING (public.is_admin())
+    WITH CHECK (public.is_admin());
 
 -- 4. Enable Supabase Realtime on both chat tables
 DO $$

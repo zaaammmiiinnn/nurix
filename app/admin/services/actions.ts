@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { supabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import { SERVICES_DATA } from "@/lib/data/site-data";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 function safeRevalidate(path: string) {
   try {
@@ -44,6 +45,8 @@ let localServicesCache: AdminService[] = SERVICES_DATA.map((s, idx) => ({
 }));
 
 export async function getAdminServices(): Promise<AdminService[]> {
+  await requireAdmin();
+
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const { data, error } = await supabaseAdmin
@@ -78,6 +81,8 @@ export async function getAdminServices(): Promise<AdminService[]> {
 export async function createAdminService(
   service: Omit<AdminService, "id" | "created_at">
 ): Promise<{ success: boolean; service?: AdminService; message?: string }> {
+  await requireAdmin();
+
   const newService: AdminService = {
     ...service,
     id: `srv-${Date.now()}`,
@@ -129,6 +134,8 @@ export async function updateAdminService(
   id: string,
   service: Partial<AdminService>
 ): Promise<{ success: boolean; message?: string }> {
+  await requireAdmin();
+
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const updatePayload: Record<string, unknown> = {};
@@ -173,6 +180,8 @@ export async function updateAdminService(
 export async function deleteAdminService(
   id: string
 ): Promise<{ success: boolean; message?: string }> {
+  await requireAdmin();
+
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const { error } = await supabaseAdmin.from("services").delete().eq("id", id);

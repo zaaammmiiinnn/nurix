@@ -2,26 +2,25 @@
 
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/require-admin";
+import { insertLead, type LeadStatus } from "@/lib/data/leads";
+
+/**
+ * Admin lead management.
+ *
+ * Every export below is a publicly-callable server action, so every one starts
+ * with `await requireAdmin()`. See lib/auth/require-admin.ts.
+ *
+ * Public lead capture does NOT live here — it lives in lib/data/leads.ts
+ * (insertLead) and is called from app/contact/actions.ts and app/actions/lead.ts.
+ */
 
 function safeRevalidate(path: string) {
   try {
     revalidatePath(path);
   } catch {
-    // Graceful fallback when invoked outside Next.js request context (tests/scripts)
+    // Graceful fallback when invoked outside a Next.js request context (scripts/tests)
   }
-}
-
-function isSupabaseConfigured(): boolean {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-  const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)?.trim();
-  return Boolean(
-    url &&
-      key &&
-      !url.includes("placeholder") &&
-      !url.includes("YOUR_") &&
-      !url.includes("xxxxxxxx") &&
-      url.startsWith("https://")
-  );
 }
 
 export interface Lead {
@@ -32,246 +31,191 @@ export interface Lead {
   company?: string | null;
   service: string;
   message: string;
-  status: "new" | "contacted" | "won" | "lost" | "archived";
+  status: LeadStatus;
   notes?: string | null;
   created_at: string;
 }
 
-// Fallback in-memory leads store when running in dev mode before Supabase credentials are configured
-let memoryLeads: Lead[] = [
-  {
-    id: "lead-001",
-    name: "Tariq Al Mansoori",
-    email: "tariq@skylineproperties.ae",
-    phone: "+971 50 491 8291",
-    company: "Skyline Luxury Realty",
-    service: "chatbots",
-    message: "Need a WhatsApp bot for Palm Jumeirah villa inquiries with calendar booking integration.",
-    status: "new",
-    notes: "High intent. Budget AED 3,500+. Call back at 2 PM.",
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-  },
-  {
-    id: "lead-002",
-    name: "Omar Al Qasimi",
-    email: "omar@karakcafegroup.ae",
-    phone: "+971 55 921 4402",
-    company: "Karak & Co.",
-    service: "dashboards",
-    message: "Looking for an order dispatch dashboard connecting our 4 cloud kitchens in Dubai.",
-    status: "contacted",
-    notes: "Demo scheduled for Thursday morning.",
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 18).toISOString(),
-  },
-  {
-    id: "lead-003",
-    name: "Sarah Jenkins",
-    email: "sarah@apexmaritime.ae",
-    phone: "+971 52 388 9104",
-    company: "Apex Maritime Logistics",
-    service: "agents",
-    message: "Need automated tender scraping and lead qualification across JAFZA and KEZAD ports.",
-    status: "won",
-    notes: "Approved proposal. Deposit paid. Sprint starts Monday.",
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
-  },
-  {
-    id: "lead-004",
-    name: "Dr. Khaled Haddad",
-    email: "khaled@auraclinics.ae",
-    phone: "+971 50 112 4920",
-    company: "Aura Dental & Wellness",
-    service: "chatbots",
-    message: "WhatsApp patient appointment bot to reduce no-shows. Bilingual Arabic and English.",
-    status: "contacted",
-    notes: "Discussed Meta Cloud API setup requirements.",
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 72).toISOString(),
-  },
-  {
-    id: "lead-005",
-    name: "Zaid Nabulsi",
-    email: "zaid@desertwheels.ae",
-    phone: "+971 56 772 1092",
-    company: "Desert Wheels Car Rental",
-    service: "dashboards",
-    message: "Admin dashboard to track 85 fleet cars, lease agreements, and fines from RTA.",
-    status: "new",
-    notes: null,
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 96).toISOString(),
-  },
-  {
-    id: "lead-006",
-    name: "Fatima Al Zaabi",
-    email: "fatima@souqgourmet.ae",
-    phone: "+971 50 994 2281",
-    company: "Souq Gourmet Foods",
-    service: "agents",
-    message: "Inventory sync agent across Noon and Amazon UAE with daily stock alerts.",
-    status: "lost",
-    notes: "Decided to keep using Shopify native sync for now.",
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 120).toISOString(),
-  },
-  {
-    id: "lead-007",
-    name: "Hamdan Al Suwaidi",
-    email: "hamdan@dubaihorizon.ae",
-    phone: "+971 55 601 3918",
-    company: "Horizon Legal Consultants",
-    service: "chatbots",
-    message: "Document intake and consultation booking bot for legal practice in DIFC.",
-    status: "won",
-    notes: "Project shipped on Growth tier. 30-day warranty active.",
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 160).toISOString(),
-  },
-];
-
-export async function getLeads(): Promise<Lead[]> {
-  if (isSupabaseConfigured()) {
-    try {
-      const supabase = createAdminClient();
-      const { data, error } = await supabase
-        .from("leads")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (!error && data && data.length > 0) {
-      interface SupabaseLeadRow {
-        id: string | number;
-        name?: string;
-        email?: string;
-        phone?: string;
-        company?: string | null;
-        service?: string;
-        message?: string;
-        status?: string;
-        notes?: string | null;
-        metadata?: { notes?: string };
-        created_at?: string;
-      }
-
-      return (data as unknown as SupabaseLeadRow[]).map((d) => ({
-        id: String(d.id),
-        name: d.name || "",
-        email: d.email || "",
-        phone: d.phone || "",
-        company: d.company || null,
-        service: d.service || "chatbots",
-        message: d.message || "",
-        status: (d.status || "new") as Lead["status"],
-        notes: d.notes || d.metadata?.notes || null,
-        created_at: d.created_at || new Date().toISOString(),
-      }));
-    }
-  } catch (e) {
-    console.warn("Supabase getLeads fetch fell back to memory store:", e);
-  }
+interface SupabaseLeadRow {
+  id: string | number;
+  name?: string;
+  email?: string;
+  phone?: string;
+  company?: string | null;
+  service?: string;
+  message?: string;
+  status?: string;
+  notes?: string | null;
+  metadata?: { notes?: string };
+  created_at?: string;
 }
 
-  return memoryLeads;
+function mapRow(d: SupabaseLeadRow): Lead {
+  return {
+    id: String(d.id),
+    name: d.name || "",
+    email: d.email || "",
+    phone: d.phone || "",
+    company: d.company || null,
+    service: d.service || "chatbots",
+    message: d.message || "",
+    status: (d.status || "new") as LeadStatus,
+    notes: d.notes || d.metadata?.notes || null,
+    created_at: d.created_at || new Date().toISOString(),
+  };
+}
+
+export async function getLeads(): Promise<Lead[]> {
+  await requireAdmin();
+
+  try {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("leads")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("[leads] fetch failed:", error.message);
+      return [];
+    }
+
+    // An empty table is a valid result. Previously this fell through to a
+    // hardcoded array of seven fabricated leads, which the operator saw as real
+    // pipeline on day one.
+    return (data as unknown as SupabaseLeadRow[] | null)?.map(mapRow) ?? [];
+  } catch (e) {
+    console.error("[leads] fetch threw:", e);
+    return [];
+  }
 }
 
 export async function updateLeadStatus(
   leadId: string,
-  status: Lead["status"],
+  status: LeadStatus,
   notes?: string
-) {
-  if (isSupabaseConfigured()) {
-    try {
-      const supabase = createAdminClient();
-      await supabase
-        .from("leads")
-        .update({
-          status,
-          metadata: notes ? { notes } : undefined,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", leadId);
-    } catch (e) {
-      console.warn("Supabase update error:", e);
-    }
-  }
+): Promise<{ success: boolean; message?: string }> {
+  await requireAdmin();
 
-  // Update memory
-  memoryLeads = memoryLeads.map((l) =>
-    l.id === leadId
-      ? { ...l, status, notes: notes !== undefined ? notes : l.notes }
-      : l
-  );
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("leads")
+      .update({
+        status,
+        metadata: notes ? { notes } : undefined,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", leadId);
+
+    if (error) {
+      console.error("[leads] update failed:", error.message);
+      return { success: false, message: error.message };
+    }
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Unknown error";
+    console.error("[leads] update threw:", message);
+    return { success: false, message };
+  }
 
   safeRevalidate("/admin");
   safeRevalidate("/admin/leads");
   return { success: true };
 }
 
-export async function bulkUpdateLeads(leadIds: string[], status: Lead["status"]) {
-  if (isSupabaseConfigured()) {
-    try {
-      const supabase = createAdminClient();
-      await supabase
-        .from("leads")
-        .update({ status, updated_at: new Date().toISOString() })
-        .in("id", leadIds);
-    } catch (e) {
-      console.warn("Supabase bulk update error:", e);
-    }
+export async function bulkUpdateLeads(
+  leadIds: string[],
+  status: LeadStatus
+): Promise<{ success: boolean; message?: string }> {
+  await requireAdmin();
+
+  if (!Array.isArray(leadIds) || leadIds.length === 0) {
+    return { success: false, message: "No leads selected." };
   }
 
-  memoryLeads = memoryLeads.map((l) =>
-    leadIds.includes(l.id) ? { ...l, status } : l
-  );
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("leads")
+      .update({ status, updated_at: new Date().toISOString() })
+      .in("id", leadIds);
+
+    if (error) {
+      console.error("[leads] bulk update failed:", error.message);
+      return { success: false, message: error.message };
+    }
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Unknown error";
+    console.error("[leads] bulk update threw:", message);
+    return { success: false, message };
+  }
 
   safeRevalidate("/admin");
   safeRevalidate("/admin/leads");
   return { success: true };
 }
 
-export async function bulkDeleteLeads(leadIds: string[]) {
-  if (isSupabaseConfigured()) {
-    try {
-      const supabase = createAdminClient();
-      await supabase.from("leads").delete().in("id", leadIds);
-    } catch (e) {
-      console.warn("Supabase bulk delete error:", e);
-    }
+export async function bulkDeleteLeads(
+  leadIds: string[]
+): Promise<{ success: boolean; message?: string }> {
+  await requireAdmin();
+
+  if (!Array.isArray(leadIds) || leadIds.length === 0) {
+    return { success: false, message: "No leads selected." };
   }
 
-  memoryLeads = memoryLeads.filter((l) => !leadIds.includes(l.id));
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase.from("leads").delete().in("id", leadIds);
+
+    if (error) {
+      console.error("[leads] bulk delete failed:", error.message);
+      return { success: false, message: error.message };
+    }
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Unknown error";
+    console.error("[leads] bulk delete threw:", message);
+    return { success: false, message };
+  }
 
   safeRevalidate("/admin");
   safeRevalidate("/admin/leads");
   return { success: true };
 }
 
-export async function createManualLead(leadData: Omit<Lead, "id" | "created_at">) {
-  const newLead: Lead = {
-    id: `lead-${Date.now()}`,
-    ...leadData,
-    created_at: new Date().toISOString(),
+/**
+ * Manually add a lead from the admin panel (e.g. a referral or a call).
+ */
+export async function createManualLead(
+  leadData: Omit<Lead, "id" | "created_at">
+): Promise<{ success: boolean; lead?: Lead; message?: string }> {
+  await requireAdmin();
+
+  const result = await insertLead({
+    name: leadData.name,
+    email: leadData.email,
+    phone: leadData.phone,
+    company: leadData.company ?? null,
+    service: leadData.service,
+    message: leadData.message,
+    status: leadData.status,
+    source: "admin_manual",
+    notes: leadData.notes ?? null,
+  });
+
+  if (!result.success) {
+    return { success: false, message: result.error ?? "Failed to create lead." };
+  }
+
+  safeRevalidate("/admin");
+  safeRevalidate("/admin/leads");
+
+  return {
+    success: true,
+    lead: {
+      id: result.id ?? `lead-${Date.now()}`,
+      ...leadData,
+      created_at: new Date().toISOString(),
+    },
   };
-
-  if (isSupabaseConfigured()) {
-    try {
-      const supabase = createAdminClient();
-      await supabase.from("leads").insert([
-        {
-          name: leadData.name,
-          email: leadData.email,
-          phone: leadData.phone,
-          company: leadData.company,
-          service: leadData.service,
-          message: leadData.message,
-          status: leadData.status,
-          metadata: leadData.notes ? { notes: leadData.notes } : {},
-        },
-      ]);
-    } catch (e) {
-      console.warn("Supabase manual lead create error:", e);
-    }
-  }
-
-  memoryLeads = [newLead, ...memoryLeads];
-
-  safeRevalidate("/admin");
-  safeRevalidate("/admin/leads");
-  return { success: true, lead: newLead };
 }

@@ -1,102 +1,97 @@
 import { NextResponse, type NextRequest, type NextFetchEvent } from "next/server";
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
 
-const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+/**
+ * Route protection for the admin area.
+ *
+ * Layered authorization model (all layers must hold):
+ *   1. This middleware requires an authenticated Clerk session for /admin/*.
+ *   2. If Clerk exposes an email claim we also require it to be on the
+ *      ADMIN_EMAILS allowlist.
+ *   3. app/admin/(dashboard)/layout.tsx re-verifies and renders an
+ *      "unauthorized" view for signed-in non-admins.
+ *   4. EVERY admin server action and route handler calls requireAdmin()
+ *      (lib/auth/require-admin.ts) and fails closed. This is the layer that
+ *      actually protects data: a layout is a render-time check and cannot stop a
+ *      direct server-action POST.
+ *
+ * This middleware previously accepted *any* authenticated Clerk user, and fell
+ * back to `supabase.auth.getSession()` — which reads a cookie without verifying
+ * the JWT and must never gate server-side authorization. That fallback is gone.
+ */
+
+const clerkPublishableKey =
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+  "pk_test_c3Ryb25nLWRvZ2Zpc2gtMzU0Ni5jbGVyay5hY2NvdW50cy5kZXYk";
 const isClerkConfigured = Boolean(
   clerkPublishableKey &&
     !clerkPublishableKey.includes("YOUR_") &&
+    !clerkPublishableKey.includes("placeholder") &&
     clerkPublishableKey.startsWith("pk_")
 );
 
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 const isAuthRoute = createRouteMatcher(["/admin/login(.*)", "/admin/auth(.*)"]);
 
-// Helper handler when Clerk is active
+/**
+ * Parsed inline on purpose: middleware runs on the edge runtime, so we avoid
+ * importing server modules that depend on next/headers.
+ */
+function getAuthorizedAdminEmails(): Set<string> {
+  const allowed = new Set<string>();
+  for (const raw of [process.env.ADMIN_EMAILS, process.env.ADMIN_EMAIL]) {
+    if (!raw) continue;
+    raw
+      .split(",")
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean)
+      .forEach((e) => allowed.add(e));
+  }
+  return allowed;
+}
+
 const clerkAuthHandler = isClerkConfigured
   ? clerkMiddleware((auth, req) => {
-      if (isAdminRoute(req) && !isAuthRoute(req)) {
-        const { userId } = auth();
-        if (!userId) {
-          const loginUrl = new URL("/admin/login", req.url);
-          loginUrl.searchParams.set("redirectedFrom", req.nextUrl.pathname);
-          return NextResponse.redirect(loginUrl);
+      if (!isAdminRoute(req) || isAuthRoute(req)) return;
+
+      const { userId, sessionClaims } = auth();
+
+      if (!userId) {
+        const loginUrl = new URL("/admin/login", req.url);
+        loginUrl.searchParams.set("redirectedFrom", req.nextUrl.pathname);
+        return NextResponse.redirect(loginUrl);
+      }
+
+      // Enforce the allowlist when the session token carries an email claim.
+      // Whether it does depends on the Clerk session-token template; when the
+      // claim is absent we deliberately fall through to the layout and the
+      // requireAdmin() guards in every action rather than locking out a
+      // legitimate administrator.
+      const email = (sessionClaims?.email as string | undefined)?.toLowerCase();
+      if (email) {
+        const allowed = getAuthorizedAdminEmails();
+        if (allowed.size > 0 && !allowed.has(email)) {
+          const deniedUrl = new URL("/admin/login", req.url);
+          deniedUrl.searchParams.set("error", "not_authorized");
+          return NextResponse.redirect(deniedUrl);
         }
       }
     })
   : null;
 
 export default async function middleware(request: NextRequest, event: NextFetchEvent) {
-  // If Clerk is configured, use Clerk middleware protection
   if (clerkAuthHandler) {
     return clerkAuthHandler(request, event);
   }
 
-  // Fallback protection when Clerk is not configured
+  // Clerk is not configured. Do not attempt a cookie-based session check here —
+  // fail closed and send admin traffic to the login page.
   const { pathname } = request.nextUrl;
-
-  if (
-    pathname.startsWith("/admin") &&
-    !pathname.startsWith("/admin/login") &&
-    !pathname.startsWith("/admin/auth")
-  ) {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    const isSupabaseConfigured = Boolean(
-      supabaseUrl &&
-        supabaseAnonKey &&
-        !supabaseUrl.includes("YOUR_PROJECT") &&
-        !supabaseUrl.includes("placeholder") &&
-        !supabaseUrl.includes("xxxxxxxx") &&
-        !supabaseUrl.includes("your-project") &&
-        supabaseUrl.startsWith("https://")
-    );
-
-    if (isSupabaseConfigured) {
-      let response = NextResponse.next({
-        request: {
-          headers: request.headers,
-        },
-      });
-
-      try {
-        const supabase = createServerClient(supabaseUrl!, supabaseAnonKey!, {
-          cookies: {
-            get(name: string) {
-              return request.cookies.get(name)?.value;
-            },
-            set(name: string, value: string, options: CookieOptions) {
-              response.cookies.set({ name, value, ...options });
-            },
-            remove(name: string, options: CookieOptions) {
-              response.cookies.set({ name, value: "", ...options });
-            },
-          },
-        });
-
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (!session) {
-          const redirectUrl = request.nextUrl.clone();
-          redirectUrl.pathname = "/admin/login";
-          redirectUrl.searchParams.set("redirectedFrom", pathname);
-          return NextResponse.redirect(redirectUrl);
-        }
-
-        return response;
-      } catch {
-        const redirectUrl = request.nextUrl.clone();
-        redirectUrl.pathname = "/admin/login";
-        return NextResponse.redirect(redirectUrl);
-      }
-    } else {
-      // Unconfigured or non-session access is redirected to login
-      const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = "/admin/login";
-      return NextResponse.redirect(redirectUrl);
-    }
+  if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/admin/login";
+    redirectUrl.searchParams.set("redirectedFrom", pathname);
+    return NextResponse.redirect(redirectUrl);
   }
 
   return NextResponse.next();

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { supabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 export interface AdminTestimonial {
   id?: string;
@@ -56,6 +57,8 @@ let localTestimonialsCache: AdminTestimonial[] = [
 ];
 
 export async function getAdminTestimonials(): Promise<AdminTestimonial[]> {
+  await requireAdmin();
+
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const { data, error } = await supabaseAdmin
@@ -88,6 +91,8 @@ export async function getAdminTestimonials(): Promise<AdminTestimonial[]> {
 export async function createAdminTestimonial(
   testimonial: Omit<AdminTestimonial, "id" | "created_at">
 ): Promise<{ success: boolean; testimonial?: AdminTestimonial; message?: string }> {
+  await requireAdmin();
+
   const newTestimonial: AdminTestimonial = {
     ...testimonial,
     id: `test-${Date.now()}`,
@@ -136,6 +141,8 @@ export async function updateAdminTestimonial(
   id: string,
   testimonial: Partial<AdminTestimonial>
 ): Promise<{ success: boolean; message?: string }> {
+  await requireAdmin();
+
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const updatePayload: Record<string, unknown> = {};
@@ -180,6 +187,8 @@ export async function updateAdminTestimonial(
 export async function deleteAdminTestimonial(
   id: string
 ): Promise<{ success: boolean; message?: string }> {
+  await requireAdmin();
+
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const { error } = await supabaseAdmin

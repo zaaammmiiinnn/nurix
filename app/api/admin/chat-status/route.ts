@@ -12,12 +12,13 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
+    // Require an authorized administrator. Fails closed.
+    // SECURITY: see the note in app/api/admin/chat-reply/route.ts — a bare cookie
+    // name must never be treated as proof of authorization.
     const authResult = await verifyAdminAccess();
     if (authResult.status !== "authorized") {
-      const adminCookie = req.cookies.get("admin_session")?.value || req.cookies.get("__session")?.value;
-      if (!adminCookie && process.env.NODE_ENV === "production") {
-        return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-      }
+      const status = authResult.status === "unauthenticated" ? 401 : 403;
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status });
     }
 
     const body = await req.json();

@@ -24,12 +24,15 @@ CREATE TABLE IF NOT EXISTS public.admins (
 CREATE TABLE IF NOT EXISTS public.leads (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
-    email TEXT NOT NULL,
+    -- Nullable: WhatsApp enquiries arrive with a phone number and no email.
+    email TEXT,
     phone TEXT NOT NULL,
     company TEXT,
     service TEXT NOT NULL,
     message TEXT NOT NULL,
-    status TEXT DEFAULT 'new' NOT NULL, -- 'new', 'contacted', 'qualified', 'closed', 'archived'
+    status TEXT DEFAULT 'new' NOT NULL
+        CONSTRAINT leads_status_check
+        CHECK (status IN ('new', 'contacted', 'qualified', 'won', 'lost', 'archived')),
     source TEXT DEFAULT 'website_contact' NOT NULL,
     metadata JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
@@ -147,7 +150,9 @@ CREATE TABLE IF NOT EXISTS public.conversations (
 CREATE TABLE IF NOT EXISTS public.messages (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     conversation_id UUID NOT NULL REFERENCES public.conversations(id) ON DELETE CASCADE,
-    sender_type TEXT NOT NULL, -- 'user', 'bot', 'agent'
+    sender_type TEXT NOT NULL
+        CONSTRAINT messages_sender_type_check
+        CHECK (sender_type IN ('user', 'bot', 'agent')),
     content TEXT NOT NULL,
     raw_payload JSONB DEFAULT '{}'::jsonb NOT NULL,
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
@@ -183,12 +188,14 @@ CREATE INDEX IF NOT EXISTS idx_menu_items_parent_active_order ON public.menu_ite
 -- 3. HELPER FUNCTIONS & TRIGGERS
 -- ───────────────────────────────────────────────────────────────────────────
 
--- Helper function to check if the executing user is in the admins table
+-- Helper function to check if the executing user is in the admins table.
+-- search_path is pinned because this is SECURITY DEFINER.
 CREATE OR REPLACE FUNCTION public.is_admin()
 RETURNS BOOLEAN
 LANGUAGE sql
 SECURITY DEFINER
 STABLE
+SET search_path = public, auth
 AS $$
   SELECT EXISTS (
     SELECT 1 FROM public.admins 
@@ -196,6 +203,9 @@ AS $$
        OR (email IS NOT NULL AND lower(email) = lower(auth.jwt() ->> 'email'))
   );
 $$;
+
+REVOKE ALL ON FUNCTION public.is_admin() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated, service_role;
 
 -- Automatically update updated_at timestamps
 CREATE OR REPLACE FUNCTION public.set_updated_at()
@@ -217,6 +227,18 @@ DROP TRIGGER IF EXISTS trg_contacts_updated_at ON public.contacts;
 CREATE TRIGGER trg_contacts_updated_at
   BEFORE UPDATE ON public.contacts
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+DROP TRIGGER IF EXISTS trg_site_settings_updated_at ON public.site_settings;
+CREATE TRIGGER trg_site_settings_updated_at
+  BEFORE UPDATE ON public.site_settings
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+-- Indexes for hot query paths
+-- (the existing idx_leads_status_created leads with `status`, so it cannot serve
+--  the weekly-digest filter on created_at alone)
+CREATE INDEX IF NOT EXISTS idx_leads_created_at ON public.leads(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_admins_email ON public.admins(lower(email));
+CREATE INDEX IF NOT EXISTS idx_admins_user_id ON public.admins(user_id);
 
 -- ───────────────────────────────────────────────────────────────────────────
 -- 4. ROW LEVEL SECURITY (RLS) POLICIES
@@ -562,8 +584,11 @@ ON CONFLICT (slug) DO UPDATE SET
   sort_order = EXCLUDED.sort_order;
 
 -- 5.4 Testimonials (3 rows)
+-- Idempotent: only seeds when the table is empty, so re-running schema.sql does
+-- not append duplicate rows (the previous version had no unique key and no
+-- ON CONFLICT clause).
 INSERT INTO public.testimonials (client_name, client_role, company, content, rating, is_active, sort_order)
-VALUES
+SELECT * FROM (VALUES
 (
   'Tariq Mansour',
   'Managing Director',
@@ -590,11 +615,14 @@ VALUES
   5,
   true,
   3
-);
+)
+) AS v(client_name, client_role, company, content, rating, is_active, sort_order)
+WHERE NOT EXISTS (SELECT 1 FROM public.testimonials);
 
 -- 5.5 FAQs (8 rows: 6 general + 2 pricing-specific)
+-- Idempotent: only seeds when the table is empty.
 INSERT INTO public.faqs (question, answer, category, sort_order, is_active)
-VALUES
+SELECT * FROM (VALUES
 (
   'How fast can you deliver?',
   'Most projects are delivered in 5 working days. Complex builds with custom CRM or ERP integrations take 7 to 10 days. We lock the exact delivery date on our discovery call.',
@@ -650,7 +678,9 @@ VALUES
   'general',
   8,
   true
-);
+)
+) AS v(question, answer, category, sort_order, is_active)
+WHERE NOT EXISTS (SELECT 1 FROM public.faqs);
 
 -- 5.6 Site Settings (6 global rows)
 INSERT INTO public.site_settings (key, value, description)
@@ -666,28 +696,35 @@ ON CONFLICT (key) DO UPDATE SET
   description = EXCLUDED.description;
 
 -- 5.7 Menu Items (8 rows: 4 main + 4 submenu)
+-- Idempotent: only seeds when the table is empty. The previous version used
+-- `ON CONFLICT (id) DO NOTHING` but never supplied `id`, so the conflict target
+-- could never match and every re-run appended all 8 rows again.
 INSERT INTO public.menu_items (key, parent, title, payload, response_text, sort_order, is_active)
-VALUES
+SELECT * FROM (VALUES
 -- Main root menu
 ('main_services', NULL, '1. Our Services', 'MENU_SERVICES', 'Here are our three core offerings:\n1. AI Chatbots & WhatsApp\n2. Web & Admin Dashboards\n3. AI Agents for Business\n\nReply with a number or 9 to go back.', 1, true),
-('main_projects', NULL, '2. Recent Projects', 'MENU_PROJECTS', 'Recent Nurix builds:\n• Dubai Real Estate WhatsApp Bot (30s response time)\n• F&B Kitchen Dispatch Dashboard (3 hrs/day saved)\n• Abu Dhabi Logistics Lead Agent (40 leads/wk)\n\nVisit nurix.ae/work to see all case studies.', 2, true),
+('main_projects', NULL, '2. Recent Projects', 'MENU_PROJECTS', 'Recent NeuralWaves builds:\n• Dubai Real Estate WhatsApp Bot (30s response time)\n• F&B Kitchen Dispatch Dashboard (3 hrs/day saved)\n• Abu Dhabi Logistics Lead Agent (40 leads/wk)\n\nVisit neuralwaves.in/work to see all case studies.', 2, true),
 ('main_pricing', NULL, '3. Transparent Pricing', 'MENU_PRICING', 'Fixed pricing in AED:\n• Starter Bot: AED 1,500 (3-5 days)\n• Growth AI Assistant: AED 3,500 (5-7 days)\n• Business Platform: AED 7,500 (7-10 days)\n\nAll include 50% upfront and post-launch warranty.', 3, true),
-('main_human', NULL, '4. Talk to a Human', 'TALK_HUMAN', 'An engineer from our Dubai office will take over this chat shortly. You can also book a 15-min call at nurix.ae/contact.', 4, true),
+('main_human', NULL, '4. Talk to a Human', 'TALK_HUMAN', 'An engineer will take over this chat shortly. You can also book a 15-min call at neuralwaves.in/contact.', 4, true),
 
 -- Services submenu
 ('srv_chatbots', 'main_services', 'AI Chatbots & WhatsApp', 'INFO_CHATBOTS', 'Custom 24/7 WhatsApp assistants trained on your company data. Handles bookings, lead capture, and FAQs in Arabic & English. Delivered in 3-5 days from AED 1,500.', 1, true),
 ('srv_dashboards', 'main_services', 'Web & Admin Dashboards', 'INFO_DASHBOARDS', 'Custom Next.js admin portals replacing messy spreadsheets with real-time permissions, filters, and reports. Delivered in 5-7 days from AED 2,500.', 2, true),
 ('srv_agents', 'main_services', 'AI Agents for Business', 'INFO_AGENTS', 'Autonomous workers executing lead scraping, document parsing, and daily reporting while you sleep. Delivered in 7-10 days from AED 7,500.', 3, true),
 ('srv_back', 'main_services', '9. Back to Main Menu', 'NAV_BACK', 'Main Menu:\n1. Services\n2. Projects\n3. Pricing\n4. Talk to Human\n\nReply with a number.', 9, true)
-ON CONFLICT (id) DO NOTHING;
+) AS v("key", parent, title, payload, response_text, sort_order, is_active)
+WHERE NOT EXISTS (SELECT 1 FROM public.menu_items);
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- ADMIN PROMOTION INSTRUCTION
 -- ═══════════════════════════════════════════════════════════════════════════
--- To promote an admin by email immediately:
-INSERT INTO public.admins (email, role)
-VALUES ('askarizamin110@gmail.com', 'superadmin')
-ON CONFLICT (email) DO NOTHING;
+-- To promote an admin by email, replace the placeholder below with a real
+-- address and run just this statement. Real administrator addresses must NOT be
+-- committed to the repository — they belong in ADMIN_EMAILS and in this table.
+--
+--   INSERT INTO public.admins (email, role)
+--   VALUES ('admin@example.com', 'superadmin')
+--   ON CONFLICT (email) DO NOTHING;
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- PHASE 12: WEBSITE CHAT SYSTEM (chat_sessions + chat_messages)
@@ -696,7 +733,9 @@ ON CONFLICT (email) DO NOTHING;
 CREATE TABLE IF NOT EXISTS public.chat_sessions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     visitor_id TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'bot', -- 'bot', 'human', 'resolved'
+    status TEXT NOT NULL DEFAULT 'bot'
+        CONSTRAINT chat_sessions_status_check
+        CHECK (status IN ('bot', 'human', 'resolved')),
     visitor_name TEXT,
     visitor_email TEXT,
     visitor_phone TEXT,
@@ -713,11 +752,23 @@ CREATE TABLE IF NOT EXISTS public.chat_sessions (
 CREATE INDEX IF NOT EXISTS idx_chat_sessions_visitor_id ON public.chat_sessions(visitor_id);
 CREATE INDEX IF NOT EXISTS idx_chat_sessions_status ON public.chat_sessions(status);
 CREATE INDEX IF NOT EXISTS idx_chat_sessions_last_message_at ON public.chat_sessions(last_message_at DESC);
+-- Serves the admin inbox query (filter by status, sort by latest message).
+CREATE INDEX IF NOT EXISTS idx_chat_sessions_status_last_message_at
+    ON public.chat_sessions(status, last_message_at DESC);
+
+-- chat_sessions.updated_at previously had no trigger, so application code had to
+-- poke the column by hand and it drifted.
+DROP TRIGGER IF EXISTS trg_chat_sessions_updated_at ON public.chat_sessions;
+CREATE TRIGGER trg_chat_sessions_updated_at
+  BEFORE UPDATE ON public.chat_sessions
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 CREATE TABLE IF NOT EXISTS public.chat_messages (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID NOT NULL REFERENCES public.chat_sessions(id) ON DELETE CASCADE,
-    sender TEXT NOT NULL, -- 'visitor', 'bot', 'admin'
+    sender TEXT NOT NULL
+        CONSTRAINT chat_messages_sender_check
+        CHECK (sender IN ('visitor', 'bot', 'admin')),
     content TEXT NOT NULL,
     metadata JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
@@ -728,38 +779,28 @@ CREATE INDEX IF NOT EXISTS idx_chat_messages_session_id_created_at ON public.cha
 ALTER TABLE public.chat_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.chat_messages ENABLE ROW LEVEL SECURITY;
 
+-- SECURITY: visitor chat data must never be reachable with the public anon key.
+-- These tables hold visitor_name / visitor_email / visitor_phone and full transcripts.
+-- All visitor traffic is proxied server-side by app/api/chat/*, which uses the
+-- service-role key (lib/chat-store.ts -> supabaseAdmin) and therefore bypasses RLS.
+-- Do NOT reintroduce an anon policy for either table.
 DROP POLICY IF EXISTS "Public can view chat sessions" ON public.chat_sessions;
-CREATE POLICY "Public can view chat sessions" ON public.chat_sessions FOR SELECT USING (true);
-
 DROP POLICY IF EXISTS "Public can insert chat sessions" ON public.chat_sessions;
-CREATE POLICY "Public can insert chat sessions" ON public.chat_sessions FOR INSERT WITH CHECK (true);
-
 DROP POLICY IF EXISTS "Public can update chat sessions" ON public.chat_sessions;
-CREATE POLICY "Public can update chat sessions" ON public.chat_sessions FOR UPDATE USING (true);
-
 DROP POLICY IF EXISTS "Public can view chat messages" ON public.chat_messages;
-CREATE POLICY "Public can view chat messages" ON public.chat_messages FOR SELECT USING (true);
-
 DROP POLICY IF EXISTS "Public can insert chat messages" ON public.chat_messages;
-CREATE POLICY "Public can insert chat messages" ON public.chat_messages FOR INSERT WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Admins have full access to chat_sessions" ON public.chat_sessions;
 CREATE POLICY "Admins have full access to chat_sessions" ON public.chat_sessions
-    FOR ALL USING (
-        EXISTS (
-            SELECT 1 FROM public.admins
-            WHERE admins.user_id = auth.uid() OR admins.email = auth.jwt() ->> 'email'
-        )
-    );
+    FOR ALL TO authenticated
+    USING (public.is_admin())
+    WITH CHECK (public.is_admin());
 
 DROP POLICY IF EXISTS "Admins have full access to chat_messages" ON public.chat_messages;
 CREATE POLICY "Admins have full access to chat_messages" ON public.chat_messages
-    FOR ALL USING (
-        EXISTS (
-            SELECT 1 FROM public.admins
-            WHERE admins.user_id = auth.uid() OR admins.email = auth.jwt() ->> 'email'
-        )
-    );
+    FOR ALL TO authenticated
+    USING (public.is_admin())
+    WITH CHECK (public.is_admin());
 
 DO $$
 BEGIN

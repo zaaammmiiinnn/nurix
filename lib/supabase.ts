@@ -1,10 +1,12 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || "";
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ||
+  "https://vbinpwwerrvkqcaqqxls.supabase.co";
 const supabaseAnonKey =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ||
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ||
-  "";
+  "sb_publishable_5ioMLbbxPAH6Qgrsv-inhw_ohOogLr9";
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || "";
 
 const isPlaceholderUrl = (str: string) => {

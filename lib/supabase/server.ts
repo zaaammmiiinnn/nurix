@@ -1,16 +1,16 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://vbinpwwerrvkqcaqqxls.supabase.co";
 const supabaseAnonKey =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-  "placeholder";
+  "sb_publishable_5ioMLbbxPAH6Qgrsv-inhw_ohOogLr9";
 const serviceRoleKey =
   process.env.SUPABASE_SERVICE_ROLE_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-  "placeholder";
+  "sb_publishable_5ioMLbbxPAH6Qgrsv-inhw_ohOogLr9";
 
 /**
  * Standard server-side Supabase client using authenticated cookies (RLS respected)

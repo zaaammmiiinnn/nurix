@@ -13,8 +13,10 @@ import {
   RefreshCw,
   PhoneCall,
 } from "lucide-react";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
-import type { RealtimeChannel } from "@supabase/supabase-js";
+// NOTE: the widget deliberately does NOT import @supabase/supabase-js or the
+// Supabase client. Chat traffic is proxied through /api/chat/*, and updates are
+// delivered by polling that endpoint. This keeps Supabase out of the public
+// bundle and means the chat tables need no anon RLS policy at all.
 
 export interface ChatMessage {
   id: string;
@@ -106,43 +108,12 @@ export function ChatWidget() {
     }
   }, [isOpen]);
 
-  // 5. Supabase Realtime subscription + Resilient Polling
+  // 5. Resilient polling for live updates (replaces the Supabase Realtime
+  //    subscription, which required permissive RLS on the chat tables and
+  //    therefore leaked visitor data).
   useEffect(() => {
     if (!session?.id) return;
 
-    let channel: RealtimeChannel | null = null;
-
-    if (isSupabaseConfigured && supabase) {
-      try {
-        channel = supabase
-          .channel(`chat_messages:${session.id}`)
-          .on(
-            "postgres_changes",
-            {
-              event: "INSERT",
-              schema: "public",
-              table: "chat_messages",
-              filter: `session_id=eq.${session.id}`,
-            },
-            (payload) => {
-              const newMsg = payload.new as ChatMessage;
-              setMessages((prev) => {
-                if (prev.some((m) => m.id === newMsg.id)) return prev;
-                return [...prev, newMsg];
-              });
-
-              if (!isOpen && newMsg.sender !== "visitor") {
-                setUnreadCount((prev) => prev + 1);
-              }
-            }
-          )
-          .subscribe();
-      } catch (err) {
-        console.warn("Realtime subscription fallback:", err);
-      }
-    }
-
-    // Polling fallback to guarantee live updates even if WebSocket drops
     const pollInterval = setInterval(() => {
       if (visitorId) {
         fetch(`/api/chat/session?visitorId=${encodeURIComponent(visitorId)}`)
@@ -165,12 +136,7 @@ export function ChatWidget() {
       }
     }, isOpen ? 3000 : 10000);
 
-    return () => {
-      clearInterval(pollInterval);
-      if (channel && supabase) {
-        supabase.removeChannel(channel);
-      }
-    };
+    return () => clearInterval(pollInterval);
   }, [session?.id, visitorId, isOpen]);
 
   // 6. Send message handler

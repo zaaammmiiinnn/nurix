@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { Resend } from "resend";
-import { createManualLead } from "@/app/admin/leads/actions";
+import { insertLead } from "@/lib/data/leads";
 
 const leadSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters"),
@@ -73,8 +73,8 @@ export async function submitLead(
 
     const { name, email, phone, company, service, message } = validated.data;
 
-    // 4. Save lead (persists to Supabase if configured and backup store for instant UI updates)
-    await createManualLead({
+    // 4. Persist the lead. Never report success on a failed write.
+    const insertResult = await insertLead({
       name,
       email,
       phone,
@@ -82,14 +82,24 @@ export async function submitLead(
       service,
       message,
       status: "new",
+      source: "website_contact",
     });
+
+    if (!insertResult.success) {
+      return {
+        success: false,
+        error:
+          "We couldn't save your message right now. Please try again, or reach us on WhatsApp.",
+      };
+    }
 
     // 5. Send notification email via Resend
     const resendApiKey = process.env.RESEND_API_KEY?.trim();
-    const adminEmail = process.env.ADMIN_EMAIL?.trim() || "zaminaskari.work@gmail.com";
-    const fromEmail = process.env.FROM_EMAIL?.trim() || "onboarding@resend.dev";
+    const adminEmail = process.env.RESEND_TO_EMAIL?.trim() || process.env.ADMIN_EMAIL?.trim();
+    const fromEmail = process.env.RESEND_FROM_EMAIL?.trim() || "onboarding@resend.dev";
 
     if (
+      adminEmail &&
       resendApiKey &&
       !resendApiKey.includes("YOUR_KEY") &&
       !resendApiKey.includes("re_xxxxxxxx")

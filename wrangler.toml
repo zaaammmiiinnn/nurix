@@ -1,6 +1,53 @@
+# Cloudflare Workers deployment (via @opennextjs/cloudflare).
+#
+# NOTE: `name` is the Worker name, which determines the *.workers.dev hostname
+# and the entry in the Cloudflare dashboard. It is still the internal project
+# name "nurix" while the public brand is NeuralWaves. Renaming it here (and in
+# package.json / the GitHub repo) is safe once you are ready to re-create the
+# Worker under the new name — see AUDIT.md section on branding.
+
 name = "nurix"
 main = ".open-next/worker.js"
-compatibility_date = "2024-12-30"
+
+# Was 2024-12-30, roughly 22 months behind OpenNext's own default. Keep this
+# reasonably current so Workers runtime behaviour matches what Next expects.
+compatibility_date = "2026-08-01"
 compatibility_flags = ["nodejs_compat"]
 
 assets = { directory = ".open-next/assets", binding = "ASSETS" }
+
+[vars]
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_c3Ryb25nLWRvZ2Zpc2gtMzU0Ni5jbGVyay5hY2NvdW50cy5kZXYk"
+NEXT_PUBLIC_CLERK_SIGN_IN_URL = "/sign-in"
+NEXT_PUBLIC_CLERK_SIGN_UP_URL = "/sign-up"
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL = "/admin"
+NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL = "/"
+NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL = "/"
+NEXT_PUBLIC_SUPABASE_URL = "https://vbinpwwerrvkqcaqqxls.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_5ioMLbbxPAH6Qgrsv-inhw_ohOogLr9"
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_5ioMLbbxPAH6Qgrsv-inhw_ohOogLr9"
+NEXT_PUBLIC_SITE_URL = "https://nurix.neuralnetworks-de2.workers.dev"
+NEXT_PUBLIC_CAL_COM_URL = "https://cal.com/neuralwaves/15min"
+NEXT_PUBLIC_WHATSAPP_NUMBER = "918840936715"
+ADMIN_EMAILS = "zaminaskari.work@gmail.com,askarizamin110@gmail.com"
+ADMIN_EMAIL = "zaminaskari.work@gmail.com"
+
+# Weekly lead digest.
+#
+# The previous configuration declared this schedule in vercel.json only, which
+# Cloudflare Workers ignores — so the digest never actually ran in production.
+# The endpoint also fails closed without CRON_SECRET; set that secret with:
+#   npx wrangler secret put CRON_SECRET
+[triggers]
+crons = ["0 8 * * 1"]
+
+# Incremental cache for ISR / revalidatePath persistence.
+#
+# Deliberately NOT enabled yet: adding an r2_buckets binding requires the bucket
+# to exist first or `wrangler deploy` will fail. Create the bucket, then add:
+#
+#   [[r2_buckets]]
+#   binding = "NEXT_INC_CACHE_R2_BUCKET"
+#   bucket_name = "nurix-incremental-cache"
+#
+# ...and configure `incrementalCache` in open-next.config.ts.
