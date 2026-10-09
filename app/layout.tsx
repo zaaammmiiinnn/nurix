@@ -9,6 +9,8 @@ import { Footer } from "@/components/layout/footer";
 import { CursorGlow } from "@/components/ui/cursor-glow";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ClerkProvider } from "@clerk/nextjs";
+import { dark } from "@clerk/themes";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -114,7 +116,14 @@ interface RootLayoutProps {
 }
 
 export default function RootLayout({ children }: RootLayoutProps) {
-  return (
+  const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  const isClerkEnabled = Boolean(
+    clerkPublishableKey &&
+      !clerkPublishableKey.includes("YOUR_") &&
+      clerkPublishableKey.startsWith("pk_")
+  );
+
+  const content = (
     <html
       lang="en"
       className={`${inter.variable} ${geistMono.variable} dark noise-overlay`}
@@ -145,4 +154,33 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </body>
     </html>
   );
+
+  if (isClerkEnabled && clerkPublishableKey) {
+    return (
+      <ClerkProvider
+        publishableKey={clerkPublishableKey}
+        appearance={{
+          baseTheme: dark,
+          variables: {
+            colorPrimary: "#8B5CF6",
+            colorBackground: "#07070A",
+            colorInputBackground: "rgba(255, 255, 255, 0.04)",
+            colorInputText: "#ffffff",
+            colorText: "#ffffff",
+            colorTextSecondary: "#a1a1aa",
+            borderRadius: "0.75rem",
+          },
+          elements: {
+            card: "bg-[#0A0A0F] border border-white/[0.08] shadow-2xl",
+            formButtonPrimary:
+              "bg-violet-600 hover:bg-violet-500 text-white font-medium",
+          },
+        }}
+      >
+        {content}
+      </ClerkProvider>
+    );
+  }
+
+  return content;
 }

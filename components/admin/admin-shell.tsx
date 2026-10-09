@@ -12,17 +12,17 @@ import {
   MessageSquareQuote,
   HelpCircle,
   Settings,
-  LogOut,
   Menu,
   X,
   ExternalLink,
 } from "lucide-react";
-import { signOutAdmin } from "@/app/admin/login/actions";
 import { Logo } from "@/components/ui/logo";
+import { AdminUserNav } from "@/components/admin/admin-user-nav";
 
 interface AdminShellProps {
   children: React.ReactNode;
   adminEmail: string;
+  isClerkAuth?: boolean;
 }
 
 const NAV_ITEMS = [
@@ -36,7 +36,7 @@ const NAV_ITEMS = [
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
-export function AdminShell({ children, adminEmail }: AdminShellProps) {
+export function AdminShell({ children, adminEmail, isClerkAuth }: AdminShellProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -99,25 +99,8 @@ export function AdminShell({ children, adminEmail }: AdminShellProps) {
         </nav>
 
         {/* User profile & sign out */}
-        <div className="p-3 border-t border-white/[0.08] space-y-2">
-          <div className="px-3 py-1">
-            <span className="block text-[10px] font-mono uppercase tracking-wider text-zinc-500">
-              Signed In As
-            </span>
-            <span className="block text-xs font-mono text-zinc-300 truncate" title={adminEmail}>
-              {adminEmail}
-            </span>
-          </div>
-
-          <form action={signOutAdmin}>
-            <button
-              type="submit"
-              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-mono text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
-            >
-              <LogOut size={14} />
-              Sign Out
-            </button>
-          </form>
+        <div className="p-3 border-t border-white/[0.08]">
+          <AdminUserNav adminEmail={adminEmail} isClerkAuth={isClerkAuth} />
         </div>
       </aside>
 
@@ -168,15 +151,7 @@ export function AdminShell({ children, adminEmail }: AdminShellProps) {
           </nav>
 
           <div className="pt-4 border-t border-white/[0.08]">
-            <form action={signOutAdmin}>
-              <button
-                type="submit"
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/[0.04] text-xs font-mono text-rose-400"
-              >
-                <LogOut size={14} />
-                Sign Out ({adminEmail})
-              </button>
-            </form>
+            <AdminUserNav adminEmail={adminEmail} isClerkAuth={isClerkAuth} />
           </div>
         </div>
       )}

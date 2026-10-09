@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
+    "@clerk/nextjs": "^5.7.6",
+    "@clerk/themes": "^2.4.57",
     "@hookform/resolvers": "^5.9.1",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.3",

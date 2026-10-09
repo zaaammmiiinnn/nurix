@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { verifyAdminAccess } from "@/lib/auth/admin-auth";
 import { AdminShell } from "@/components/admin/admin-shell";
+import { UnauthorizedView } from "@/components/admin/unauthorized-view";
 
 export const metadata: Metadata = {
   title: "NeuralWaves Ops — Admin Portal",
@@ -14,49 +14,32 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = cookies();
-  const hasDemoCookie = cookieStore.get("neuralwaves_admin_demo_session")?.value === "1";
-  const demoEmail = cookieStore.get("neuralwaves_admin_email")?.value || "zaminaskari.work@gmail.com";
+  const authResult = await verifyAdminAccess();
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const isConfigured = Boolean(
-    supabaseUrl && !supabaseUrl.includes("YOUR_PROJECT") && !supabaseUrl.includes("placeholder")
-  );
-
-  let adminEmail = demoEmail;
-
-  if (isConfigured) {
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user && !hasDemoCookie) {
-      redirect("/admin/login");
-    }
-
-    if (user) {
-      adminEmail = user.email || "zaminaskari.work@gmail.com";
-
-      // Verify user ID in admins table
-      const { data: adminRow } = await supabase
-        .from("admins")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (!adminRow && !hasDemoCookie) {
-        redirect(
-          `/admin/login?error=not_authorized&email=${encodeURIComponent(adminEmail)}`
-        );
-      }
-    }
-  } else {
-    // In unconfigured dev mode, check demo cookie
-    if (!hasDemoCookie) {
-      redirect("/admin/login");
-    }
+  // If unauthenticated, redirect to admin login
+  if (authResult.status === "unauthenticated") {
+    redirect("/admin/login");
   }
 
-  return <AdminShell adminEmail={adminEmail}>{children}</AdminShell>;
+  // If user is logged in but unverified or unauthorized (not in admin whitelist)
+  if (authResult.status === "unverified" || authResult.status === "unauthorized") {
+    return (
+      <UnauthorizedView
+        status={authResult.status}
+        email={authResult.email}
+        authProvider={authResult.authProvider}
+        message={authResult.message}
+      />
+    );
+  }
+
+  // User is authenticated, verified, and authorized!
+  return (
+    <AdminShell
+      adminEmail={authResult.email}
+      isClerkAuth={authResult.authProvider === "clerk"}
+    >
+      {children}
+    </AdminShell>
+  );
 }

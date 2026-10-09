@@ -1,35 +1,61 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextRequest, type NextFetchEvent } from "next/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 
-export async function middleware(request: NextRequest) {
+const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const isClerkConfigured = Boolean(
+  clerkPublishableKey &&
+    !clerkPublishableKey.includes("YOUR_") &&
+    clerkPublishableKey.startsWith("pk_")
+);
+
+const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
+const isAuthRoute = createRouteMatcher(["/admin/login(.*)", "/admin/auth(.*)"]);
+
+// Helper handler when Clerk is active
+const clerkAuthHandler = isClerkConfigured
+  ? clerkMiddleware((auth, req) => {
+      if (isAdminRoute(req) && !isAuthRoute(req)) {
+        const loginUrl = new URL("/admin/login", req.url).toString();
+        auth().protect({ unauthenticatedUrl: loginUrl });
+      }
+    })
+  : null;
+
+export default async function middleware(request: NextRequest, event: NextFetchEvent) {
+  // If Clerk is configured, use Clerk middleware protection
+  if (clerkAuthHandler) {
+    return clerkAuthHandler(request, event);
+  }
+
+  // Fallback protection for local development and Supabase auth
   const { pathname } = request.nextUrl;
 
-  // Protect /admin routes, excluding login and auth callbacks
   if (
     pathname.startsWith("/admin") &&
     !pathname.startsWith("/admin/login") &&
     !pathname.startsWith("/admin/auth")
   ) {
-    let response = NextResponse.next({
-      request: {
-        headers: request.headers,
-      },
-    });
+    const hasDemoCookie =
+      request.cookies.get("nurix_admin_demo_session")?.value === "1" ||
+      request.cookies.get("neuralwaves_admin_demo_session")?.value === "1";
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    const isConfigured = Boolean(
+    const isSupabaseConfigured = Boolean(
       supabaseUrl &&
         supabaseAnonKey &&
         !supabaseUrl.includes("YOUR_PROJECT") &&
         !supabaseUrl.includes("placeholder")
     );
 
-    const hasDemoCookie =
-      request.cookies.get("nurix_admin_demo_session")?.value === "1" ||
-      request.cookies.get("neuralwaves_admin_demo_session")?.value === "1";
+    if (isSupabaseConfigured) {
+      let response = NextResponse.next({
+        request: {
+          headers: request.headers,
+        },
+      });
 
-    if (isConfigured) {
       try {
         const supabase = createServerClient(supabaseUrl!, supabaseAnonKey!, {
           cookies: {
@@ -55,7 +81,9 @@ export async function middleware(request: NextRequest) {
           redirectUrl.searchParams.set("redirectedFrom", pathname);
           return NextResponse.redirect(redirectUrl);
         }
-      } catch (e) {
+
+        return response;
+      } catch {
         if (!hasDemoCookie) {
           const redirectUrl = request.nextUrl.clone();
           redirectUrl.pathname = "/admin/login";
@@ -76,5 +104,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: [
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/(api|trpc)(.*)",
+  ],
 };

@@ -11,6 +11,11 @@ Add the following environment variables to your Vercel Project under **Settings 
 
 | Key | Example Value | Description |
 | :--- | :--- | :--- |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | `pk_live_...` or `pk_test_...` | Clerk Publishable Key (from Clerk Dashboard API Keys). |
+| `CLERK_SECRET_KEY` | `sk_live_...` or `sk_test_...` | Clerk Secret Key (Server-side API calls & JWT verification). |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | `/admin/login` | Redirect target for unauthenticated users. |
+| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | `/admin` | Post-login redirect destination for verified admins. |
+| `ADMIN_EMAILS` | `zaminaskari.work@gmail.com,askarizamin110@gmail.com` | Whitelist of verified admin emails permitted in `/admin`. |
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://xyzproject.supabase.co` | Supabase project API endpoint. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJhbGciOi...` | Supabase public anonymous key. |
 | `SUPABASE_SERVICE_ROLE_KEY` | `eyJhbGciOi...` | Supabase elevated admin key (kept secret, server-only). |
