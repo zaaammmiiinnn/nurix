@@ -8,6 +8,13 @@ import { Menu, X, ArrowUpRight, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollProgressBar } from "@/components/ui/scroll-progress";
 import { Logo } from "@/components/ui/logo";
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+} from "@clerk/nextjs";
 
 const NAV_LINKS = [
   { href: "/services", label: "Services" },
@@ -79,6 +86,30 @@ export function Nav() {
 
             {/* Desktop CTA */}
             <div className="hidden md:flex items-center gap-3">
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <button className="px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-300 hover:text-white hover:bg-white/[0.06] transition-all">
+                    Sign in
+                  </button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <button className="px-3 py-1.5 rounded-lg text-xs font-medium text-violet-300 hover:text-white border border-violet-500/30 hover:bg-violet-500/10 transition-all">
+                    Sign up
+                  </button>
+                </SignUpButton>
+              </SignedOut>
+
+              <SignedIn>
+                <UserButton
+                  afterSignOutUrl="/"
+                  appearance={{
+                    elements: {
+                      userButtonAvatarBox: "w-7 h-7 ring-1 ring-violet-500/40",
+                    },
+                  }}
+                />
+              </SignedIn>
+
               <Link
                 href="/admin"
                 title="Admin Ops Portal"
@@ -149,6 +180,30 @@ export function Nav() {
               <Shield size={14} className="text-violet-400" />
               <span>Admin Ops</span>
             </Link>
+
+            {/* Mobile Auth Controls */}
+            <div className="pt-2 pb-1">
+              <SignedOut>
+                <div className="grid grid-cols-2 gap-2">
+                  <SignInButton mode="modal">
+                    <button className="w-full py-2 text-xs font-medium text-zinc-200 border border-white/10 rounded-lg hover:bg-white/5 transition-all text-center">
+                      Sign in
+                    </button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <button className="w-full py-2 text-xs font-medium text-violet-300 border border-violet-500/30 rounded-lg hover:bg-violet-500/10 transition-all text-center">
+                      Sign up
+                    </button>
+                  </SignUpButton>
+                </div>
+              </SignedOut>
+              <SignedIn>
+                <div className="flex items-center justify-between px-3 py-2 bg-white/[0.04] rounded-lg border border-white/[0.08]">
+                  <span className="text-xs text-zinc-400">Account</span>
+                  <UserButton afterSignOutUrl="/" />
+                </div>
+              </SignedIn>
+            </div>
             <div className="pt-4 flex flex-col gap-3">
               <Link
                 href={WA_URL}
