@@ -57,7 +57,7 @@ export const supabase = isSupabaseConfigured
   : null;
 
 // Admin/Server-only instance (service role key)
-export const supabaseAdmin = isSupabaseConfigured && supabaseServiceKey && !isPlaceholder(supabaseServiceKey)
+export const supabaseAdmin = isSupabaseConfigured && supabaseServiceKey && !isPlaceholderKey(supabaseServiceKey)
   ? safeCreateClient(supabaseUrl, supabaseServiceKey, {
       auth: { persistSession: false },
     })
