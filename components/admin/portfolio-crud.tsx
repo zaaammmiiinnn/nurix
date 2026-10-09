@@ -595,7 +595,7 @@ export function PortfolioCrud({ initialProjects }: PortfolioCrudProps) {
                     rows={2}
                     value={formData.solution}
                     onChange={(e) => setFormData({ ...formData, solution: e.target.value })}
-                    placeholder="What Nurix engineered to solve it..."
+                    placeholder="What NeuralWaves engineered to solve it..."
                     className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-xs text-white focus:outline-none focus:border-violet-500"
                   />
                 </div>

@@ -17,7 +17,7 @@ let localSettingsCache: Record<string, string> = {
   contact_phone: SITE_CONFIG.contact.phone,
   calendar_url: SITE_CONFIG.contact.calUrl,
   social_linkedin: SITE_CONFIG.socials.linkedin,
-  social_instagram: "https://instagram.com/nurix.ae",
+  social_instagram: "https://instagram.com/neuralwaves.in",
   studio_address: `${SITE_CONFIG.address.streetAddress}, ${SITE_CONFIG.address.addressLocality}, ${SITE_CONFIG.location}`,
 };
 

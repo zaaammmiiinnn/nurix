@@ -109,7 +109,7 @@ export default function AdminLoginPage() {
                   <input
                     type="email"
                     required
-                    placeholder="askarizamin110@gmail.com"
+                    placeholder="zaminaskari.work@gmail.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/60 transition-colors"
@@ -148,7 +148,7 @@ export default function AdminLoginPage() {
               className="w-full py-2.5 px-3 rounded-lg bg-white/[0.04] border border-white/[0.08] hover:border-violet-500/30 text-xs font-mono text-zinc-300 hover:text-white flex items-center justify-center gap-2 transition-colors"
             >
               <Sparkles size={14} className="text-violet-400" />
-              1-Click Demo Login (admin@nurix.ae)
+              1-Click Demo Login (zaminaskari.work@gmail.com)
             </button>
           </div>
         </div>
@@ -159,7 +159,7 @@ export default function AdminLoginPage() {
             href="/"
             className="text-xs font-mono text-zinc-500 hover:text-zinc-300 transition-colors"
           >
-            ← Back to nurix.ae
+            ← Back to neuralwaves.in
           </Link>
         </div>
       </div>

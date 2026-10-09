@@ -139,7 +139,7 @@ export function SettingsForm({
                   type="email"
                   value={settings.contact_email || ""}
                   onChange={(e) => handleChange("contact_email", e.target.value)}
-                  placeholder="hello@nurix.ae"
+                  placeholder="zaminaskari.work@gmail.com"
                   className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-xs text-white focus:outline-none focus:border-violet-500 font-mono"
                 />
                 <span className="text-[10px] text-zinc-500 block">Direct inquiries &amp; proposals</span>
@@ -153,7 +153,7 @@ export function SettingsForm({
                   type="text"
                   value={settings.calendar_url || ""}
                   onChange={(e) => handleChange("calendar_url", e.target.value)}
-                  placeholder="https://cal.com/nurix/15min"
+                  placeholder="https://cal.com/neuralwaves/15min"
                   className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-xs text-white focus:outline-none focus:border-violet-500 font-mono"
                 />
                 <span className="text-[10px] text-zinc-500 block">Native scope booking link</span>
@@ -190,7 +190,7 @@ export function SettingsForm({
                   type="text"
                   value={settings.social_linkedin || ""}
                   onChange={(e) => handleChange("social_linkedin", e.target.value)}
-                  placeholder="https://linkedin.com/company/nurix-ae"
+                  placeholder="https://linkedin.com/company/neuralwaves"
                   className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-xs text-white focus:outline-none focus:border-violet-500 font-mono"
                 />
               </div>
@@ -203,7 +203,7 @@ export function SettingsForm({
                   type="text"
                   value={settings.social_instagram || ""}
                   onChange={(e) => handleChange("social_instagram", e.target.value)}
-                  placeholder="https://instagram.com/nurix.ae"
+                  placeholder="https://instagram.com/neuralwaves.in"
                   className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-xs text-white focus:outline-none focus:border-violet-500 font-mono"
                 />
               </div>
@@ -283,7 +283,7 @@ export function SettingsForm({
                       Zamin Askari Rizvi
                     </span>
                     <span className="text-[10px] font-mono text-zinc-400">
-                      askarizamin110@gmail.com
+                      zaminaskari.work@gmail.com
                     </span>
                   </div>
                 </div>
@@ -299,10 +299,10 @@ export function SettingsForm({
                   </div>
                   <div>
                     <span className="text-xs font-semibold text-white block">
-                      Nurix Operations
+                      NeuralWaves Operations
                     </span>
                     <span className="text-[10px] font-mono text-zinc-400">
-                      admin@nurix.ae
+                      hello@neuralwaves.in
                     </span>
                   </div>
                 </div>
