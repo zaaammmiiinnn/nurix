@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MessageCircle, Mail, MapPin } from "lucide-react";
+import { Logo } from "@/components/ui/logo";
 
 const SERVICES_LINKS = [
   { href: "/services/chatbots", label: "AI Chatbots & WhatsApp" },
@@ -30,12 +31,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
           {/* Brand column */}
           <div className="lg:col-span-1">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-0.5 font-bold text-xl tracking-[-0.04em] text-signal-text"
-            >
-              Neural<span className="text-signal-violet">Waves</span>
-            </Link>
+            <Logo size="md" />
             <p className="mt-4 text-sm text-signal-muted leading-relaxed">
               AI that ships.
               <br />

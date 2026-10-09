@@ -1,0 +1,34 @@
+<svg width="220" height="48" viewBox="0 0 220 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="nw-full-grad" x1="4" y1="40" x2="44" y2="8" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#8B5CF6" />
+      <stop offset="50%" stop-color="#6366F1" />
+      <stop offset="100%" stop-color="#22D3EE" />
+    </linearGradient>
+    <linearGradient id="nw-text-grad" x1="120" y1="24" x2="210" y2="24" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#A78BFA" />
+      <stop offset="60%" stop-color="#818CF8" />
+      <stop offset="100%" stop-color="#22D3EE" />
+    </linearGradient>
+    <filter id="nw-icon-glow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="1.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Icon container -->
+  <g transform="translate(4, 4)">
+    <rect x="0" y="0" width="40" height="40" rx="10" fill="#07070A" stroke="url(#nw-full-grad)" stroke-width="1.2" stroke-opacity="0.35" />
+    <path d="M 8 28 C 8 16, 13 10, 16 10 C 19 10, 20 23, 23 23 C 26 23, 27 12, 31 12 C 33 12, 33 26, 30 29" stroke="url(#nw-full-grad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#nw-icon-glow)" />
+    <path d="M 12 24 L 16 12 L 20 22 L 24 16 L 28 26" stroke="#A78BFA" stroke-width="1" stroke-linecap="round" stroke-dasharray="2 2" stroke-opacity="0.8" />
+    <circle cx="8" cy="28" r="2.2" fill="#8B5CF6" /><circle cx="8" cy="28" r="0.9" fill="#FFFFFF" />
+    <circle cx="16" cy="11" r="2.4" fill="#A78BFA" /><circle cx="16" cy="11" r="1" fill="#FFFFFF" />
+    <circle cx="21" cy="22" r="2" fill="#6366F1" /><circle cx="21" cy="22" r="0.8" fill="#FFFFFF" />
+    <circle cx="27" cy="14" r="2.2" fill="#38BDF8" /><circle cx="27" cy="14" r="0.9" fill="#FFFFFF" />
+    <circle cx="30" cy="29" r="2.4" fill="#22D3EE" /><circle cx="30" cy="29" r="1" fill="#FFFFFF" />
+  </g>
+
+  <!-- Typography -->
+  <text x="56" y="31" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="700" letter-spacing="-0.03em" fill="#FFFFFF">Neural</text>
+  <text x="126" y="31" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="700" letter-spacing="-0.03em" fill="url(#nw-text-grad)">Waves</text>
+</svg>

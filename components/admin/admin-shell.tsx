@@ -18,6 +18,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { signOutAdmin } from "@/app/admin/login/actions";
+import { Logo } from "@/components/ui/logo";
 
 interface AdminShellProps {
   children: React.ReactNode;
@@ -51,20 +52,12 @@ export function AdminShell({ children, adminEmail }: AdminShellProps) {
       <aside className="hidden md:flex flex-col w-60 border-r border-white/[0.08] bg-[#0A0A0F] shrink-0 sticky top-0 h-screen z-30">
         {/* Brand header */}
         <div className="h-16 flex items-center justify-between px-6 border-b border-white/[0.08]">
-          <Link
-            href="/admin"
-            className="flex items-center gap-0.5 font-bold text-lg tracking-[-0.04em] text-white"
-          >
-            nur
-            <span className="relative inline-flex items-center justify-center text-violet-400">
-              i
-              <span className="absolute bottom-[2px] left-1/2 -translate-x-1/2 w-[4px] h-[4px] rounded-full bg-violet-400 shadow-[0_0_6px_rgba(139,92,246,0.8)]" />
-            </span>
-            x
-            <span className="ml-2 font-mono text-[10px] uppercase px-1.5 py-0.2 rounded bg-violet-500/10 border border-violet-500/30 text-violet-300">
+          <div className="flex items-center gap-2">
+            <Logo size="sm" href="/admin" />
+            <span className="font-mono text-[10px] uppercase px-1.5 py-0.5 rounded bg-violet-500/10 border border-violet-500/30 text-violet-300">
               Ops
             </span>
-          </Link>
+          </div>
 
           <Link
             href="/"
@@ -130,15 +123,12 @@ export function AdminShell({ children, adminEmail }: AdminShellProps) {
 
       {/* ── Mobile Header ── */}
       <header className="md:hidden flex items-center justify-between h-14 px-4 border-b border-white/[0.08] bg-[#0A0A0F] sticky top-0 z-40">
-        <Link
-          href="/admin"
-          className="flex items-center gap-0.5 font-bold text-base tracking-[-0.04em] text-white"
-        >
-          nur<span className="text-violet-400">i</span>x
-          <span className="ml-1.5 font-mono text-[9px] uppercase px-1.5 py-0.2 rounded bg-violet-500/10 border border-violet-500/30 text-violet-300">
+        <div className="flex items-center gap-2">
+          <Logo size="sm" href="/admin" />
+          <span className="font-mono text-[9px] uppercase px-1.5 py-0.5 rounded bg-violet-500/10 border border-violet-500/30 text-violet-300">
             Admin
           </span>
-        </Link>
+        </div>
 
         <button
           onClick={() => setMobileMenuOpen((o) => !o)}

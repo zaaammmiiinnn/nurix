@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Mail, ArrowRight, Loader2, ShieldAlert, Sparkles, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { sendMagicLink, loginAsDemoAdmin } from "./actions";
+import { Logo } from "@/components/ui/logo";
 
 export default function AdminLoginPage() {
   const searchParams = useSearchParams();
@@ -50,20 +51,12 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-md relative z-10 space-y-8">
         {/* Wordmark */}
         <div className="text-center space-y-2">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-0.5 font-bold text-2xl tracking-[-0.04em] text-white"
-          >
-            nur
-            <span className="relative inline-flex items-center justify-center text-violet-400">
-              i
-              <span className="absolute bottom-[3px] left-1/2 -translate-x-1/2 w-[5px] h-[5px] rounded-full bg-violet-400 shadow-[0_0_8px_rgba(139,92,246,0.8)]" />
-            </span>
-            x
-            <span className="ml-2 font-mono text-xs uppercase px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300">
+          <div className="inline-flex items-center gap-2">
+            <Logo size="lg" />
+            <span className="font-mono text-xs uppercase px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300">
               Admin
             </span>
-          </Link>
+          </div>
           <p className="text-xs font-mono text-zinc-500">
             Internal Operations Portal
           </p>

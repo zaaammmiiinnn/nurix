@@ -44,16 +44,28 @@ export default async function OpenGraphImage() {
             zIndex: 10,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div
-              style={{
-                width: "16px",
-                height: "16px",
-                borderRadius: "50%",
-                backgroundColor: "#8B5CF6",
-                boxShadow: "0 0 16px #8B5CF6",
-              }}
-            />
+          <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+            <svg
+              width="36"
+              height="36"
+              viewBox="0 0 40 40"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect x="1" y="1" width="38" height="38" rx="10" fill="#07070A" stroke="#8B5CF6" strokeWidth="1.5" />
+              <path
+                d="M 8 28 C 8 16, 13 10, 16 10 C 19 10, 20 23, 23 23 C 26 23, 27 12, 31 12 C 33 12, 33 26, 30 29"
+                stroke="#8B5CF6"
+                strokeWidth="3.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <circle cx="8" cy="28" r="2.2" fill="#8B5CF6" />
+              <circle cx="16" cy="11" r="2.4" fill="#A78BFA" />
+              <circle cx="21" cy="22" r="2" fill="#6366F1" />
+              <circle cx="27" cy="14" r="2.2" fill="#38BDF8" />
+              <circle cx="30" cy="29" r="2.4" fill="#22D3EE" />
+            </svg>
             <span
               style={{
                 fontSize: "36px",

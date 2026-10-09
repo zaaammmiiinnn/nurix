@@ -7,6 +7,7 @@ import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import { Menu, X, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollProgressBar } from "@/components/ui/scroll-progress";
+import { Logo } from "@/components/ui/logo";
 
 const NAV_LINKS = [
   { href: "/services", label: "Services" },
@@ -55,14 +56,8 @@ export function Nav() {
               scrolled ? "h-14" : "h-18"
             )}
           >
-            {/* Wordmark */}
-            <Link
-              href="/"
-              className="flex items-center gap-0.5 font-bold text-xl tracking-[-0.04em] text-white select-none group"
-              aria-label="NeuralWaves home"
-            >
-              Neural<span className="text-violet-400 group-hover:text-cyan-400 transition-colors">Waves</span>
-            </Link>
+            {/* Wordmark & Icon */}
+            <Logo size="md" />
 
             {/* Desktop nav links */}
             <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
