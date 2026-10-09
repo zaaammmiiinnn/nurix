@@ -66,10 +66,19 @@ export const SITE_CONFIG = {
     longitude: 55.2708,
   },
   contact: {
+    // Static fallbacks only. The live site reads these from the `site_settings`
+    // table via the admin panel (see /api/site-config), so editing them there
+    // takes effect without a redeploy.
+    //
+    // TODO before launch: replace the Gmail address with one on the production
+    // domain, and replace the India phone/WhatsApp number with a UAE number if you
+    // are selling as a Dubai studio. See AUDIT.md section 1 on positioning — the
+    // copy says Dubai while these details say India.
     email: "zaminaskari.work@gmail.com",
     phone: "+91-8840936715",
     whatsapp: "+91-8840936715",
     whatsappDisplay: "+91-8840936715",
+    // TODO: this Cal.com link returns 404. Create the booking page or remove it.
     calUrl: "https://cal.com/neuralwaves/15min",
   },
   socials: {

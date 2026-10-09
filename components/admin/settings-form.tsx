@@ -179,7 +179,7 @@ export function SettingsForm({
                   type="email"
                   value={settings.contact_email || ""}
                   onChange={(e) => handleChange("contact_email", e.target.value)}
-                  placeholder="zaminaskari.work@gmail.com"
+                  placeholder="hello@yourdomain.com"
                   className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-xs text-white focus:outline-none focus:border-violet-500 font-mono"
                 />
                 <span className="text-[10px] text-zinc-500 block">Direct inquiries &amp; proposals</span>
@@ -323,7 +323,7 @@ export function SettingsForm({
                       Zamin Askari Rizvi
                     </span>
                     <span className="text-[10px] font-mono text-zinc-400">
-                      zaminaskari.work@gmail.com
+                      hello@yourdomain.com
                     </span>
                   </div>
                 </div>

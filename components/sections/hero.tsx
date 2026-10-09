@@ -1,15 +1,26 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useSiteConfig, toDialable } from "@/lib/hooks/use-site-config";
 import Link from "next/link";
 import { motion, useMotionValue, useTransform, useSpring, useScroll } from "framer-motion";
 import { MessageCircle, ChevronDown, ArrowRight } from "lucide-react";
 import { CountUp } from "@/components/ui/reveal";
 
-const WA_URL =
-  "https://wa.me/918840936715?text=Hi%20NeuralWaves%2C%20I%20need%20help%20with%20automation";
+// Admin-controlled WhatsApp number, resolved at runtime so edits in the
+// admin panel take effect. This was a hardcoded literal in seven files.
+const FALLBACK_WA_NUMBER = "918840936715";
 
 export function HeroSection() {
+  const siteConfig = useSiteConfig({
+    whatsappNumber: FALLBACK_WA_NUMBER,
+    email: "",
+    phone: "",
+    calendarUrl: "",
+    address: "",
+    linkedin: "",
+  });
+  const waUrl = `https://wa.me/${toDialable(siteConfig.whatsappNumber)}?text=Hi%20NeuralWaves%2C%20I%20need%20help%20with%20automation`;
   const heroRef = useRef<HTMLElement>(null);
 
   // Mouse parallax motion values
@@ -184,7 +195,7 @@ export function HeroSection() {
 
           {/* "WhatsApp us" glass with backdrop blur, hover glow */}
           <Link
-            href={WA_URL}
+            href={waUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl text-sm font-medium text-zinc-200 bg-white/[0.05] border border-white/[0.1] backdrop-blur-xl hover:bg-white/[0.1] hover:border-violet-500/40 hover:text-white transition-all duration-200 w-full sm:w-auto hover:shadow-[0_0_24px_rgba(255,255,255,0.06)]"

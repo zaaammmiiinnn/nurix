@@ -1,16 +1,27 @@
 "use client";
 
 import React, { useState } from "react";
+import { useSiteConfig, toDialable } from "@/lib/hooks/use-site-config";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { MessageCircle, ArrowRight, CheckCircle2, Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { submitLead } from "@/app/actions/lead";
 
-const WA_URL =
-  "https://wa.me/918840936715?text=Hi%20NeuralWaves%2C%20I%20need%20help%20with%20automation";
+// Admin-controlled WhatsApp number, resolved at runtime so edits in the
+// admin panel take effect. This was a hardcoded literal in seven files.
+const FALLBACK_WA_NUMBER = "918840936715";
 
 export function FinalCta() {
+  const siteConfig = useSiteConfig({
+    whatsappNumber: FALLBACK_WA_NUMBER,
+    email: "",
+    phone: "",
+    calendarUrl: "",
+    address: "",
+    linkedin: "",
+  });
+  const waUrl = `https://wa.me/${toDialable(siteConfig.whatsappNumber)}?text=Hi%20NeuralWaves%2C%20I%20need%20help%20with%20automation`;
   return (
     <section
       className="relative py-40 px-6 md:px-8 overflow-hidden bg-[#040407] border-t border-white/[0.08] select-none"
@@ -69,7 +80,7 @@ export function FinalCta() {
         {/* Quick WhatsApp option */}
         <div className="flex items-center justify-center gap-3 mb-4">
           <Link
-            href={WA_URL}
+            href={waUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-xs font-mono text-emerald-300 hover:text-white hover:bg-emerald-500/20 transition-all"

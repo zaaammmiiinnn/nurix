@@ -163,7 +163,10 @@ export default function AdminLoginPage() {
                   CLERK_SECRET_KEY=sk_test_...
                 </div>
                 <p className="text-[10px] text-zinc-500 font-mono">
-                  Authorized admins: zaminaskari.work@gmail.com, askarizamin110@gmail.com
+                  {/* The allowlist must not be displayed on an unauthenticated
+                      page — it told anyone who loaded /admin/login exactly which
+                      addresses to target. */}
+                  Access is limited to addresses configured in ADMIN_EMAILS.
                 </p>
               </div>
 
@@ -199,7 +202,7 @@ export default function AdminLoginPage() {
                       <input
                         type="email"
                         required
-                        placeholder="zaminaskari.work@gmail.com"
+                        placeholder="you@company.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/60 transition-colors"

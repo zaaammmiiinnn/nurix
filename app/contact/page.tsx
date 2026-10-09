@@ -20,9 +20,20 @@ import { toast } from "sonner";
 import { submitLead } from "@/app/actions/lead";
 import { type ContactFormData } from "@/lib/schemas/contact";
 import { SITE_CONFIG } from "@/lib/data/site-data";
+import { useSiteConfig, toDialable } from "@/lib/hooks/use-site-config";
 
-const WA_NUMBER = "918840936715";
-const WA_BASE_URL = `https://wa.me/${WA_NUMBER}?text=Hi%20NeuralWaves%2C%20I%20want%20to%20discuss%20an%20AI%20project`;
+// Contact details come from the admin-controlled settings at runtime; these are
+// the static fallbacks used until /api/site-config resolves. Previously the
+// WhatsApp number, email and phone were hardcoded here, so editing them in the
+// admin panel changed nothing on this page.
+const FALLBACK_CONFIG = {
+  whatsappNumber: SITE_CONFIG.contact.whatsapp,
+  email: SITE_CONFIG.contact.email,
+  phone: SITE_CONFIG.contact.phone,
+  calendarUrl: SITE_CONFIG.contact.calUrl,
+  address: "",
+  linkedin: "",
+};
 
 const TIME_SLOTS = [
   "10:00 AM",
@@ -34,6 +45,12 @@ const TIME_SLOTS = [
 
 export default function ContactPage() {
   const searchParams = useSearchParams();
+
+  // Admin-controlled contact details (falls back to the static defaults above).
+  const siteConfig = useSiteConfig(FALLBACK_CONFIG);
+  const waNumber = toDialable(siteConfig.whatsappNumber);
+  const waBaseUrl = `https://wa.me/${waNumber}?text=Hi%20NeuralWaves%2C%20I%20want%20to%20discuss%20an%20AI%20project`;
+  const telHref = `tel:${siteConfig.phone.replace(/\s+/g, "")}`;
 
   const [formData, setFormData] = useState<ContactFormData>({
     name: "",
@@ -128,7 +145,7 @@ export default function ContactPage() {
       const waText = encodeURIComponent(
         `Hi NeuralWaves, I would like to book a 15-minute scoping call on ${selectedDay} at ${selectedSlot} (GST).`
       );
-      window.open(`https://wa.me/${WA_NUMBER}?text=${waText}`, "_blank");
+      window.open(`https://wa.me/${waNumber}?text=${waText}`, "_blank");
       toast.success("Opening WhatsApp to confirm your slot!");
     } else {
       setFormData((prev) => ({
@@ -211,7 +228,7 @@ export default function ContactPage() {
             <div className="space-y-4 pt-2">
               {/* WhatsApp card */}
               <Link
-                href={WA_BASE_URL}
+                href={waBaseUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group flex items-center justify-between p-5 rounded-2xl border border-white/[0.08] bg-gradient-to-br from-white/[0.04] to-white/[0.01] hover:border-emerald-500/40 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(16,185,129,0.12)] transition-all duration-300"
@@ -233,7 +250,7 @@ export default function ContactPage() {
 
               {/* Email card */}
               <a
-                href={`mailto:${SITE_CONFIG.contact.email}`}
+                href={`mailto:${siteConfig.email}`}
                 className="group flex items-center justify-between p-5 rounded-2xl border border-white/[0.08] bg-gradient-to-br from-white/[0.04] to-white/[0.01] hover:border-violet-500/40 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(139,92,246,0.12)] transition-all duration-300"
               >
                 <div className="flex items-center gap-4">
@@ -242,7 +259,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <span className="font-medium text-white text-base block">Email</span>
-                    <span className="text-xs text-zinc-400 font-mono">{SITE_CONFIG.contact.email}</span>
+                    <span className="text-xs text-zinc-400 font-mono">{siteConfig.email}</span>
                   </div>
                 </div>
                 <ArrowRight size={18} className="text-zinc-500 group-hover:text-violet-400 group-hover:translate-x-1 transition-all" />
@@ -274,7 +291,7 @@ export default function ContactPage() {
 
               {/* Phone card */}
               <a
-                href={`tel:${SITE_CONFIG.contact.phone.replace(/\s+/g, "")}`}
+                href={telHref}
                 className="group flex items-center justify-between p-5 rounded-2xl border border-white/[0.08] bg-gradient-to-br from-white/[0.04] to-white/[0.01] hover:border-white/20 hover:-translate-y-0.5 transition-all duration-300"
               >
                 <div className="flex items-center gap-4">
@@ -283,7 +300,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <span className="font-medium text-white text-base block">Phone</span>
-                    <span className="text-xs text-zinc-400 font-mono">{SITE_CONFIG.contact.phone}</span>
+                    <span className="text-xs text-zinc-400 font-mono">{siteConfig.phone}</span>
                   </div>
                 </div>
                 <ArrowRight size={18} className="text-zinc-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
@@ -465,7 +482,7 @@ export default function ContactPage() {
                     Send another message
                   </button>
                   <Link
-                    href={WA_BASE_URL}
+                    href={waBaseUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn-glow px-6 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider text-white"

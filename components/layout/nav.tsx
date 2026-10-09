@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSiteConfig, toDialable } from "@/lib/hooks/use-site-config";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
@@ -24,10 +25,20 @@ const NAV_LINKS = [
   { href: "/contact", label: "Contact" },
 ];
 
-const WA_URL =
-  "https://wa.me/918840936715?text=Hi%20NeuralWaves%2C%20I%20need%20help%20with%20automation";
+// Admin-controlled WhatsApp number, resolved at runtime so edits in the
+// admin panel take effect. This was a hardcoded literal in seven files.
+const FALLBACK_WA_NUMBER = "918840936715";
 
 export function Nav() {
+  const siteConfig = useSiteConfig({
+    whatsappNumber: FALLBACK_WA_NUMBER,
+    email: "",
+    phone: "",
+    calendarUrl: "",
+    address: "",
+    linkedin: "",
+  });
+  const waUrl = `https://wa.me/${toDialable(siteConfig.whatsappNumber)}?text=Hi%20NeuralWaves%2C%20I%20need%20help%20with%20automation`;
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -119,7 +130,7 @@ export function Nav() {
                 <span>Admin</span>
               </Link>
               <Link
-                href={WA_URL}
+                href={waUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs font-mono uppercase tracking-wider text-zinc-400 hover:text-white transition-colors duration-150 flex items-center gap-1"
@@ -206,7 +217,7 @@ export function Nav() {
             </div>
             <div className="pt-4 flex flex-col gap-3">
               <Link
-                href={WA_URL}
+                href={waUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-ghost-border w-full text-center px-4 py-2.5 text-sm font-medium text-white rounded-lg"

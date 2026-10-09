@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useSiteConfig, toDialable } from "@/lib/hooks/use-site-config";
+import { SITE_CONFIG } from "@/lib/data/site-data";
 import { usePathname } from "next/navigation";
 import { MessageCircle, Mail, MapPin, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
@@ -19,10 +21,22 @@ const COMPANY_LINKS = [
   { href: "/admin", label: "Admin Portal" },
 ];
 
-const WA_URL =
-  "https://wa.me/918840936715?text=Hi%20NeuralWaves%2C%20I%20need%20help%20with%20automation";
+// Admin-controlled WhatsApp number, resolved at runtime so edits in the
+// admin panel take effect. This was a hardcoded literal in seven files.
+const FALLBACK_WA_NUMBER = "918840936715";
 
 export function Footer() {
+  // Static defaults so the footer never renders blank while /api/site-config
+  // resolves; the runtime values then override them.
+  const siteConfig = useSiteConfig({
+    whatsappNumber: FALLBACK_WA_NUMBER,
+    email: SITE_CONFIG.contact.email,
+    phone: SITE_CONFIG.contact.phone,
+    calendarUrl: SITE_CONFIG.contact.calUrl,
+    address: "",
+    linkedin: "",
+  });
+  const waUrl = `https://wa.me/${toDialable(siteConfig.whatsappNumber)}?text=Hi%20NeuralWaves%2C%20I%20need%20help%20with%20automation`;
   const pathname = usePathname();
   if (pathname?.startsWith("/admin")) return null;
 
@@ -86,7 +100,7 @@ export function Footer() {
             <ul className="space-y-3">
               <li>
                 <a
-                  href={WA_URL}
+                  href={waUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-sm text-signal-muted hover:text-signal-text transition-colors duration-150 group"
@@ -100,19 +114,19 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="mailto:zaminaskari.work@gmail.com"
+                  href={`mailto:${siteConfig.email}`}
                   className="flex items-center gap-2 text-sm text-signal-muted hover:text-signal-text transition-colors duration-150 group"
                 >
                   <Mail size={14} className="text-signal-violet" />
-                  zaminaskari.work@gmail.com
+                  {siteConfig.email}
                 </a>
               </li>
               <li>
                 <a
-                  href="tel:+918840936715"
+                  href={`tel:${toDialable(siteConfig.phone)}`}
                   className="text-sm text-signal-muted hover:text-signal-text transition-colors duration-150"
                 >
-                  +91-8840936715
+                  {siteConfig.phone}
                 </a>
               </li>
             </ul>

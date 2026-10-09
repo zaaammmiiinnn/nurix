@@ -136,12 +136,19 @@ export async function POST(req: NextRequest) {
 
         // Email notification via Resend
         const resendKey = process.env.RESEND_API_KEY;
-        const adminEmail = process.env.ADMIN_EMAIL || "zaminaskari.work@gmail.com";
-        if (resendKey && !resendKey.includes("YOUR_") && !resendKey.includes("placeholder")) {
+        const adminEmail = process.env.RESEND_TO_EMAIL || process.env.ADMIN_EMAIL;
+        if (
+          adminEmail &&
+          resendKey &&
+          !resendKey.includes("YOUR_") &&
+          !resendKey.includes("placeholder")
+        ) {
           try {
             const resend = new Resend(resendKey);
             await resend.emails.send({
-              from: process.env.FROM_EMAIL || "NeuralWaves Chat <leads@neuralwaves.in>",
+              from:
+                process.env.RESEND_FROM_EMAIL ||
+                "NeuralWaves Chat <onboarding@resend.dev>",
               to: [adminEmail],
               subject: `🔥 New Inbound Chat Lead: ${lead.email}`,
               text: `A visitor just converted via the website chat widget!\n\nEmail: ${lead.email}\nPhone: ${lead.phone || "Not provided"}\nMessage: ${content}\nVisitor ID: ${visitorId}\nSession ID: ${session.id}`,

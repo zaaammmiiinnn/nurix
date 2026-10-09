@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { usePathname } from "next/navigation";
+import { useSiteConfig, toDialable } from "@/lib/hooks/use-site-config";
 import {
   MessageSquare,
   X,
@@ -40,6 +41,19 @@ export interface ChatSession {
 
 export function ChatWidget() {
   const pathname = usePathname();
+
+  // Admin-controlled WhatsApp number, shared with nav/footer/CTAs via a single
+  // cached request. This link was previously hardcoded.
+  const siteConfig = useSiteConfig({
+    whatsappNumber: "918840936715",
+    email: "",
+    phone: "",
+    calendarUrl: "",
+    address: "",
+    linkedin: "",
+  });
+  const waHref = `https://wa.me/${toDialable(siteConfig.whatsappNumber)}`;
+
   const [isOpen, setIsOpen] = useState(false);
   const [visitorId, setVisitorId] = useState<string>("");
   const [session, setSession] = useState<ChatSession | null>(null);
@@ -432,7 +446,7 @@ export function ChatWidget() {
             <div className="mt-2 flex items-center justify-between text-[11px] text-zinc-500 px-1">
               <span>Dubai office · Typically replies in &lt; 2m</span>
               <a
-                href="https://wa.me/918840936715"
+                href={waHref}
                 target="_blank"
                 rel="noreferrer"
                 className="text-violet-400 hover:underline flex items-center gap-1"

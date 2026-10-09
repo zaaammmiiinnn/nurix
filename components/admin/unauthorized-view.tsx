@@ -137,7 +137,10 @@ export function UnauthorizedView({
               </p>
             ) : (
               <p className="leading-relaxed text-zinc-400">
-                Contact the primary admin (<code className="text-violet-300 font-mono">zaminaskari.work@gmail.com</code>) to add your email address to the <code className="text-violet-300 font-mono">ADMIN_EMAILS</code> environment variable or the <code className="text-violet-300 font-mono">admins</code> database table.
+                Ask an existing administrator to add your address to the{" "}
+                <code className="text-violet-300 font-mono">ADMIN_EMAILS</code> environment
+                variable or to the <code className="text-violet-300 font-mono">admins</code>{" "}
+                database table.
               </p>
             )}
           </div>

@@ -15,7 +15,7 @@ Add the following environment variables to your Vercel Project under **Settings 
 | `CLERK_SECRET_KEY` | `sk_live_...` or `sk_test_...` | Clerk Secret Key (Server-side API calls & JWT verification). |
 | `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | `/admin/login` | Redirect target for unauthenticated users. |
 | `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | `/admin` | Post-login redirect destination for verified admins. |
-| `ADMIN_EMAILS` | `zaminaskari.work@gmail.com,askarizamin110@gmail.com` | Whitelist of verified admin emails permitted in `/admin`. |
+| `ADMIN_EMAILS` | `admin@example.com,owner@example.com` | Whitelist of verified admin emails permitted in `/admin`. |
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://xyzproject.supabase.co` | Supabase project API endpoint. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJhbGciOi...` | Supabase public anonymous key. |
 | `SUPABASE_SERVICE_ROLE_KEY` | `eyJhbGciOi...` | Supabase elevated admin key (kept secret, server-only). |
@@ -26,7 +26,7 @@ Add the following environment variables to your Vercel Project under **Settings 
 | `VERIFY_TOKEN` | `neuralwaves_wa_secret_verify_2026` | Custom secret string for webhook handshake verification. |
 | `NEXT_PUBLIC_SITE_URL` | `https://neuralwaves.in` | Canonical production URL (used for Auth redirects and OG tags). |
 | `NEXT_PUBLIC_CAL_COM_URL` | `https://cal.com/neuralwaves/15min` | Cal.com scheduling URL. |
-| `ADMIN_EMAIL` | `zaminaskari.work@gmail.com` | Primary admin email for lead alerts and digests. |
+| `ADMIN_EMAIL` | `admin@example.com` | Primary admin email for lead alerts and digests. |
 | `CRON_SECRET` *(Optional)* | `cr_secret_token_...` | Protects `/api/cron/lead-digest` from unauthorized invocations. |
 
 ---
@@ -126,7 +126,7 @@ curl -i "https://neuralwaves.in/api/whatsapp/webhook?hub.mode=subscribe&hub.chal
 2. In the Supabase SQL Editor, run:
 ```sql
 INSERT INTO public.admins (email, role)
-VALUES ('zaminaskari.work@gmail.com', 'superadmin')
+VALUES ('admin@example.com', 'superadmin')
 ON CONFLICT (email) DO UPDATE SET role = 'superadmin';
 ```
 3. Refresh `https://neuralwaves.in/admin` — full access to Dashboard and Leads is unlocked.
