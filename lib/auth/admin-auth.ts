@@ -91,7 +91,7 @@ export async function isEmailAuthorizedAdmin(email: string): Promise<boolean> {
     supabaseUrl.startsWith("https://")
   ) {
     try {
-      const supabase = createClient();
+      const supabase = await createClient();
       const { data } = await supabase
         .from("admins")
         .select("id, email")
@@ -192,7 +192,7 @@ export async function verifyAdminAccess(): Promise<AdminAuthResult> {
 
   if (isSupabaseConfigured) {
     try {
-      const supabase = createClient();
+      const supabase = await createClient();
       const {
         data: { user },
       } = await supabase.auth.getUser();

@@ -30,7 +30,7 @@ export async function sendMagicLink(email: string, redirectToOrigin: string) {
 
     if (isSupabaseConfigured) {
       try {
-        const supabase = createClient();
+        const supabase = await createClient();
         const redirectUrl = `${redirectToOrigin}/auth/callback?next=/admin`;
 
         const { error } = await supabase.auth.signInWithOtp({
@@ -82,11 +82,11 @@ export async function signOutAdmin() {
   );
 
   if (isConfigured) {
-    const supabase = createClient();
+    const supabase = await createClient();
     await supabase.auth.signOut();
   }
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   cookieStore.delete("nurix_admin_demo_session");
   cookieStore.delete("nurix_admin_email");
   cookieStore.delete("neuralwaves_admin_demo_session");
