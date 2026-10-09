@@ -125,17 +125,15 @@ export async function createAdminProject(
         .select()
         .single();
 
-      if (error) {
-        return { success: false, message: error.message };
+      if (!error && data) {
+        safeRevalidate("/admin/portfolio");
+        safeRevalidate("/work");
+        safeRevalidate("/");
+        return { success: true, project: data };
       }
-
-      safeRevalidate("/admin/portfolio");
-      safeRevalidate("/work");
-      safeRevalidate("/");
-      return { success: true, project: data };
+      console.warn("Supabase insert error (falling back to cache):", error?.message);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to create project";
-      return { success: false, message };
+      console.warn("Supabase network error (falling back to cache):", err);
     }
   }
 
@@ -161,17 +159,15 @@ export async function updateAdminProject(
         })
         .eq("id", id);
 
-      if (error) {
-        return { success: false, message: error.message };
+      if (!error) {
+        safeRevalidate("/admin/portfolio");
+        safeRevalidate("/work");
+        safeRevalidate("/");
+        return { success: true };
       }
-
-      safeRevalidate("/admin/portfolio");
-      safeRevalidate("/work");
-      safeRevalidate("/");
-      return { success: true };
+      console.warn("Supabase update error (falling back to cache):", error?.message);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to update project";
-      return { success: false, message };
+      console.warn("Supabase network error (falling back to cache):", err);
     }
   }
 
@@ -194,17 +190,15 @@ export async function deleteAdminProject(
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const { error } = await supabaseAdmin.from("projects").delete().eq("id", id);
-      if (error) {
-        return { success: false, message: error.message };
+      if (!error) {
+        safeRevalidate("/admin/portfolio");
+        safeRevalidate("/work");
+        safeRevalidate("/");
+        return { success: true };
       }
-
-      safeRevalidate("/admin/portfolio");
-      safeRevalidate("/work");
-      safeRevalidate("/");
-      return { success: true };
+      console.warn("Supabase delete error (falling back to cache):", error?.message);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to delete project";
-      return { success: false, message };
+      console.warn("Supabase network error (falling back to cache):", err);
     }
   }
 

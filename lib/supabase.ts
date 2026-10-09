@@ -4,12 +4,22 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() || "";
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || "";
 
-const isPlaceholder = (str: string) =>
-  !str ||
-  str.includes("YOUR_PROJECT") ||
-  str.includes("your-project") ||
-  str.includes("your-anon-key") ||
-  str.includes("your-service-role-key");
+const isPlaceholder = (str: string) => {
+  if (!str) return true;
+  const s = str.toLowerCase().trim();
+  return (
+    s.includes("placeholder") ||
+    s.includes("your_project") ||
+    s.includes("your-project") ||
+    s.includes("your-anon-key") ||
+    s.includes("your-service-role-key") ||
+    s.includes("your_anon_key") ||
+    s.includes("your_service_role_key") ||
+    s.includes("xxxxxxxx") ||
+    s.includes("example.com") ||
+    !s.startsWith("http")
+  );
+};
 
 export const isSupabaseConfigured = Boolean(
   supabaseUrl &&

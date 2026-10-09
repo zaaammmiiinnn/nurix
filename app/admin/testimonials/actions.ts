@@ -113,22 +113,22 @@ export async function createAdminTestimonial(
         .select()
         .single();
 
-      if (error) {
-        return { success: false, message: error.message };
+      if (!error && data) {
+        revalidatePath("/admin/testimonials");
+        revalidatePath("/");
+        return { success: true, testimonial: data };
       }
-
-      revalidatePath("/admin/testimonials");
-      revalidatePath("/");
-      return { success: true, testimonial: data };
+      console.warn("Supabase insert error (falling back to cache):", error?.message);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to create testimonial";
-      return { success: false, message };
+      console.warn("Supabase network error (falling back to cache):", err);
     }
   }
 
   localTestimonialsCache = [...localTestimonialsCache, newTestimonial];
-  revalidatePath("/admin/testimonials");
-  revalidatePath("/");
+  try {
+    revalidatePath("/admin/testimonials");
+    revalidatePath("/");
+  } catch {}
   return { success: true, testimonial: newTestimonial };
 }
 
@@ -155,16 +155,14 @@ export async function updateAdminTestimonial(
         .update(updatePayload)
         .eq("id", id);
 
-      if (error) {
-        return { success: false, message: error.message };
+      if (!error) {
+        revalidatePath("/admin/testimonials");
+        revalidatePath("/");
+        return { success: true };
       }
-
-      revalidatePath("/admin/testimonials");
-      revalidatePath("/");
-      return { success: true };
+      console.warn("Supabase update error (falling back to cache):", error?.message);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to update testimonial";
-      return { success: false, message };
+      console.warn("Supabase network error (falling back to cache):", err);
     }
   }
 
@@ -172,8 +170,10 @@ export async function updateAdminTestimonial(
     t.id === id ? { ...t, ...testimonial } : t
   );
 
-  revalidatePath("/admin/testimonials");
-  revalidatePath("/");
+  try {
+    revalidatePath("/admin/testimonials");
+    revalidatePath("/");
+  } catch {}
   return { success: true };
 }
 
@@ -187,21 +187,21 @@ export async function deleteAdminTestimonial(
         .delete()
         .eq("id", id);
 
-      if (error) {
-        return { success: false, message: error.message };
+      if (!error) {
+        revalidatePath("/admin/testimonials");
+        revalidatePath("/");
+        return { success: true };
       }
-
-      revalidatePath("/admin/testimonials");
-      revalidatePath("/");
-      return { success: true };
+      console.warn("Supabase delete error (falling back to cache):", error?.message);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to delete testimonial";
-      return { success: false, message };
+      console.warn("Supabase network error (falling back to cache):", err);
     }
   }
 
   localTestimonialsCache = localTestimonialsCache.filter((t) => t.id !== id);
-  revalidatePath("/admin/testimonials");
-  revalidatePath("/");
+  try {
+    revalidatePath("/admin/testimonials");
+    revalidatePath("/");
+  } catch {}
   return { success: true };
 }

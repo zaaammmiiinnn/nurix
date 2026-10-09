@@ -55,24 +55,24 @@ export async function updateAdminSettings(
         .from("site_settings")
         .upsert(upsertRows, { onConflict: "key" });
 
-      if (error) {
-        return { success: false, message: error.message };
+      if (!error) {
+        revalidatePath("/admin/settings");
+        revalidatePath("/");
+        revalidatePath("/contact");
+        return { success: true };
       }
-
-      revalidatePath("/admin/settings");
-      revalidatePath("/");
-      revalidatePath("/contact");
-      return { success: true };
+      console.warn("Supabase upsert error (falling back to cache):", error?.message);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to save settings";
-      return { success: false, message };
+      console.warn("Supabase network error (falling back to cache):", err);
     }
   }
 
   localSettingsCache = { ...localSettingsCache, ...settings };
-  revalidatePath("/admin/settings");
-  revalidatePath("/");
-  revalidatePath("/contact");
+  try {
+    revalidatePath("/admin/settings");
+    revalidatePath("/");
+    revalidatePath("/contact");
+  } catch {}
   return { success: true };
 }
 
@@ -86,24 +86,24 @@ export async function deleteAdminSetting(
         .delete()
         .eq("key", key);
 
-      if (error) {
-        return { success: false, message: error.message };
+      if (!error) {
+        revalidatePath("/admin/settings");
+        revalidatePath("/");
+        revalidatePath("/contact");
+        return { success: true };
       }
-
-      revalidatePath("/admin/settings");
-      revalidatePath("/");
-      revalidatePath("/contact");
-      return { success: true };
+      console.warn("Supabase delete error (falling back to cache):", error?.message);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to delete setting";
-      return { success: false, message };
+      console.warn("Supabase network error (falling back to cache):", err);
     }
   }
 
   delete localSettingsCache[key];
-  revalidatePath("/admin/settings");
-  revalidatePath("/");
-  revalidatePath("/contact");
+  try {
+    revalidatePath("/admin/settings");
+    revalidatePath("/");
+    revalidatePath("/contact");
+  } catch {}
   return { success: true };
 }
 

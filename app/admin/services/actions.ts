@@ -104,18 +104,16 @@ export async function createAdminService(
         .select()
         .single();
 
-      if (error) {
-        return { success: false, message: error.message };
+      if (!error && data) {
+        safeRevalidate("/admin/services");
+        safeRevalidate("/services");
+        safeRevalidate(`/services/${service.slug}`);
+        safeRevalidate("/");
+        return { success: true, service: data };
       }
-
-      safeRevalidate("/admin/services");
-      safeRevalidate("/services");
-      safeRevalidate(`/services/${service.slug}`);
-      safeRevalidate("/");
-      return { success: true, service: data };
+      console.warn("Supabase insert error (falling back to cache):", error?.message);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to create service";
-      return { success: false, message };
+      console.warn("Supabase network error (falling back to cache):", err);
     }
   }
 
@@ -149,18 +147,16 @@ export async function updateAdminService(
         .update(updatePayload)
         .eq("id", id);
 
-      if (error) {
-        return { success: false, message: error.message };
+      if (!error) {
+        safeRevalidate("/admin/services");
+        safeRevalidate("/services");
+        if (service.slug) safeRevalidate(`/services/${service.slug}`);
+        safeRevalidate("/");
+        return { success: true };
       }
-
-      safeRevalidate("/admin/services");
-      safeRevalidate("/services");
-      if (service.slug) safeRevalidate(`/services/${service.slug}`);
-      safeRevalidate("/");
-      return { success: true };
+      console.warn("Supabase update error (falling back to cache):", error?.message);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to update service";
-      return { success: false, message };
+      console.warn("Supabase network error (falling back to cache):", err);
     }
   }
 
@@ -180,17 +176,15 @@ export async function deleteAdminService(
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const { error } = await supabaseAdmin.from("services").delete().eq("id", id);
-      if (error) {
-        return { success: false, message: error.message };
+      if (!error) {
+        safeRevalidate("/admin/services");
+        safeRevalidate("/services");
+        safeRevalidate("/");
+        return { success: true };
       }
-
-      revalidatePath("/admin/services");
-      revalidatePath("/services");
-      revalidatePath("/");
-      return { success: true };
+      console.warn("Supabase delete error (falling back to cache):", error?.message);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to delete service";
-      return { success: false, message };
+      console.warn("Supabase network error (falling back to cache):", err);
     }
   }
 
