@@ -17,6 +17,9 @@ compatibility_flags = ["nodejs_compat"]
 assets = { directory = ".open-next/assets", binding = "ASSETS" }
 
 [vars]
+# Public, non-sensitive build-time configuration only. Anything secret belongs in
+# a Worker secret (`npx wrangler secret put NAME`) — values here are committed to
+# the repository and visible in the Cloudflare dashboard.
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_c3Ryb25nLWRvZ2Zpc2gtMzU0Ni5jbGVyay5hY2NvdW50cy5kZXYk"
 NEXT_PUBLIC_CLERK_SIGN_IN_URL = "/sign-in"
 NEXT_PUBLIC_CLERK_SIGN_UP_URL = "/sign-up"
@@ -29,8 +32,12 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_5ioMLbbxPAH6Qgrsv-inhw_oh
 NEXT_PUBLIC_SITE_URL = "https://nurix.neuralnetworks-de2.workers.dev"
 NEXT_PUBLIC_CAL_COM_URL = "https://cal.com/neuralwaves/15min"
 NEXT_PUBLIC_WHATSAPP_NUMBER = "918840936715"
-ADMIN_EMAILS = "zaminaskari.work@gmail.com,askarizamin110@gmail.com"
-ADMIN_EMAIL = "zaminaskari.work@gmail.com"
+
+# ADMIN_EMAILS / ADMIN_EMAIL are deliberately NOT set here. The admin allowlist
+# must not be published in the repository — it is precisely what an attacker
+# would target. Set it as an encrypted Worker secret instead:
+#   npx wrangler secret put ADMIN_EMAILS
+# The admin check fails closed, so the panel is inaccessible until you do.
 
 # Weekly lead digest.
 #

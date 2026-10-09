@@ -1,21 +1,21 @@
 import type { Metadata } from "next";
 import { BreadcrumbJsonLd } from "@/components/seo/json-ld";
+import { SITE_URL } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: "Contact — Book a 15-Minute Scoping Call",
   description:
     "Direct contact for Dubai AI automation sprints. Chat directly on WhatsApp or book a 15-minute scoping call. Fast quotes, fixed price, delivered in days.",
   alternates: {
-    canonical: "https://neuralwaves.in/contact",
+    canonical: `${SITE_URL}/contact`,
     languages: {
-      "en-AE": "https://neuralwaves.in/contact",
-      "ar-AE": "https://neuralwaves.in/ar/contact",
+      "en-AE": `${SITE_URL}/contact`,
     },
   },
   openGraph: {
     title: "Contact NeuralWaves — Book a 15-Minute Scoping Call",
     description: "Direct contact for Dubai AI automation sprints. WhatsApp or calendar booking.",
-    url: "https://neuralwaves.in/contact",
+    url: `${SITE_URL}/contact`,
     images: [
       {
         url: "/api/og?title=Contact%20NeuralWaves&subtitle=Book%20a%2015-minute%20call%20or%20WhatsApp%20us.&badge=START%20A%20SPRINT",

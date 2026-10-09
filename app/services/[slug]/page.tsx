@@ -4,6 +4,7 @@ import Link from "next/link";
 import { MessageSquare, LayoutDashboard, Bot, Check, ArrowRight, MessageCircle, Clock, ShieldCheck, Zap } from "lucide-react";
 import { getServiceBySlug, getServices, getSiteSettings } from "@/lib/data/db-queries";
 import { ServiceJsonLd, BreadcrumbJsonLd } from "@/components/seo/json-ld";
+import { SITE_URL } from "@/lib/config";
 
 interface Props {
   params: { slug: string };
@@ -30,16 +31,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: service.title,
     description: service.description,
     alternates: {
-      canonical: `https://neuralwaves.in/services/${service.slug}`,
+      canonical: `${SITE_URL}/services/${service.slug}`,
       languages: {
-        "en-AE": `https://neuralwaves.in/services/${service.slug}`,
-        "ar-AE": `https://neuralwaves.in/ar/services/${service.slug}`,
+        "en-AE": `${SITE_URL}/services/${service.slug}`,
       },
     },
     openGraph: {
       title: `${service.title} — NeuralWaves`,
       description: service.description,
-      url: `https://neuralwaves.in/services/${service.slug}`,
+      url: `${SITE_URL}/services/${service.slug}`,
     },
     twitter: {
       card: "summary_large_image",

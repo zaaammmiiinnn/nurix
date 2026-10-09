@@ -1,8 +1,9 @@
 import { MetadataRoute } from "next";
 import { PROJECTS_DATA, SERVICES_DATA } from "@/lib/data/site-data";
+import { SITE_URL } from "@/lib/config";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://neuralwaves.in";
+  const baseUrl = SITE_URL;
   const now = new Date();
 
   // Core static public routes

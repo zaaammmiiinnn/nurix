@@ -10,16 +10,15 @@ export const metadata: Metadata = {
   title: service.title,
   description: service.description,
   alternates: {
-    canonical: `https://neuralwaves.in/services/${service.slug}`,
+    canonical: `${SITE_URL}/services/${service.slug}`,
     languages: {
-      "en-AE": `https://neuralwaves.in/services/${service.slug}`,
-      "ar-AE": `https://neuralwaves.in/ar/services/${service.slug}`,
+      "en-AE": `${SITE_URL}/services/${service.slug}`,
     },
   },
   openGraph: {
     title: `${service.title} — NeuralWaves`,
     description: service.description,
-    url: `https://neuralwaves.in/services/${service.slug}`,
+    url: `${SITE_URL}/services/${service.slug}`,
     images: [
       {
         url: `/api/og?title=${encodeURIComponent(service.title)}&subtitle=${encodeURIComponent(service.tagline)}&badge=AI%20CHATBOTS&metric=Sub-30s%20Replies`,
@@ -36,6 +35,7 @@ export const metadata: Metadata = {
 };
 
 import { getServiceBySlug, getSiteSettings } from "@/lib/data/db-queries";
+import { SITE_URL } from "@/lib/config";
 
 export default async function ChatbotsPage() {
   const [dbService, siteSettings] = await Promise.all([

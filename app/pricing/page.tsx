@@ -3,22 +3,22 @@ import Link from "next/link";
 import { Check, MessageCircle, ShieldCheck, Zap } from "lucide-react";
 import { BreadcrumbJsonLd, FaqJsonLd } from "@/components/seo/json-ld";
 import { getPricingTiers, getFaqs, getSiteSettings } from "@/lib/data/db-queries";
+import { SITE_URL } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: "Pricing — Fixed Price AI & Automation",
   description:
     "Transparent, fixed-price AI automation packages for UAE businesses. Starts at AED 1,500. 50% deposit upfront, balance on delivery. No hourly surprises.",
   alternates: {
-    canonical: "https://neuralwaves.in/pricing",
+    canonical: `${SITE_URL}/pricing`,
     languages: {
-      "en-AE": "https://neuralwaves.in/pricing",
-      "ar-AE": "https://neuralwaves.in/ar/pricing",
+      "en-AE": `${SITE_URL}/pricing`,
     },
   },
   openGraph: {
     title: "Pricing — NeuralWaves",
     description: "Fixed-price AI automation packages for UAE businesses. From AED 1,500.",
-    url: "https://neuralwaves.in/pricing",
+    url: `${SITE_URL}/pricing`,
     images: [
       {
         url: "/api/og?title=Fixed%20Pricing&subtitle=From%20AED%201%2C500.%20Delivered%20in%20days.&badge=TRANSPARENT%20PRICING",

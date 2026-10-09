@@ -8,17 +8,16 @@ export const metadata: Metadata = {
   description:
     "Three things. Done properly. Custom AI Chatbots, Web & Admin Dashboards, and AI Agents for UAE businesses.",
   alternates: {
-    canonical: "https://neuralwaves.in/services",
+    canonical: `${SITE_URL}/services`,
     languages: {
-      "en-AE": "https://neuralwaves.in/services",
-      "ar-AE": "https://neuralwaves.in/ar/services",
+      "en-AE": `${SITE_URL}/services`,
     },
   },
   openGraph: {
     title: "Services — NeuralWaves",
     description:
       "Three things. Done properly. Custom AI Chatbots, Web & Admin Dashboards, and AI Agents for UAE businesses.",
-    url: "https://neuralwaves.in/services",
+    url: `${SITE_URL}/services`,
     images: [
       {
         url: "/api/og?title=Services&subtitle=Three%20things.%20Done%20properly.&badge=SERVICES",
@@ -34,6 +33,7 @@ export const metadata: Metadata = {
   },
 };
 import { getServices, getSiteSettings } from "@/lib/data/db-queries";
+import { SITE_URL } from "@/lib/config";
 
 const ICON_MAP: Record<string, typeof MessageSquare> = {
   chatbots: MessageSquare,

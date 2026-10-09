@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
+import { SITE_HOST } from "@/lib/config";
 
 export async function GET(req: NextRequest) {
   try {
@@ -195,7 +196,7 @@ export async function GET(req: NextRequest) {
                 letterSpacing: "-0.01em",
               }}
             >
-              neuralwaves.in
+              {SITE_HOST}
             </div>
           </div>
         </div>

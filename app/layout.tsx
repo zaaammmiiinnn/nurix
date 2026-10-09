@@ -12,6 +12,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ChatWidget } from "@/components/ChatWidget";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
+import { SITE_URL } from "@/lib/config";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -36,7 +37,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://neuralwaves.in"),
+  metadataBase: new URL(SITE_URL),
   title: {
     template: "%s · NeuralWaves",
     default: "NeuralWaves — AI that ships.",
@@ -54,7 +55,7 @@ export const metadata: Metadata = {
     "SME automation UAE",
     "fixed price AI development",
   ],
-  authors: [{ name: "NeuralWaves AI Studio", url: "https://neuralwaves.in" }],
+  authors: [{ name: "NeuralWaves AI Studio", url: SITE_URL }],
   creator: "NeuralWaves",
   publisher: "NeuralWaves",
   formatDetection: {
@@ -63,18 +64,17 @@ export const metadata: Metadata = {
     telephone: false,
   },
   alternates: {
-    canonical: "https://neuralwaves.in",
+    canonical: SITE_URL,
     languages: {
-      "en-AE": "https://neuralwaves.in",
-      "ar-AE": "https://neuralwaves.in/ar",
-      "x-default": "https://neuralwaves.in",
+      "en-AE": SITE_URL,
+      "x-default": SITE_URL,
     },
   },
   openGraph: {
     title: "NeuralWaves — AI that ships.",
     description:
       "Chatbots, dashboards, and AI agents for UAE businesses. Fixed price. Delivered in days.",
-    url: "https://neuralwaves.in",
+    url: SITE_URL,
     siteName: "NeuralWaves",
     locale: "en_AE",
     type: "website",

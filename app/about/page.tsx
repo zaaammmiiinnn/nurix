@@ -8,16 +8,15 @@ export const metadata: Metadata = {
   description:
     "NeuralWaves is a Dubai-based AI automation studio building production chatbots, dashboards, and AI agents for UAE SMEs. Fast, fixed-price, delivered in days.",
   alternates: {
-    canonical: "https://neuralwaves.in/about",
+    canonical: `${SITE_URL}/about`,
     languages: {
-      "en-AE": "https://neuralwaves.in/about",
-      "ar-AE": "https://neuralwaves.in/ar/about",
+      "en-AE": `${SITE_URL}/about`,
     },
   },
   openGraph: {
     title: "About — NeuralWaves AI Studio Dubai",
     description: "Fast, fixed-price AI automation for UAE businesses. Delivered in days, not months.",
-    url: "https://neuralwaves.in/about",
+    url: `${SITE_URL}/about`,
     images: [
       {
         url: "/api/og?title=About%20NeuralWaves&subtitle=Dubai-based%20AI%20automation%20studio.&badge=ABOUT%20US",
@@ -34,6 +33,7 @@ export const metadata: Metadata = {
 };
 
 import { getSiteSettings } from "@/lib/data/db-queries";
+import { SITE_URL } from "@/lib/config";
 
 export default async function AboutPage() {
   const siteSettings = await getSiteSettings();

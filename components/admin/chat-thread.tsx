@@ -19,8 +19,8 @@ import {
   updateChatStatusAction,
   sendAdminReplyAction,
 } from "@/app/admin/chats/actions";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
-import type { RealtimeChannel } from "@supabase/supabase-js";
+// Supabase is intentionally not imported here: live updates come from polling
+// app/api/chat/session, which keeps the public anon key out of this bundle.
 import { toast } from "sonner";
 
 interface ChatThreadProps {
@@ -46,37 +46,16 @@ export function ChatThread({ initialSession, initialMessages }: ChatThreadProps)
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
-  // 1. Supabase Realtime Subscription + Resilient Polling for live updates
+  // 1. Resilient polling for live updates.
+  //
+  // The Supabase Realtime subscription that used to live here has been removed:
+  // it required permissive RLS on chat_messages, which exposed every visitor's
+  // transcript to anyone holding the public anon key. Because Clerk (not Supabase
+  // Auth) is the identity provider, an authenticated admin has no Supabase JWT,
+  // so postgres_changes can never be authorized for this client. Polling below
+  // (every 2.5s) already provided the same updates.
   useEffect(() => {
     if (!session?.id) return;
-
-    let channel: RealtimeChannel | null = null;
-
-    if (isSupabaseConfigured && supabase) {
-      try {
-        channel = supabase
-          .channel(`admin_chat_thread:${session.id}`)
-          .on(
-            "postgres_changes",
-            {
-              event: "INSERT",
-              schema: "public",
-              table: "chat_messages",
-              filter: `session_id=eq.${session.id}`,
-            },
-            (payload) => {
-              const newMsg = payload.new as AdminChatMessage;
-              setMessages((prev) => {
-                if (prev.some((m) => m.id === newMsg.id)) return prev;
-                return [...prev, newMsg];
-              });
-            }
-          )
-          .subscribe();
-      } catch (err) {
-        console.warn("Realtime admin subscription failed, falling back to polling:", err);
-      }
-    }
 
     // Polling fallback every 2.5 seconds
     const interval = setInterval(async () => {
@@ -99,9 +78,6 @@ export function ChatThread({ initialSession, initialMessages }: ChatThreadProps)
 
     return () => {
       clearInterval(interval);
-      if (channel && supabase) {
-        supabase.removeChannel(channel);
-      }
     };
   }, [session.id, session.visitor_id]);
 

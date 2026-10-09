@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/config";
 export interface ServiceItem {
   number: string;
   slug: string;
@@ -51,7 +52,7 @@ export const SITE_CONFIG = {
   name: "NeuralWaves",
   tagline: "AI that ships.",
   subhead: "Chatbots, dashboards, and AI agents for UAE businesses. Fixed price. Delivered in days.",
-  domain: "https://neuralwaves.in",
+  domain: SITE_URL,
   location: "Dubai, United Arab Emirates",
   address: {
     streetAddress: "DIFC Gate Precinct, Building 4",

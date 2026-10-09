@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, Clock, ShieldCheck, Building, Sparkles } from "lucide-react";
 import { getProjects, getProjectBySlug } from "@/lib/data/db-queries";
 import { BreadcrumbJsonLd } from "@/components/seo/json-ld";
+import { SITE_URL } from "@/lib/config";
 
 interface Props {
   params: { slug: string };
@@ -24,16 +25,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: project.title,
     description: `${project.overview} Impact: ${project.resultMetric}.`,
     alternates: {
-      canonical: `https://neuralwaves.in/work/${project.slug}`,
+      canonical: `${SITE_URL}/work/${project.slug}`,
       languages: {
-        "en-AE": `https://neuralwaves.in/work/${project.slug}`,
-        "ar-AE": `https://neuralwaves.in/ar/work/${project.slug}`,
+        "en-AE": `${SITE_URL}/work/${project.slug}`,
       },
     },
     openGraph: {
       title: `${project.title} — NeuralWaves Case Study`,
       description: project.overview,
-      url: `https://neuralwaves.in/work/${project.slug}`,
+      url: `${SITE_URL}/work/${project.slug}`,
       images: [
         {
           url: `/api/og?title=${encodeURIComponent(project.title)}&subtitle=${encodeURIComponent(project.overview)}&badge=${encodeURIComponent(project.sector)}&metric=${encodeURIComponent(project.resultMetric)}`,

@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { SITE_HOST } from "@/lib/config";
 
 export const alt = "NeuralWaves — AI that ships.";
 export const size = { width: 1200, height: 630 };
@@ -161,7 +162,7 @@ export default async function OpenGraphImage() {
               letterSpacing: "-0.01em",
             }}
           >
-            neuralwaves.in
+            {SITE_HOST}
           </div>
         </div>
       </div>

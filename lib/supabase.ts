@@ -1,12 +1,19 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
-const supabaseUrl =
-  process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ||
-  "https://vbinpwwerrvkqcaqqxls.supabase.co";
+/**
+ * Shared Supabase clients.
+ *
+ * NOTE: there are no hardcoded project URLs or keys here by design. An earlier
+ * revision fell back to the production project reference and the public
+ * publishable key, which made a misconfigured deployment silently target
+ * production instead of failing fast.
+ */
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || "";
 const supabaseAnonKey =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ||
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ||
-  "sb_publishable_5ioMLbbxPAH6Qgrsv-inhw_ohOogLr9";
+  "";
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || "";
 
 const isPlaceholderUrl = (str: string) => {
@@ -36,12 +43,16 @@ const isPlaceholderKey = (str: string) => {
 
 export const isSupabaseConfigured = Boolean(
   supabaseUrl &&
-  !isPlaceholderUrl(supabaseUrl) &&
-  ((supabaseAnonKey && !isPlaceholderKey(supabaseAnonKey)) ||
-   (supabaseServiceKey && !isPlaceholderKey(supabaseServiceKey)))
+    !isPlaceholderUrl(supabaseUrl) &&
+    ((supabaseAnonKey && !isPlaceholderKey(supabaseAnonKey)) ||
+      (supabaseServiceKey && !isPlaceholderKey(supabaseServiceKey)))
 );
 
-function safeCreateClient(url: string, key: string, options?: Parameters<typeof createClient>[2]): SupabaseClient | null {
+function safeCreateClient(
+  url: string,
+  key: string,
+  options?: Parameters<typeof createClient>[2]
+): SupabaseClient | null {
   try {
     if (!url || !key || isPlaceholderUrl(url) || isPlaceholderKey(key)) {
       return null;
@@ -53,14 +64,28 @@ function safeCreateClient(url: string, key: string, options?: Parameters<typeof 
   }
 }
 
-// Client-safe instance (anon key)
+/**
+ * Public / client-safe instance (anonymous key). Used by the browser for
+ * read-only public content.
+ */
 export const supabase = isSupabaseConfigured
   ? safeCreateClient(supabaseUrl, supabaseAnonKey)
   : null;
 
-// Admin/Server-only instance (service role key)
-export const supabaseAdmin = isSupabaseConfigured && supabaseServiceKey && !isPlaceholderKey(supabaseServiceKey)
-  ? safeCreateClient(supabaseUrl, supabaseServiceKey, {
-      auth: { persistSession: false },
-    })
-  : supabase;
+/**
+ * Server-only privileged instance.
+ *
+ * SECURITY: this must NEVER fall back to the anonymous client. Doing so meant a
+ * missing or misspelled SUPABASE_SERVICE_ROLE_KEY silently ran every admin read
+ * and write as `anon`: RLS rejected the writes, the code reported success, and
+ * the operator saw "saved" for changes that were never persisted. It is `null`
+ * when unconfigured so callers can fail explicitly.
+ *
+ * Do not import this into a client component.
+ */
+export const supabaseAdmin: SupabaseClient | null =
+  isSupabaseConfigured && supabaseServiceKey && !isPlaceholderKey(supabaseServiceKey)
+    ? safeCreateClient(supabaseUrl, supabaseServiceKey, {
+        auth: { persistSession: false },
+      })
+    : null;

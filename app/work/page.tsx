@@ -8,16 +8,15 @@ export const metadata: Metadata = {
   description:
     "Real AI projects shipped for UAE businesses in real estate, F&B, healthcare, and logistics. High impact, fixed price, delivered in days.",
   alternates: {
-    canonical: "https://neuralwaves.in/work",
+    canonical: `${SITE_URL}/work`,
     languages: {
-      "en-AE": "https://neuralwaves.in/work",
-      "ar-AE": "https://neuralwaves.in/ar/work",
+      "en-AE": `${SITE_URL}/work`,
     },
   },
   openGraph: {
     title: "Selected Work — NeuralWaves",
     description: "Real AI projects shipped for UAE businesses. Real results, real clients.",
-    url: "https://neuralwaves.in/work",
+    url: `${SITE_URL}/work`,
     images: [
       {
         url: "/api/og?title=Selected%20Work&subtitle=Real%20projects%20shipped%20for%20UAE%20businesses.&badge=CASE%20STUDIES",
@@ -34,6 +33,7 @@ export const metadata: Metadata = {
 };
 
 import { getProjects } from "@/lib/data/db-queries";
+import { SITE_URL } from "@/lib/config";
 
 export default async function WorkPage() {
   const projects = await getProjects();

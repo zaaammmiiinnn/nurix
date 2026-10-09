@@ -26,7 +26,15 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+# .env*.local covers .env.local, .env.production.local, .env.development.local …
 .env*.local
+.env.local
+.env
+.env.*.local
+
+# Cloudflare local secrets (wrangler dev)
+.dev.vars
+.dev.vars.*
 
 # vercel
 .vercel
@@ -34,8 +42,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-.env.local
-.env
 
 # cloudflare open-next & wrangler
 .open-next

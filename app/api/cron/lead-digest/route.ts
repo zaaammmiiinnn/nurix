@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import { Resend } from "resend";
+import { SITE_URL } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
@@ -57,7 +58,7 @@ export async function GET(req: NextRequest) {
     const resendKey = process.env.RESEND_API_KEY?.trim();
     const fromEmail = process.env.RESEND_FROM_EMAIL?.trim() || "onboarding@resend.dev";
     const toEmail = process.env.RESEND_TO_EMAIL?.trim() || process.env.ADMIN_EMAIL?.trim();
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://neuralwaves.in";
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || SITE_URL;
 
     if (resendKey && toEmail) {
       const resend = new Resend(resendKey);
