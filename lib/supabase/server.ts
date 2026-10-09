@@ -21,9 +21,11 @@ const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || "";
 
 /**
  * Standard server-side Supabase client using authenticated cookies (RLS respected).
+ *
+ * Async because Next 15 made `cookies()` asynchronous.
  */
-export function createClient() {
-  const cookieStore = cookies();
+export async function createClient() {
+  const cookieStore = await cookies();
 
   return createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {

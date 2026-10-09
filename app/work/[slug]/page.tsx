@@ -7,7 +7,8 @@ import { BreadcrumbJsonLd } from "@/components/seo/json-ld";
 import { SITE_URL } from "@/lib/config";
 
 interface Props {
-  params: { slug: string };
+  // Next 15 passes params as a Promise.
+  params: Promise<{ slug: string }>;
 }
 
 /**
@@ -24,7 +25,8 @@ export const dynamic = "force-dynamic";
 export const dynamicParams = true;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const project = await getProjectBySlug(params.slug);
+  const { slug } = await params;
+  const project = await getProjectBySlug(slug);
   // Call notFound() here rather than returning a "Project Not Found" title.
   // Metadata resolves before the page body is streamed, so a notFound() raised
   // only in the component leaves the response status at 200 — a soft 404 that
@@ -61,7 +63,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function WorkSlugPage({ params }: Props) {
-  const project = await getProjectBySlug(params.slug);
+  const { slug } = await params;
+  const project = await getProjectBySlug(slug);
   if (!project) notFound();
 
   return (

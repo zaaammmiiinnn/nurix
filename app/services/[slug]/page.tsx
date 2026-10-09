@@ -7,7 +7,8 @@ import { ServiceJsonLd, BreadcrumbJsonLd } from "@/components/seo/json-ld";
 import { SITE_URL } from "@/lib/config";
 
 interface Props {
-  params: { slug: string };
+  // Next 15 passes params as a Promise.
+  params: Promise<{ slug: string }>;
 }
 
 /**
@@ -28,7 +29,8 @@ const ICON_MAP: Record<string, typeof MessageSquare> = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const service = await getServiceBySlug(params.slug);
+  const { slug } = await params;
+  const service = await getServiceBySlug(slug);
   // Raise the 404 during metadata resolution so the response carries a real 404
   // status. Doing it only in the page body leaves the status at 200 (a soft 404),
   // because metadata streams before the component runs.
@@ -57,8 +59,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function DynamicServicePage({ params }: Props) {
+  const { slug } = await params;
   const [service, siteSettings] = await Promise.all([
-    getServiceBySlug(params.slug),
+    getServiceBySlug(slug),
     getSiteSettings(),
   ]);
 
