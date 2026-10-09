@@ -28,9 +28,11 @@ export async function GET(request: Request) {
         );
       }
 
+      // Authorized admin: proceed to requested admin route
       return NextResponse.redirect(`${origin}${next}`);
     }
   }
 
+  // Auth failed or code missing
   return NextResponse.redirect(`${origin}/admin/login?error=auth_failed`);
 }

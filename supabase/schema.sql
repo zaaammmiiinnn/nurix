@@ -14,7 +14,9 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- Admins Table (Maps Supabase auth.users to platform administrators)
 CREATE TABLE IF NOT EXISTS public.admins (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT UNIQUE,
+    role TEXT DEFAULT 'superadmin',
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -189,7 +191,9 @@ SECURITY DEFINER
 STABLE
 AS $$
   SELECT EXISTS (
-    SELECT 1 FROM public.admins WHERE user_id = auth.uid()
+    SELECT 1 FROM public.admins 
+    WHERE user_id = auth.uid()
+       OR (email IS NOT NULL AND lower(email) = lower(auth.jwt() ->> 'email'))
   );
 $$;
 
@@ -666,9 +670,9 @@ INSERT INTO public.menu_items (key, parent, title, payload, response_text, sort_
 VALUES
 -- Main root menu
 ('main_services', NULL, '1. Our Services', 'MENU_SERVICES', 'Here are our three core offerings:\n1. AI Chatbots & WhatsApp\n2. Web & Admin Dashboards\n3. AI Agents for Business\n\nReply with a number or 9 to go back.', 1, true),
-('main_projects', NULL, '2. Recent Projects', 'MENU_PROJECTS', 'Recent NeuralWaves builds:\n• Dubai Real Estate WhatsApp Bot (30s response time)\n• F&B Kitchen Dispatch Dashboard (3 hrs/day saved)\n• Abu Dhabi Logistics Lead Agent (40 leads/wk)\n\nVisit neuralwaves.in/work to see all case studies.', 2, true),
+('main_projects', NULL, '2. Recent Projects', 'MENU_PROJECTS', 'Recent Nurix builds:\n• Dubai Real Estate WhatsApp Bot (30s response time)\n• F&B Kitchen Dispatch Dashboard (3 hrs/day saved)\n• Abu Dhabi Logistics Lead Agent (40 leads/wk)\n\nVisit nurix.ae/work to see all case studies.', 2, true),
 ('main_pricing', NULL, '3. Transparent Pricing', 'MENU_PRICING', 'Fixed pricing in AED:\n• Starter Bot: AED 1,500 (3-5 days)\n• Growth AI Assistant: AED 3,500 (5-7 days)\n• Business Platform: AED 7,500 (7-10 days)\n\nAll include 50% upfront and post-launch warranty.', 3, true),
-('main_human', NULL, '4. Talk to a Human', 'TALK_HUMAN', 'An engineer from our Dubai office will take over this chat shortly. You can also book a 15-min call at neuralwaves.in/contact.', 4, true),
+('main_human', NULL, '4. Talk to a Human', 'TALK_HUMAN', 'An engineer from our Dubai office will take over this chat shortly. You can also book a 15-min call at nurix.ae/contact.', 4, true),
 
 -- Services submenu
 ('srv_chatbots', 'main_services', 'AI Chatbots & WhatsApp', 'INFO_CHATBOTS', 'Custom 24/7 WhatsApp assistants trained on your company data. Handles bookings, lead capture, and FAQs in Arabic & English. Delivered in 3-5 days from AED 1,500.', 1, true),
@@ -680,5 +684,12 @@ ON CONFLICT (id) DO NOTHING;
 -- ═══════════════════════════════════════════════════════════════════════════
 -- ADMIN PROMOTION INSTRUCTION
 -- ═══════════════════════════════════════════════════════════════════════════
--- After you sign up on /admin, run:
--- insert into admins (user_id) values ('<paste-your-auth-user-id>');
+-- To promote an admin by email immediately:
+INSERT INTO public.admins (email, role)
+VALUES ('askarizamin110@gmail.com', 'superadmin')
+ON CONFLICT (email) DO NOTHING;
+
+-- Or to promote an existing Supabase authenticated user by ID:
+-- INSERT INTO public.admins (user_id, email, role)
+-- VALUES ('<paste-user-uuid>', 'your-email@domain.com', 'superadmin')
+-- ON CONFLICT DO NOTHING;

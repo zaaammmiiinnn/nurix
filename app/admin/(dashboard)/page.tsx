@@ -11,15 +11,22 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { getLeads } from "@/app/admin/leads/actions";
+import { getAdminProjects } from "@/app/admin/portfolio/actions";
 
 export default async function AdminDashboardPage() {
-  const leads = await getLeads();
+  const [leads, projects] = await Promise.all([
+    getLeads(),
+    getAdminProjects(),
+  ]);
 
   // Metrics computation
   const totalLeads = leads.length;
   const newLeads = leads.filter((l) => l.status === "new").length;
   const wonLeads = leads.filter((l) => l.status === "won").length;
   const contactedLeads = leads.filter((l) => l.status === "contacted").length;
+
+  const totalProjectsCount = projects.length;
+  const featuredProjectsCount = projects.filter((p) => p.is_featured).length;
 
   const recentLeads = leads.slice(0, 8);
 
@@ -148,11 +155,15 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
           <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-bold font-mono text-white">12</span>
-            <span className="text-[10px] font-mono text-zinc-400">4 Featured</span>
+            <span className="text-3xl font-bold font-mono text-white">
+              {totalProjectsCount}
+            </span>
+            <span className="text-[10px] font-mono text-cyan-400">
+              {featuredProjectsCount} Featured
+            </span>
           </div>
           <p className="text-[11px] text-zinc-500">
-            All systems monitored with 99.9% uptime
+            Active client deployments in database
           </p>
         </div>
       </div>
