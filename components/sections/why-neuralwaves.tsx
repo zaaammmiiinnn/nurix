@@ -30,15 +30,15 @@ const BULLETS = [
   },
 ];
 
-export function WhyNurix() {
+export function WhyNeuralWaves() {
   return (
     <section
-      id="why-nurix"
+      id="why-neuralwaves"
       className="py-32 md:py-40 px-6 md:px-8 max-w-7xl mx-auto select-none"
       aria-labelledby="why-heading"
     >
       <SectionHeader
-        label="05 / WHY NURIX"
+        label="05 / WHY NEURALWAVES"
         title="Why teams pick us over agencies."
         description="We replaced traditional agency fluff with high-speed engineering sprints tailored for UAE business owners."
       />

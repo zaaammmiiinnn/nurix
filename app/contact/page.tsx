@@ -21,7 +21,7 @@ import { type ContactFormData } from "@/lib/schemas/contact";
 import { SITE_CONFIG } from "@/lib/data/site-data";
 
 const WA_NUMBER = "971501234567";
-const WA_BASE_URL = `https://wa.me/${WA_NUMBER}?text=Hi%20Nurix%2C%20I%20want%20to%20discuss%20an%20AI%20project`;
+const WA_BASE_URL = `https://wa.me/${WA_NUMBER}?text=Hi%20NeuralWaves%2C%20I%20want%20to%20discuss%20an%20AI%20project`;
 
 const TIME_SLOTS = [
   "10:00 AM",
@@ -79,8 +79,8 @@ export default function ContactPage() {
   const configuredCalUrl = process.env.NEXT_PUBLIC_CAL_COM_URL;
   const hasCustomCalUrl =
     configuredCalUrl &&
-    configuredCalUrl !== "https://cal.com/nurix/15min" &&
-    !configuredCalUrl.includes("cal.com/nurix");
+    configuredCalUrl !== "https://cal.com/neuralwaves/15min" &&
+    !configuredCalUrl.includes("cal.com/neuralwaves");
 
   const useIframeEmbed = Boolean(hasCustomCalUrl);
 
@@ -89,7 +89,7 @@ export default function ContactPage() {
 
     if (destination === "whatsapp") {
       const waText = encodeURIComponent(
-        `Hi Nurix, I would like to book a 15-minute scoping call on ${selectedDay} at ${selectedSlot} (GST).`
+        `Hi NeuralWaves, I would like to book a 15-minute scoping call on ${selectedDay} at ${selectedSlot} (GST).`
       );
       window.open(`https://wa.me/${WA_NUMBER}?text=${waText}`, "_blank");
       toast.success("Opening WhatsApp to confirm your slot!");
@@ -285,7 +285,7 @@ export default function ContactPage() {
                       width="100%"
                       height="100%"
                       frameBorder="0"
-                      title="Schedule with Nurix"
+                      title="Schedule with NeuralWaves"
                       className="w-full h-full"
                     />
                   </div>

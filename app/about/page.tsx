@@ -6,21 +6,21 @@ import { BreadcrumbJsonLd } from "@/components/seo/json-ld";
 export const metadata: Metadata = {
   title: "About — Dubai AI Automation Studio",
   description:
-    "Nurix is a Dubai-based AI automation studio building production chatbots, dashboards, and AI agents for UAE SMEs. Fast, fixed-price, delivered in days.",
+    "NeuralWaves is a Dubai-based AI automation studio building production chatbots, dashboards, and AI agents for UAE SMEs. Fast, fixed-price, delivered in days.",
   alternates: {
-    canonical: "https://nurix.ae/about",
+    canonical: "https://neuralwaves.in/about",
     languages: {
-      "en-AE": "https://nurix.ae/about",
-      "ar-AE": "https://nurix.ae/ar/about",
+      "en-AE": "https://neuralwaves.in/about",
+      "ar-AE": "https://neuralwaves.in/ar/about",
     },
   },
   openGraph: {
-    title: "About — Nurix AI Studio Dubai",
+    title: "About — NeuralWaves AI Studio Dubai",
     description: "Fast, fixed-price AI automation for UAE businesses. Delivered in days, not months.",
-    url: "https://nurix.ae/about",
+    url: "https://neuralwaves.in/about",
     images: [
       {
-        url: "/api/og?title=About%20Nurix&subtitle=Dubai-based%20AI%20automation%20studio.&badge=ABOUT%20US",
+        url: "/api/og?title=About%20NeuralWaves&subtitle=Dubai-based%20AI%20automation%20studio.&badge=ABOUT%20US",
         width: 1200,
         height: 630,
       },
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "About — Nurix",
+    title: "About — NeuralWaves",
     description: "Dubai-based AI automation studio. We ship AI.",
   },
 };
@@ -68,7 +68,7 @@ export default function AboutPage() {
           <div className="flex items-center gap-3 mb-4">
             <span className="w-6 h-[1px] bg-violet-500/40 inline-block" aria-hidden="true" />
             <span className="font-mono text-xs uppercase tracking-widest text-violet-400">
-              04 / ABOUT NURIX
+              04 / ABOUT NEURALWAVES
             </span>
           </div>
 
@@ -77,7 +77,7 @@ export default function AboutPage() {
           </h1>
 
           <p className="text-lg sm:text-xl text-zinc-400 font-normal leading-relaxed">
-            Most software agencies spend months producing slide decks, wireframes, and bloated retainers. Nurix was founded on a simple premise: UAE businesses need working software in production, delivered in days.
+            Most software agencies spend months producing slide decks, wireframes, and bloated retainers. NeuralWaves was founded on a simple premise: UAE businesses need working software in production, delivered in days.
           </p>
         </div>
 
@@ -117,7 +117,7 @@ export default function AboutPage() {
 
           {/* Narrative */}
           <div className="p-8 sm:p-10 rounded-2xl border border-white/[0.08] bg-[#0A0A0F] space-y-6">
-            <h2 className="text-2xl font-bold text-white tracking-tight">Why Nurix Exists</h2>
+            <h2 className="text-2xl font-bold text-white tracking-tight">Why NeuralWaves Exists</h2>
             <div className="space-y-4 text-zinc-300 leading-relaxed text-sm sm:text-base">
               <p>
                 In 2026, generative AI models have become commodities. Anyone can query an LLM via an API. The bottleneck is no longer model intelligence—it is operational engineering.
@@ -126,7 +126,7 @@ export default function AboutPage() {
                 How do you wire an AI assistant to your WhatsApp Business Cloud account with zero downtime? How do you ensure it never hallucinates property prices or inventory levels? How do you build an internal dashboard your team actually enjoys using instead of fighting Excel sheets?
               </p>
               <p>
-                That is what Nurix builds. Production-grade software that automates real workflows and returns measurable time and revenue to business owners across Dubai, Abu Dhabi, and the Northern Emirates.
+                That is what NeuralWaves builds. Production-grade software that automates real workflows and returns measurable time and revenue to business owners across Dubai, Abu Dhabi, and the Northern Emirates.
               </p>
             </div>
 

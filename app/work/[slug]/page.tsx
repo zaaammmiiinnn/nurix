@@ -23,16 +23,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: project.title,
     description: `${project.overview} Impact: ${project.resultMetric}.`,
     alternates: {
-      canonical: `https://nurix.ae/work/${project.slug}`,
+      canonical: `https://neuralwaves.in/work/${project.slug}`,
       languages: {
-        "en-AE": `https://nurix.ae/work/${project.slug}`,
-        "ar-AE": `https://nurix.ae/ar/work/${project.slug}`,
+        "en-AE": `https://neuralwaves.in/work/${project.slug}`,
+        "ar-AE": `https://neuralwaves.in/ar/work/${project.slug}`,
       },
     },
     openGraph: {
-      title: `${project.title} — Nurix Case Study`,
+      title: `${project.title} — NeuralWaves Case Study`,
       description: project.overview,
-      url: `https://nurix.ae/work/${project.slug}`,
+      url: `https://neuralwaves.in/work/${project.slug}`,
       images: [
         {
           url: `/api/og?title=${encodeURIComponent(project.title)}&subtitle=${encodeURIComponent(project.overview)}&badge=${encodeURIComponent(project.sector)}&metric=${encodeURIComponent(project.resultMetric)}`,
@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: `${project.title} — Nurix`,
+      title: `${project.title} — NeuralWaves`,
       description: project.overview,
     },
   };

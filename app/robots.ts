@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/admin", "/admin/*", "/api/admin/*", "/api/og/*"],
       },
     ],
-    sitemap: "https://nurix.ae/sitemap.xml",
-    host: "https://nurix.ae",
+    sitemap: "https://neuralwaves.in/sitemap.xml",
+    host: "https://neuralwaves.in",
   };
 }

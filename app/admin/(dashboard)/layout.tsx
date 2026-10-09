@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { AdminShell } from "@/components/admin/admin-shell";
 
 export const metadata: Metadata = {
-  title: "Nurix Ops — Admin Portal",
+  title: "NeuralWaves Ops — Admin Portal",
   robots: { index: false, follow: false },
 };
 
@@ -15,8 +15,8 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const cookieStore = cookies();
-  const hasDemoCookie = cookieStore.get("nurix_admin_demo_session")?.value === "1";
-  const demoEmail = cookieStore.get("nurix_admin_email")?.value || "admin@nurix.ae";
+  const hasDemoCookie = cookieStore.get("neuralwaves_admin_demo_session")?.value === "1";
+  const demoEmail = cookieStore.get("neuralwaves_admin_email")?.value || "admin@neuralwaves.in";
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const isConfigured = Boolean(
@@ -36,7 +36,7 @@ export default async function AdminLayout({
     }
 
     if (user) {
-      adminEmail = user.email || "admin@nurix.ae";
+      adminEmail = user.email || "admin@neuralwaves.in";
 
       // Verify user ID in admins table
       const { data: adminRow } = await supabase

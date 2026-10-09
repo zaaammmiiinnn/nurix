@@ -132,14 +132,14 @@ export default function AdminSettingsPage() {
               <div className="py-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center justify-center font-bold text-xs text-zinc-400">
-                    N
+                    NW
                   </div>
                   <div>
                     <span className="text-xs font-semibold text-white block">
-                      Nurix Operations
+                      NeuralWaves Operations
                     </span>
                     <span className="text-[11px] font-mono text-zinc-400">
-                      admin@nurix.ae
+                      admin@neuralwaves.in
                     </span>
                   </div>
                 </div>

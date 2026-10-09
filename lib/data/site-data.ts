@@ -48,10 +48,10 @@ export interface FaqItem {
 }
 
 export const SITE_CONFIG = {
-  name: "Nurix",
+  name: "NeuralWaves",
   tagline: "AI that ships.",
   subhead: "Chatbots, dashboards, and AI agents for UAE businesses. Fixed price. Delivered in days.",
-  domain: "https://nurix.ae",
+  domain: "https://neuralwaves.in",
   location: "Dubai, United Arab Emirates",
   address: {
     streetAddress: "DIFC Gate Precinct, Building 4",
@@ -65,16 +65,16 @@ export const SITE_CONFIG = {
     longitude: 55.2708,
   },
   contact: {
-    email: "hello@nurix.ae",
+    email: "hello@neuralwaves.in",
     phone: "+971 4 812 9400",
     whatsapp: "+971 50 123 4567",
     whatsappDisplay: "+971 50 123 4567",
-    calUrl: "https://cal.com/nurix/15min",
+    calUrl: "https://cal.com/neuralwaves/15min",
   },
   socials: {
-    twitter: "https://twitter.com/nurix_ae",
-    linkedin: "https://linkedin.com/company/nurix-ae",
-    github: "https://github.com/nurix-ae",
+    twitter: "https://twitter.com/neuralwaves_in",
+    linkedin: "https://linkedin.com/company/neuralwaves",
+    github: "https://github.com/neuralwaves",
   },
 };
 
@@ -99,7 +99,7 @@ export const SERVICES_DATA: ServiceItem[] = [
     pricing: "From AED 1,500",
     pricingNumeric: 1500,
     delivery: "3–5 days",
-    waText: "Hi Nurix, I want to discuss WhatsApp & AI Chatbots",
+    waText: "Hi NeuralWaves, I want to discuss WhatsApp & AI Chatbots",
     benefits: [
       "Sub-30 second response times 24/7/365",
       "Zero missed inquiries during weekends & holidays",
@@ -133,7 +133,7 @@ export const SERVICES_DATA: ServiceItem[] = [
     pricing: "From AED 2,500",
     pricingNumeric: 2500,
     delivery: "5–7 days",
-    waText: "Hi Nurix, I want to discuss Web & Admin Dashboards",
+    waText: "Hi NeuralWaves, I want to discuss Web & Admin Dashboards",
     benefits: [
       "Eliminate spreadsheet synchronization conflicts",
       "Granular team permissions (Admins, Managers, Staff)",
@@ -167,7 +167,7 @@ export const SERVICES_DATA: ServiceItem[] = [
     pricing: "From AED 7,500",
     pricingNumeric: 7500,
     delivery: "7–10 days",
-    waText: "Hi Nurix, I want to discuss AI Agents for Business",
+    waText: "Hi NeuralWaves, I want to discuss AI Agents for Business",
     benefits: [
       "Save 15–30 hours of repetitive data entry every week",
       "Zero human error in invoice transcription & verification",

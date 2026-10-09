@@ -17,7 +17,7 @@ const NAV_LINKS = [
 ];
 
 const WA_URL =
-  "https://wa.me/971501234567?text=Hi%20Nurix%2C%20I%20need%20help%20with%20automation";
+  "https://wa.me/971501234567?text=Hi%20NeuralWaves%2C%20I%20need%20help%20with%20automation";
 
 export function Nav() {
   const pathname = usePathname();
@@ -59,17 +59,9 @@ export function Nav() {
             <Link
               href="/"
               className="flex items-center gap-0.5 font-bold text-xl tracking-[-0.04em] text-white select-none group"
-              aria-label="Nurix home"
+              aria-label="NeuralWaves home"
             >
-              nur
-              <span className="relative inline-flex items-center justify-center text-violet-400 group-hover:text-cyan-400 transition-colors">
-                i
-                <span
-                  className="absolute bottom-[3px] left-1/2 -translate-x-1/2 w-[5px] h-[5px] rounded-full bg-violet-400 group-hover:bg-cyan-400 transition-colors shadow-[0_0_8px_rgba(139,92,246,0.8)]"
-                  aria-hidden="true"
-                />
-              </span>
-              x
+              Neural<span className="text-violet-400 group-hover:text-cyan-400 transition-colors">Waves</span>
             </Link>
 
             {/* Desktop nav links */}

@@ -1,6 +1,6 @@
-# Production Deployment Guide & Checklist — NURIX
+# Production Deployment Guide & Checklist — NEURALWAVES
 
-> **Target Domain:** [https://nurix.ae](https://nurix.ae)  
+> **Target Domain:** [https://NeuralWaves.in](https://NeuralWaves.in)  
 > **Tech Stack:** Next.js 14 (App Router), Supabase (PostgreSQL + Auth + RLS), Vercel, Resend, Meta WhatsApp Cloud API.
 
 ---
@@ -18,10 +18,10 @@ Add the following environment variables to your Vercel Project under **Settings 
 | `NEXT_PUBLIC_WHATSAPP_NUMBER` | `971501234567` | Public E.164 phone number without `+` sign. |
 | `WHATSAPP_TOKEN` | `EAAG...` | Meta WhatsApp Cloud API permanent system user token. |
 | `PHONE_NUMBER_ID` | `102938475610293` | Meta WhatsApp Cloud API Phone Number ID. |
-| `VERIFY_TOKEN` | `nurix_wa_secret_verify_2026` | Custom secret string for webhook handshake verification. |
-| `NEXT_PUBLIC_SITE_URL` | `https://nurix.ae` | Canonical production URL (used for Auth redirects and OG tags). |
-| `NEXT_PUBLIC_CAL_COM_URL` | `https://cal.com/nurix/15min` | Cal.com scheduling URL. |
-| `ADMIN_EMAIL` | `admin@nurix.ae` | Primary admin email for lead alerts and digests. |
+| `VERIFY_TOKEN` | `neuralwaves_wa_secret_verify_2026` | Custom secret string for webhook handshake verification. |
+| `NEXT_PUBLIC_SITE_URL` | `https://neuralwaves.in` | Canonical production URL (used for Auth redirects and OG tags). |
+| `NEXT_PUBLIC_CAL_COM_URL` | `https://cal.com/neuralwaves/15min` | Cal.com scheduling URL. |
+| `ADMIN_EMAIL` | `admin@neuralwaves.in` | Primary admin email for lead alerts and digests. |
 | `CRON_SECRET` *(Optional)* | `cr_secret_token_...` | Protects `/api/cron/lead-digest` from unauthorized invocations. |
 
 ---
@@ -31,19 +31,19 @@ Add the following environment variables to your Vercel Project under **Settings 
 ### Step 1: Create Supabase Project & Execute Schema
 1. Log in to [Supabase](https://supabase.com) and click **New Project** (Region: **Frankfurt / eu-central-1** or **Middle East / me-central-1** if available).
 2. Open the **SQL Editor** in the left sidebar.
-3. Open [`supabase/schema.sql`](file:///Volumes/Zamin/nurix/supabase/schema.sql), copy its entire contents, paste it into the SQL editor, and click **Run**.
+3. Open [`supabase/schema.sql`](./supabase/schema.sql), copy its entire contents, paste it into the SQL editor, and click **Run**.
 4. Navigate to **Project Settings → API** and copy:
    - **Project URL** (`NEXT_PUBLIC_SUPABASE_URL`)
    - **anon public key** (`NEXT_PUBLIC_SUPABASE_ANON_KEY`)
    - **service_role secret key** (`SUPABASE_SERVICE_ROLE_KEY`)
 5. Under **Authentication → URL Configuration**, add:
-   - **Site URL**: `https://nurix.ae`
-   - **Redirect URLs**: `https://nurix.ae/**` and `http://localhost:3000/**`
+   - **Site URL**: `https://neuralwaves.in`
+   - **Redirect URLs**: `https://neuralwaves.in/**` and `http://localhost:3000/**`
 
 ---
 
 ### Step 2: Set Up Resend for Email Ingestion
-1. Go to [Resend](https://resend.com) and click **Domains → Add Domain** (`nurix.ae`).
+1. Go to [Resend](https://resend.com) and click **Domains → Add Domain** (`neuralwaves.in`).
 2. Add the provided DKIM and SPF TXT/MX records to your DNS provider (Cloudflare).
 3. Under **API Keys**, create a new full-access key (`RESEND_API_KEY`).
 
@@ -55,7 +55,7 @@ Add the following environment variables to your Vercel Project under **Settings 
 3. Under **WhatsApp → API Setup**:
    - Copy the **Phone number ID** (`PHONE_NUMBER_ID`).
    - Create a **Permanent System User Token** under Meta Business Manager with permissions: `whatsapp_business_messaging` and `whatsapp_business_management` (`WHATSAPP_TOKEN`).
-4. Decide on your `VERIFY_TOKEN` (e.g. `nurix_wa_secret_verify_2026`).
+4. Decide on your `VERIFY_TOKEN` (e.g. `neuralwaves_wa_secret_verify_2026`).
 
 ---
 
@@ -63,9 +63,9 @@ Add the following environment variables to your Vercel Project under **Settings 
 Ensure git is clean and committed:
 ```bash
 git add .
-git commit -m "feat: complete production readiness for Nurix platform"
+git commit -m "feat: complete production readiness for NeuralWaves platform"
 git branch -M main
-git remote add origin https://github.com/your-org/nurix.git
+git remote add origin https://github.com/your-org/neuralwaves.git
 git push -u origin main
 ```
 
@@ -73,7 +73,7 @@ git push -u origin main
 
 ### Step 5: Import to Vercel & Initial Deploy
 1. Open [Vercel](https://vercel.com) and select **Add New Project**.
-2. Select your `nurix` GitHub repository.
+2. Select your `neuralwaves` GitHub repository.
 3. Framework Preset: **Next.js**.
 4. In the **Environment Variables** section, paste all values from Section 1 above.
 5. Click **Deploy**.
@@ -81,7 +81,7 @@ git push -u origin main
 ---
 
 ### Step 6: Configure Custom Domain & Cloudflare DNS
-1. In Vercel, navigate to **Settings → Domains** and add `nurix.ae` and `www.nurix.ae`.
+1. In Vercel, navigate to **Settings → Domains** and add `neuralwaves.in` and `www.neuralwaves.in`.
 2. In Cloudflare DNS:
    - `A` record: `@` → `76.76.21.21` (DNS only / Proxied depending on SSL mode).
    - `CNAME` record: `www` → `cname.vercel-dns.com`.
@@ -90,7 +90,7 @@ git push -u origin main
 ---
 
 ### Step 7: Update `NEXT_PUBLIC_SITE_URL` & Redeploy
-1. In Vercel, verify `NEXT_PUBLIC_SITE_URL` is set to `https://nurix.ae`.
+1. In Vercel, verify `NEXT_PUBLIC_SITE_URL` is set to `https://neuralwaves.in`.
 2. Trigger a redeploy if the variable was updated after initial build.
 
 ---
@@ -98,7 +98,7 @@ git push -u origin main
 ### Step 8: Configure Meta WhatsApp Webhook
 1. In the Meta App Dashboard, navigate to **WhatsApp → Configuration**.
 2. Click **Edit** next to Webhook:
-   - **Callback URL**: `https://nurix.ae/api/whatsapp/webhook`
+   - **Callback URL**: `https://neuralwaves.in/api/whatsapp/webhook`
    - **Verify token**: Value of your `VERIFY_TOKEN`
 3. Click **Verify and Save**.
 4. Under **Webhook fields**, click **Manage** and subscribe to:
@@ -110,32 +110,32 @@ git push -u origin main
 ### Step 9: Verify Webhook Verification
 Test the webhook handshake using curl:
 ```bash
-curl -i "https://nurix.ae/api/whatsapp/webhook?hub.mode=subscribe&hub.challenge=1158201236&hub.verify_token=nurix_wa_secret_verify_2026"
+curl -i "https://neuralwaves.in/api/whatsapp/webhook?hub.mode=subscribe&hub.challenge=1158201236&hub.verify_token=neuralwaves_wa_secret_verify_2026"
 ```
 *Expected response: HTTP 200 with raw body `1158201236`.*
 
 ---
 
 ### Step 10: Promote Your User Account to Admin
-1. Go to `https://nurix.ae/admin/login` and sign in with your email address using magic link.
+1. Go to `https://neuralwaves.in/admin/login` and sign in with your email address using magic link.
 2. In the Supabase SQL Editor, run:
 ```sql
 INSERT INTO public.admins (email, role)
-VALUES ('your-email@nurix.ae', 'superadmin')
+VALUES ('your-email@neuralwaves.in', 'superadmin')
 ON CONFLICT (email) DO UPDATE SET role = 'superadmin';
 ```
-3. Refresh `https://nurix.ae/admin` — full access to Dashboard and Leads is unlocked.
+3. Refresh `https://neuralwaves.in/admin` — full access to Dashboard and Leads is unlocked.
 
 ---
 
 ### Step 11: Validate Inbound Contact Form
-1. Visit `https://nurix.ae/contact`.
+1. Visit `https://neuralwaves.in/contact`.
 2. Fill out a test inquiry and submit.
 3. Verify:
    - Instant success toast on the frontend.
    - Lead appears immediately in `public.leads` in Supabase.
    - Email alert arrives in your inbox via Resend.
-   - Lead appears at `https://nurix.ae/admin/leads`.
+   - Lead appears at `https://neuralwaves.in/admin/leads`.
 
 ---
 
@@ -146,7 +146,7 @@ ON CONFLICT (email) DO UPDATE SET role = 'superadmin';
 ---
 
 ### Step 13: Run Lighthouse Production Audit
-1. Open Chrome DevTools in an incognito window at `https://nurix.ae`.
+1. Open Chrome DevTools in an incognito window at `https://neuralwaves.in`.
 2. Run Lighthouse Audit on **Mobile** and **Desktop**.
 3. Targets:
    - **Performance**: 90+

@@ -44,13 +44,13 @@ export async function sendMagicLink(email: string, redirectToOrigin: string) {
 
 export async function loginAsDemoAdmin() {
   const cookieStore = cookies();
-  cookieStore.set("nurix_admin_demo_session", "1", {
+  cookieStore.set("neuralwaves_admin_demo_session", "1", {
     path: "/",
     httpOnly: true,
     sameSite: "lax",
     maxAge: 60 * 60 * 24 * 7, // 7 days
   });
-  cookieStore.set("nurix_admin_email", "admin@nurix.ae", {
+  cookieStore.set("neuralwaves_admin_email", "admin@neuralwaves.in", {
     path: "/",
     httpOnly: true,
     sameSite: "lax",
@@ -62,8 +62,8 @@ export async function loginAsDemoAdmin() {
 
 export async function signOutAdmin() {
   const cookieStore = cookies();
-  cookieStore.delete("nurix_admin_demo_session");
-  cookieStore.delete("nurix_admin_email");
+  cookieStore.delete("neuralwaves_admin_demo_session");
+  cookieStore.delete("neuralwaves_admin_email");
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const isConfigured = Boolean(

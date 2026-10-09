@@ -18,7 +18,7 @@ const COMPANY_LINKS = [
 ];
 
 const WA_URL =
-  "https://wa.me/971501234567?text=Hi%20Nurix%2C%20I%20need%20help%20with%20automation";
+  "https://wa.me/971501234567?text=Hi%20NeuralWaves%2C%20I%20need%20help%20with%20automation";
 
 export function Footer() {
   const pathname = usePathname();
@@ -34,12 +34,7 @@ export function Footer() {
               href="/"
               className="inline-flex items-center gap-0.5 font-bold text-xl tracking-[-0.04em] text-signal-text"
             >
-              nur
-              <span className="relative inline-flex items-center justify-center">
-                i
-                <span className="absolute bottom-[2px] left-1/2 -translate-x-1/2 w-[5px] h-[5px] rounded-full bg-signal-violet" />
-              </span>
-              x
+              Neural<span className="text-signal-violet">Waves</span>
             </Link>
             <p className="mt-4 text-sm text-signal-muted leading-relaxed">
               AI that ships.
@@ -108,11 +103,11 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="mailto:hello@nurix.ae"
+                  href="mailto:hello@neuralwaves.in"
                   className="flex items-center gap-2 text-sm text-signal-muted hover:text-signal-text transition-colors duration-150 group"
                 >
                   <Mail size={14} className="text-signal-violet" />
-                  hello@nurix.ae
+                  hello@neuralwaves.in
                 </a>
               </li>
               <li>
@@ -130,7 +125,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-12 pt-8 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-signal-muted">
-            © {new Date().getFullYear()} Nurix. All rights reserved.
+            © {new Date().getFullYear()} NeuralWaves. All rights reserved.
           </p>
           <p className="mono-label text-[0.6rem]">Made in Dubai 🇦🇪</p>
         </div>

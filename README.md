@@ -1,14 +1,14 @@
-# Nurix — AI that ships.
+# NeuralWaves — AI that ships.
 
 > Fast, fixed-price AI & automation for UAE SMEs. Delivered in days, not months.  
 > **Location:** Dubai, United Arab Emirates  
-> **Production Site:** [https://nurix.ae](https://nurix.ae)
+> **Production Site:** [https://NeuralWaves.in](https://NeuralWaves.in)
 
 ---
 
 ## Overview
 
-Nurix is a specialized AI automation studio based in Dubai, UAE. We engineer production-grade systems across three primary disciplines:
+NeuralWaves is a specialized AI automation studio based in Dubai, UAE. We engineer production-grade systems across three primary disciplines:
 1. **AI Chatbots & WhatsApp Automation**: Verified Meta WhatsApp Cloud API bots with bilingual (Arabic & English) natural language understanding, instant calendar booking, and live agent escalation.
 2. **Web & Admin Dashboards**: High-speed, secure internal operations portals and client consoles built with Next.js, Supabase, and Tailwind CSS.
 3. **AI Agents for Business**: Deterministic background workers for commercial tender scraping, document parsing (OCR), and automated executive briefing digests.
@@ -70,8 +70,8 @@ Nurix is a specialized AI automation studio based in Dubai, UAE. We engineer pro
 
 ### 1. Clone & Install Dependencies
 ```bash
-git clone https://github.com/your-org/nurix.git
-cd nurix
+git clone https://github.com/your-org/neuralwaves.git
+cd neuralwaves
 npm install
 ```
 
@@ -83,7 +83,7 @@ cp .env.example .env.local
 Fill in your Supabase, Resend, and Meta Cloud API credentials.
 
 ### 3. Initialize the Database
-Open your Supabase project SQL Editor, copy [`supabase/schema.sql`](file:///Volumes/Zamin/nurix/supabase/schema.sql), and run the script to create all 12 tables, indexes, RLS policies, and seed data.
+Open your Supabase project SQL Editor, copy [`supabase/schema.sql`](./supabase/schema.sql), and run the script to create all 12 tables, indexes, RLS policies, and seed data.
 
 ### 4. Run the Dev Server
 ```bash
@@ -102,7 +102,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
    - Run the promotion query in Supabase SQL Editor:
      ```sql
      INSERT INTO public.admins (email, role)
-     VALUES ('your-email@nurix.ae', 'superadmin')
+     VALUES ('your-email@neuralwaves.in', 'superadmin')
      ON CONFLICT (email) DO UPDATE SET role = 'superadmin';
      ```
 
@@ -121,4 +121,4 @@ Verify that all 23 static and dynamic routes compile with zero errors.
 
 ## License
 
-Proprietary © 2026 Nurix AI Studio. All rights reserved.
+Proprietary © 2026 NeuralWaves AI Studio. All rights reserved.

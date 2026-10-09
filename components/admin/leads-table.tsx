@@ -197,7 +197,7 @@ export function LeadsTable({
     link.setAttribute("href", encodedUri);
     link.setAttribute(
       "download",
-      `nurix-leads-${new Date().toISOString().split("T")[0]}.csv`
+      `neuralwaves-leads-${new Date().toISOString().split("T")[0]}.csv`
     );
     document.body.appendChild(link);
     link.click();

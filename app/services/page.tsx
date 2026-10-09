@@ -8,17 +8,17 @@ export const metadata: Metadata = {
   description:
     "Three things. Done properly. Custom AI Chatbots, Web & Admin Dashboards, and AI Agents for UAE businesses.",
   alternates: {
-    canonical: "https://nurix.ae/services",
+    canonical: "https://neuralwaves.in/services",
     languages: {
-      "en-AE": "https://nurix.ae/services",
-      "ar-AE": "https://nurix.ae/ar/services",
+      "en-AE": "https://neuralwaves.in/services",
+      "ar-AE": "https://neuralwaves.in/ar/services",
     },
   },
   openGraph: {
-    title: "Services — Nurix",
+    title: "Services — NeuralWaves",
     description:
       "Three things. Done properly. Custom AI Chatbots, Web & Admin Dashboards, and AI Agents for UAE businesses.",
-    url: "https://nurix.ae/services",
+    url: "https://neuralwaves.in/services",
     images: [
       {
         url: "/api/og?title=Services&subtitle=Three%20things.%20Done%20properly.&badge=SERVICES",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Services — Nurix",
+    title: "Services — NeuralWaves",
     description: "Three things. Done properly. Chatbots, dashboards, and AI agents for UAE businesses.",
   },
 };
@@ -55,7 +55,7 @@ const SERVICES_DATA = [
     ],
     pricing: "From AED 1,500",
     delivery: "3–5 days",
-    waText: "Hi Nurix, I want to discuss WhatsApp & AI Chatbots",
+    waText: "Hi NeuralWaves, I want to discuss WhatsApp & AI Chatbots",
   },
   {
     number: "02",
@@ -75,7 +75,7 @@ const SERVICES_DATA = [
     ],
     pricing: "From AED 2,500",
     delivery: "5–7 days",
-    waText: "Hi Nurix, I want to discuss Web & Admin Dashboards",
+    waText: "Hi NeuralWaves, I want to discuss Web & Admin Dashboards",
   },
   {
     number: "03",
@@ -95,7 +95,7 @@ const SERVICES_DATA = [
     ],
     pricing: "From AED 7,500",
     delivery: "7–10 days",
-    waText: "Hi Nurix, I want to discuss AI Agents for Business",
+    waText: "Hi NeuralWaves, I want to discuss AI Agents for Business",
   },
 ];
 

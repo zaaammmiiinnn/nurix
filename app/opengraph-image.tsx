@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Nurix — AI that ships.";
+export const alt = "NeuralWaves — AI that ships.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -62,7 +62,7 @@ export default async function OpenGraphImage() {
                 letterSpacing: "-0.04em",
               }}
             >
-              nurix
+              NeuralWaves
             </span>
           </div>
 
@@ -150,7 +150,7 @@ export default async function OpenGraphImage() {
               letterSpacing: "-0.01em",
             }}
           >
-            nurix.ae
+            neuralwaves.in
           </div>
         </div>
       </div>

@@ -30,12 +30,12 @@ export async function GET(req: NextRequest) {
     if (process.env.RESEND_API_KEY && process.env.ADMIN_EMAIL) {
       const resend = new Resend(process.env.RESEND_API_KEY);
       await resend.emails.send({
-        from: "Nurix Ops <alerts@nurix.ae>",
+        from: "NeuralWaves Ops <alerts@neuralwaves.in>",
         to: process.env.ADMIN_EMAIL,
         subject: `Weekly Pipeline Digest: ${leadCount} New Inbound Leads`,
         text: `You received ${leadCount} new leads in the past 7 days.\n\n${leadsList
           .map((l) => `• ${l.name} (${l.email}) - Service: ${l.service} - Status: ${l.status}`)
-          .join("\n")}\n\nReview them at: https://nurix.ae/admin/leads`,
+          .join("\n")}\n\nReview them at: https://neuralwaves.in/admin/leads`,
       });
     }
 

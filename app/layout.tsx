@@ -33,10 +33,10 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://nurix.ae"),
+  metadataBase: new URL("https://neuralwaves.in"),
   title: {
-    template: "%s · Nurix",
-    default: "Nurix — AI that ships.",
+    template: "%s · NeuralWaves",
+    default: "NeuralWaves — AI that ships.",
   },
   description:
     "Chatbots, dashboards, and AI agents for UAE businesses. Fixed price. Delivered in days.",
@@ -51,28 +51,28 @@ export const metadata: Metadata = {
     "SME automation UAE",
     "fixed price AI development",
   ],
-  authors: [{ name: "Nurix AI Studio", url: "https://nurix.ae" }],
-  creator: "Nurix",
-  publisher: "Nurix",
+  authors: [{ name: "NeuralWaves AI Studio", url: "https://neuralwaves.in" }],
+  creator: "NeuralWaves",
+  publisher: "NeuralWaves",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
   alternates: {
-    canonical: "https://nurix.ae",
+    canonical: "https://neuralwaves.in",
     languages: {
-      "en-AE": "https://nurix.ae",
-      "ar-AE": "https://nurix.ae/ar",
-      "x-default": "https://nurix.ae",
+      "en-AE": "https://neuralwaves.in",
+      "ar-AE": "https://neuralwaves.in/ar",
+      "x-default": "https://neuralwaves.in",
     },
   },
   openGraph: {
-    title: "Nurix — AI that ships.",
+    title: "NeuralWaves — AI that ships.",
     description:
       "Chatbots, dashboards, and AI agents for UAE businesses. Fixed price. Delivered in days.",
-    url: "https://nurix.ae",
-    siteName: "Nurix",
+    url: "https://neuralwaves.in",
+    siteName: "NeuralWaves",
     locale: "en_AE",
     type: "website",
     images: [
@@ -80,17 +80,17 @@ export const metadata: Metadata = {
         url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "Nurix — AI that ships.",
+        alt: "NeuralWaves — AI that ships.",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Nurix — AI that ships.",
+    title: "NeuralWaves — AI that ships.",
     description:
       "Chatbots, dashboards, and AI agents for UAE businesses. Fixed price. Delivered in days.",
-    site: "@nurix_ae",
-    creator: "@nurix_ae",
+    site: "@neuralwaves_in",
+    creator: "@neuralwaves_in",
     images: ["/opengraph-image"],
   },
   robots: {

@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   const token = searchParams.get("hub.verify_token");
   const challenge = searchParams.get("hub.challenge");
 
-  const verifyToken = process.env.VERIFY_TOKEN || "nurix_wa_secret_verify_token_2026";
+  const verifyToken = process.env.VERIFY_TOKEN || "neuralwaves_wa_secret_verify_token_2026";
 
   if (mode === "subscribe" && token === verifyToken) {
     return new NextResponse(challenge, {
@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
           // 4. Also register as a pipeline lead if high intent or new contact
           await supabaseAdmin.from("leads").insert({
             name: contactName,
-            email: `${fromWaId}@wa.nurix.ae`,
+            email: `${fromWaId}@wa.neuralwaves.in`,
             phone: `+${fromWaId}`,
             service: "chatbots",
             message: messageText || "Initiated WhatsApp inquiry",

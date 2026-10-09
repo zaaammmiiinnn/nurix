@@ -9,16 +9,16 @@ export const metadata: Metadata = {
   description:
     "Transparent, fixed-price AI automation packages for UAE businesses. Starts at AED 1,500. 50% deposit upfront, balance on delivery. No hourly surprises.",
   alternates: {
-    canonical: "https://nurix.ae/pricing",
+    canonical: "https://neuralwaves.in/pricing",
     languages: {
-      "en-AE": "https://nurix.ae/pricing",
-      "ar-AE": "https://nurix.ae/ar/pricing",
+      "en-AE": "https://neuralwaves.in/pricing",
+      "ar-AE": "https://neuralwaves.in/ar/pricing",
     },
   },
   openGraph: {
-    title: "Pricing — Nurix",
+    title: "Pricing — NeuralWaves",
     description: "Fixed-price AI automation packages for UAE businesses. From AED 1,500.",
-    url: "https://nurix.ae/pricing",
+    url: "https://neuralwaves.in/pricing",
     images: [
       {
         url: "/api/og?title=Fixed%20Pricing&subtitle=From%20AED%201%2C500.%20Delivered%20in%20days.&badge=TRANSPARENT%20PRICING",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Pricing — Nurix",
+    title: "Pricing — NeuralWaves",
     description: "Fixed-price AI automation packages for UAE businesses.",
   },
 };
@@ -204,7 +204,7 @@ export default function PricingPage() {
               Book Scope Call
             </Link>
             <a
-              href={`${WA_BASE}?text=Hi%20Nurix%2C%20I%20have%20a%20custom%20AI%20project%20scope`}
+              href={`${WA_BASE}?text=Hi%20NeuralWaves%2C%20I%20have%20a%20custom%20AI%20project%20scope`}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-ghost-border px-6 py-3 rounded-xl text-xs font-mono uppercase tracking-wider text-zinc-300 hover:text-white w-full sm:w-auto flex items-center justify-center gap-2"

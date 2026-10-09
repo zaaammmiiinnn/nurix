@@ -3,7 +3,7 @@ import { getLeads } from "@/app/admin/leads/actions";
 import { LeadsTable } from "@/components/admin/leads-table";
 
 export const metadata = {
-  title: "Leads Pipeline | Nurix Admin",
+  title: "Leads Pipeline | NeuralWaves Admin",
   description: "Track inbound inquiries, client discussions, and project status.",
 };
 

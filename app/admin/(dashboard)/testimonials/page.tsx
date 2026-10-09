@@ -17,7 +17,7 @@ const TESTIMONIALS: Testimonial[] = [
     clientRole: "Managing Director",
     company: "Gulf Skyline Real Estate, Dubai",
     content:
-      "Nurix delivered our WhatsApp concierge in exactly 5 days. We captured 34 qualified property viewings in our first weekend without our brokers working overtime. Best agency investment we made this year.",
+      "NeuralWaves delivered our WhatsApp concierge in exactly 5 days. We captured 34 qualified property viewings in our first weekend without our brokers working overtime. Best agency investment we made this year.",
     rating: 5,
     isActive: true,
     sortOrder: 1,
@@ -27,7 +27,7 @@ const TESTIMONIALS: Testimonial[] = [
     clientRole: "Head of Operations",
     company: "Karak Express Hospitality, Abu Dhabi",
     content:
-      "Replacing our branch reporting spreadsheets with Nurix's custom admin portal saved our ops managers 15 hours every single week. Fast, direct, zero corporate nonsense.",
+      "Replacing our branch reporting spreadsheets with NeuralWaves's custom admin portal saved our ops managers 15 hours every single week. Fast, direct, zero corporate nonsense.",
     rating: 5,
     isActive: true,
     sortOrder: 2,
@@ -37,7 +37,7 @@ const TESTIMONIALS: Testimonial[] = [
     clientRole: "Founder & CEO",
     company: "Apex Courier & Freight, Dubai",
     content:
-      "Traditional agencies in Dubai quoted us 3 months and AED 60,000 for what Nurix built in 7 business days for a fixed fee. The system is rock solid and handles all our client inquiries.",
+      "Traditional agencies in Dubai quoted us 3 months and AED 60,000 for what NeuralWaves built in 7 business days for a fixed fee. The system is rock solid and handles all our client inquiries.",
     rating: 5,
     isActive: true,
     sortOrder: 3,

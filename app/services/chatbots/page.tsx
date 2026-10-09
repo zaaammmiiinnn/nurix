@@ -10,16 +10,16 @@ export const metadata: Metadata = {
   title: service.title,
   description: service.description,
   alternates: {
-    canonical: `https://nurix.ae/services/${service.slug}`,
+    canonical: `https://neuralwaves.in/services/${service.slug}`,
     languages: {
-      "en-AE": `https://nurix.ae/services/${service.slug}`,
-      "ar-AE": `https://nurix.ae/ar/services/${service.slug}`,
+      "en-AE": `https://neuralwaves.in/services/${service.slug}`,
+      "ar-AE": `https://neuralwaves.in/ar/services/${service.slug}`,
     },
   },
   openGraph: {
-    title: `${service.title} — Nurix`,
+    title: `${service.title} — NeuralWaves`,
     description: service.description,
-    url: `https://nurix.ae/services/${service.slug}`,
+    url: `https://neuralwaves.in/services/${service.slug}`,
     images: [
       {
         url: `/api/og?title=${encodeURIComponent(service.title)}&subtitle=${encodeURIComponent(service.tagline)}&badge=AI%20CHATBOTS&metric=Sub-30s%20Replies`,
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: `${service.title} — Nurix`,
+    title: `${service.title} — NeuralWaves`,
     description: service.description,
   },
 };

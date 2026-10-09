@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════════════════
--- NURIX SUPABASE DATABASE SCHEMA & SEED SCRIPT
+-- NEURALWAVES SUPABASE DATABASE SCHEMA & SEED SCRIPT
 -- Fast, Fixed-Price AI & Automation Studio (Dubai, UAE)
 -- ═══════════════════════════════════════════════════════════════════════════
 
@@ -564,7 +564,7 @@ VALUES
   'Tariq Mansour',
   'Managing Director',
   'Gulf Skyline Real Estate, Dubai',
-  'Nurix delivered our WhatsApp concierge in exactly 5 days. We captured 34 qualified property viewings in our first weekend without our brokers working overtime. Best agency investment we made this year.',
+  'NeuralWaves delivered our WhatsApp concierge in exactly 5 days. We captured 34 qualified property viewings in our first weekend without our brokers working overtime. Best agency investment we made this year.',
   5,
   true,
   1
@@ -573,7 +573,7 @@ VALUES
   'Farah Al Hashimi',
   'Head of Operations',
   'Karak Express Hospitality, Abu Dhabi',
-  'Replacing our branch reporting spreadsheets with Nurix''s custom admin portal saved our ops managers 15 hours every single week. Fast, direct, zero corporate nonsense.',
+  'Replacing our branch reporting spreadsheets with NeuralWaves''s custom admin portal saved our ops managers 15 hours every single week. Fast, direct, zero corporate nonsense.',
   5,
   true,
   2
@@ -582,7 +582,7 @@ VALUES
   'Vikram Mehta',
   'Founder & CEO',
   'Apex Courier & Freight, Dubai',
-  'Traditional agencies in Dubai quoted us 3 months and AED 60,000 for what Nurix built in 7 business days for a fixed fee. The system is rock solid and handles all our client inquiries.',
+  'Traditional agencies in Dubai quoted us 3 months and AED 60,000 for what NeuralWaves built in 7 business days for a fixed fee. The system is rock solid and handles all our client inquiries.',
   5,
   true,
   3
@@ -652,11 +652,11 @@ VALUES
 INSERT INTO public.site_settings (key, value, description)
 VALUES
 ('whatsapp_number', '+971500000000', 'Primary WhatsApp contact number in E.164 format'),
-('contact_email', 'hello@nurix.ae', 'Official contact & inbound lead notification email'),
+('contact_email', 'hello@neuralwaves.in', 'Official contact & inbound lead notification email'),
 ('contact_phone', '+971 4 812 9400', 'Official UAE phone line'),
-('calendar_url', 'https://cal.com/nurix/15min', 'Cal.com or Calendly scope booking link'),
-('social_linkedin', 'https://linkedin.com/company/nurix-ae', 'Company LinkedIn page'),
-('social_instagram', 'https://instagram.com/nurix.ae', 'Company Instagram handle')
+('calendar_url', 'https://cal.com/neuralwaves/15min', 'Cal.com or Calendly scope booking link'),
+('social_linkedin', 'https://linkedin.com/company/neuralwaves', 'Company LinkedIn page'),
+('social_instagram', 'https://instagram.com/neuralwaves.in', 'Company Instagram handle')
 ON CONFLICT (key) DO UPDATE SET
   value = EXCLUDED.value,
   description = EXCLUDED.description;
@@ -666,9 +666,9 @@ INSERT INTO public.menu_items (key, parent, title, payload, response_text, sort_
 VALUES
 -- Main root menu
 ('main_services', NULL, '1. Our Services', 'MENU_SERVICES', 'Here are our three core offerings:\n1. AI Chatbots & WhatsApp\n2. Web & Admin Dashboards\n3. AI Agents for Business\n\nReply with a number or 9 to go back.', 1, true),
-('main_projects', NULL, '2. Recent Projects', 'MENU_PROJECTS', 'Recent Nurix builds:\n• Dubai Real Estate WhatsApp Bot (30s response time)\n• F&B Kitchen Dispatch Dashboard (3 hrs/day saved)\n• Abu Dhabi Logistics Lead Agent (40 leads/wk)\n\nVisit nurix.ae/work to see all case studies.', 2, true),
+('main_projects', NULL, '2. Recent Projects', 'MENU_PROJECTS', 'Recent NeuralWaves builds:\n• Dubai Real Estate WhatsApp Bot (30s response time)\n• F&B Kitchen Dispatch Dashboard (3 hrs/day saved)\n• Abu Dhabi Logistics Lead Agent (40 leads/wk)\n\nVisit neuralwaves.in/work to see all case studies.', 2, true),
 ('main_pricing', NULL, '3. Transparent Pricing', 'MENU_PRICING', 'Fixed pricing in AED:\n• Starter Bot: AED 1,500 (3-5 days)\n• Growth AI Assistant: AED 3,500 (5-7 days)\n• Business Platform: AED 7,500 (7-10 days)\n\nAll include 50% upfront and post-launch warranty.', 3, true),
-('main_human', NULL, '4. Talk to a Human', 'TALK_HUMAN', 'An engineer from our Dubai office will take over this chat shortly. You can also book a 15-min call at nurix.ae/contact.', 4, true),
+('main_human', NULL, '4. Talk to a Human', 'TALK_HUMAN', 'An engineer from our Dubai office will take over this chat shortly. You can also book a 15-min call at neuralwaves.in/contact.', 4, true),
 
 -- Services submenu
 ('srv_chatbots', 'main_services', 'AI Chatbots & WhatsApp', 'INFO_CHATBOTS', 'Custom 24/7 WhatsApp assistants trained on your company data. Handles bookings, lead capture, and FAQs in Arabic & English. Delivered in 3-5 days from AED 1,500.', 1, true),

@@ -9,16 +9,16 @@ export const metadata: Metadata = {
   description:
     "Real AI projects shipped for UAE businesses in real estate, F&B, healthcare, and logistics. High impact, fixed price, delivered in days.",
   alternates: {
-    canonical: "https://nurix.ae/work",
+    canonical: "https://neuralwaves.in/work",
     languages: {
-      "en-AE": "https://nurix.ae/work",
-      "ar-AE": "https://nurix.ae/ar/work",
+      "en-AE": "https://neuralwaves.in/work",
+      "ar-AE": "https://neuralwaves.in/ar/work",
     },
   },
   openGraph: {
-    title: "Selected Work — Nurix",
+    title: "Selected Work — NeuralWaves",
     description: "Real AI projects shipped for UAE businesses. Real results, real clients.",
-    url: "https://nurix.ae/work",
+    url: "https://neuralwaves.in/work",
     images: [
       {
         url: "/api/og?title=Selected%20Work&subtitle=Real%20projects%20shipped%20for%20UAE%20businesses.&badge=CASE%20STUDIES",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Selected Work — Nurix",
+    title: "Selected Work — NeuralWaves",
     description: "AI projects shipped for UAE businesses. Fixed price. Delivered in days.",
   },
 };

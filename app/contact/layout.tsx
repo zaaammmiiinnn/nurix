@@ -6,19 +6,19 @@ export const metadata: Metadata = {
   description:
     "Direct contact for Dubai AI automation sprints. Chat directly on WhatsApp or book a 15-minute scoping call. Fast quotes, fixed price, delivered in days.",
   alternates: {
-    canonical: "https://nurix.ae/contact",
+    canonical: "https://neuralwaves.in/contact",
     languages: {
-      "en-AE": "https://nurix.ae/contact",
-      "ar-AE": "https://nurix.ae/ar/contact",
+      "en-AE": "https://neuralwaves.in/contact",
+      "ar-AE": "https://neuralwaves.in/ar/contact",
     },
   },
   openGraph: {
-    title: "Contact Nurix — Book a 15-Minute Scoping Call",
+    title: "Contact NeuralWaves — Book a 15-Minute Scoping Call",
     description: "Direct contact for Dubai AI automation sprints. WhatsApp or calendar booking.",
-    url: "https://nurix.ae/contact",
+    url: "https://neuralwaves.in/contact",
     images: [
       {
-        url: "/api/og?title=Contact%20Nurix&subtitle=Book%20a%2015-minute%20call%20or%20WhatsApp%20us.&badge=START%20A%20SPRINT",
+        url: "/api/og?title=Contact%20NeuralWaves&subtitle=Book%20a%2015-minute%20call%20or%20WhatsApp%20us.&badge=START%20A%20SPRINT",
         width: 1200,
         height: 630,
       },
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Contact Nurix — AI that ships.",
+    title: "Contact NeuralWaves — AI that ships.",
     description: "Book a 15-minute scoping call or WhatsApp our Dubai team.",
   },
 };

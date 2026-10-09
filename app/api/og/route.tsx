@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
                   letterSpacing: "-0.04em",
                 }}
               >
-                nurix
+                NeuralWaves
               </span>
             </div>
 
@@ -185,7 +185,7 @@ export async function GET(req: NextRequest) {
                 letterSpacing: "-0.01em",
               }}
             >
-              nurix.ae
+              neuralwaves.in
             </div>
           </div>
         </div>

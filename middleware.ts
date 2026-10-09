@@ -25,7 +25,7 @@ export async function middleware(request: NextRequest) {
         !supabaseUrl.includes("placeholder")
     );
 
-    const hasDemoCookie = request.cookies.get("nurix_admin_demo_session")?.value === "1";
+    const hasDemoCookie = request.cookies.get("neuralwaves_admin_demo_session")?.value === "1";
 
     if (isConfigured) {
       try {

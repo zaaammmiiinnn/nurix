@@ -25,8 +25,8 @@ const PricingTeaser = dynamic(
   { ssr: true }
 );
 
-const WhyNurix = dynamic(
-  () => import("@/components/sections/why-nurix").then((mod) => mod.WhyNurix),
+const WhyNeuralWaves = dynamic(
+  () => import("@/components/sections/why-neuralwaves").then((mod) => mod.WhyNeuralWaves),
   { ssr: true }
 );
 
@@ -56,7 +56,7 @@ export default function HomePage() {
       <HowItWorks />
       <FeaturedWork />
       <PricingTeaser />
-      <WhyNurix />
+      <WhyNeuralWaves />
       <FaqSection />
       <FinalCta />
     </>
