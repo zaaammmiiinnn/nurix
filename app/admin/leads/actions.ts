@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { supabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
+import { createAdminClient } from "@/lib/supabase/server";
 
 function safeRevalidate(path: string) {
   try {
@@ -113,19 +113,43 @@ let memoryLeads: Lead[] = [
 ];
 
 export async function getLeads(): Promise<Lead[]> {
-  if (isSupabaseConfigured && supabaseAdmin) {
-    try {
-      const { data, error } = await supabaseAdmin
-        .from("leads")
-        .select("*")
-        .order("created_at", { ascending: false });
+  try {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("leads")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-      if (!error && data && data.length > 0) {
-        return data as Lead[];
+    if (!error && data && data.length > 0) {
+      interface SupabaseLeadRow {
+        id: string | number;
+        name?: string;
+        email?: string;
+        phone?: string;
+        company?: string | null;
+        service?: string;
+        message?: string;
+        status?: string;
+        notes?: string | null;
+        metadata?: { notes?: string };
+        created_at?: string;
       }
-    } catch (e) {
-      console.error("Error fetching leads from Supabase, using local fallback:", e);
+
+      return (data as unknown as SupabaseLeadRow[]).map((d) => ({
+        id: String(d.id),
+        name: d.name || "",
+        email: d.email || "",
+        phone: d.phone || "",
+        company: d.company || null,
+        service: d.service || "chatbots",
+        message: d.message || "",
+        status: (d.status || "new") as Lead["status"],
+        notes: d.notes || d.metadata?.notes || null,
+        created_at: d.created_at || new Date().toISOString(),
+      }));
     }
+  } catch (e) {
+    console.warn("Supabase getLeads fetch fell back to memory store:", e);
   }
 
   return memoryLeads;
@@ -136,19 +160,18 @@ export async function updateLeadStatus(
   status: Lead["status"],
   notes?: string
 ) {
-  if (isSupabaseConfigured && supabaseAdmin) {
-    try {
-      await supabaseAdmin
-        .from("leads")
-        .update({
-          status,
-          metadata: notes ? { notes } : undefined,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", leadId);
-    } catch (e) {
-      console.error("Supabase update error:", e);
-    }
+  try {
+    const supabase = createAdminClient();
+    await supabase
+      .from("leads")
+      .update({
+        status,
+        metadata: notes ? { notes } : undefined,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", leadId);
+  } catch (e) {
+    console.warn("Supabase update error:", e);
   }
 
   // Update memory
@@ -164,15 +187,14 @@ export async function updateLeadStatus(
 }
 
 export async function bulkUpdateLeads(leadIds: string[], status: Lead["status"]) {
-  if (isSupabaseConfigured && supabaseAdmin) {
-    try {
-      await supabaseAdmin
-        .from("leads")
-        .update({ status, updated_at: new Date().toISOString() })
-        .in("id", leadIds);
-    } catch (e) {
-      console.error("Supabase bulk update error:", e);
-    }
+  try {
+    const supabase = createAdminClient();
+    await supabase
+      .from("leads")
+      .update({ status, updated_at: new Date().toISOString() })
+      .in("id", leadIds);
+  } catch (e) {
+    console.warn("Supabase bulk update error:", e);
   }
 
   memoryLeads = memoryLeads.map((l) =>
@@ -185,12 +207,11 @@ export async function bulkUpdateLeads(leadIds: string[], status: Lead["status"])
 }
 
 export async function bulkDeleteLeads(leadIds: string[]) {
-  if (isSupabaseConfigured && supabaseAdmin) {
-    try {
-      await supabaseAdmin.from("leads").delete().in("id", leadIds);
-    } catch (e) {
-      console.error("Supabase bulk delete error:", e);
-    }
+  try {
+    const supabase = createAdminClient();
+    await supabase.from("leads").delete().in("id", leadIds);
+  } catch (e) {
+    console.warn("Supabase bulk delete error:", e);
   }
 
   memoryLeads = memoryLeads.filter((l) => !leadIds.includes(l.id));
@@ -207,23 +228,22 @@ export async function createManualLead(leadData: Omit<Lead, "id" | "created_at">
     created_at: new Date().toISOString(),
   };
 
-  if (isSupabaseConfigured && supabaseAdmin) {
-    try {
-      await supabaseAdmin.from("leads").insert([
-        {
-          name: leadData.name,
-          email: leadData.email,
-          phone: leadData.phone,
-          company: leadData.company,
-          service: leadData.service,
-          message: leadData.message,
-          status: leadData.status,
-          metadata: leadData.notes ? { notes: leadData.notes } : {},
-        },
-      ]);
-    } catch (e) {
-      console.error("Supabase manual lead create error:", e);
-    }
+  try {
+    const supabase = createAdminClient();
+    await supabase.from("leads").insert([
+      {
+        name: leadData.name,
+        email: leadData.email,
+        phone: leadData.phone,
+        company: leadData.company,
+        service: leadData.service,
+        message: leadData.message,
+        status: leadData.status,
+        metadata: leadData.notes ? { notes: leadData.notes } : {},
+      },
+    ]);
+  } catch (e) {
+    console.warn("Supabase manual lead create error:", e);
   }
 
   memoryLeads = [newLead, ...memoryLeads];

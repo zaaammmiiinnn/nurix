@@ -16,7 +16,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
-import { submitContactForm } from "./actions";
+import { submitLead } from "@/app/actions/lead";
 import { type ContactFormData } from "@/lib/schemas/contact";
 import { SITE_CONFIG } from "@/lib/data/site-data";
 
@@ -105,22 +105,20 @@ export default function ContactPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     setErrors({});
 
     try {
-      const result = await submitContactForm(formData);
+      const dataPayload = new FormData(e.currentTarget);
+      const result = await submitLead(dataPayload);
 
       if (result.success) {
-        toast.success(result.message);
+        toast.success("Got it. We'll reply within 4 hours with a scope and fixed quote.");
         setSubmitted(true);
       } else {
-        if (result.errors) {
-          setErrors(result.errors);
-        }
-        toast.error(result.message || "Please fix the highlighted fields.");
+        toast.error(result.error || "Please fix the highlighted fields.");
       }
     } catch {
       toast.error("Submission failed. Please try messaging us on WhatsApp.");
@@ -433,14 +431,10 @@ export default function ContactPage() {
                 {/* Honeypot field for bot protection */}
                 <input
                   type="text"
-                  name="honeypot"
-                  value={formData.honeypot}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, honeypot: e.target.value }))
-                  }
+                  name="website"
                   tabIndex={-1}
                   autoComplete="off"
-                  className="hidden"
+                  className="hidden sr-only"
                   aria-hidden="true"
                 />
 
@@ -452,6 +446,7 @@ export default function ContactPage() {
                     </label>
                     <input
                       id="name"
+                      name="name"
                       type="text"
                       required
                       placeholder="Tariq Mansoor"
@@ -473,6 +468,7 @@ export default function ContactPage() {
                     </label>
                     <input
                       id="email"
+                      name="email"
                       type="email"
                       required
                       placeholder="tariq@company.ae"
@@ -496,6 +492,7 @@ export default function ContactPage() {
                     </label>
                     <input
                       id="phone"
+                      name="phone"
                       type="tel"
                       required
                       placeholder="+91-8840936715"
@@ -517,6 +514,7 @@ export default function ContactPage() {
                     </label>
                     <input
                       id="company"
+                      name="company"
                       type="text"
                       placeholder="Skyline Properties"
                       value={formData.company || ""}
@@ -535,6 +533,7 @@ export default function ContactPage() {
                   </label>
                   <select
                     id="service"
+                    name="service"
                     value={formData.service}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -558,6 +557,7 @@ export default function ContactPage() {
                   </label>
                   <textarea
                     id="message"
+                    name="message"
                     required
                     rows={4}
                     placeholder="Tell us about the workflow you want automated, systems to integrate, and timeline..."
