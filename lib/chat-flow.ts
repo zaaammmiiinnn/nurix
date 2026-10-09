@@ -50,9 +50,51 @@ export const MAIN_QUICK_REPLIES = [
   "4. Talk to Human",
 ];
 
+/**
+ * Pricing shown in chat.
+ *
+ * SECURITY/CORRECTNESS: this used to be hardcoded here (AED 2,000 / 4,500 /
+ * 9,500) while the pricing page rendered different figures from the database
+ * (AED 1,500 / 3,500 / 7,500). A visitor could be quoted one price in chat and see
+ * another on /pricing seconds later. The bot now formats whatever the database
+ * says, so there is exactly one source of truth.
+ */
+export interface ChatPricingTier {
+  name: string;
+  price: string;
+  description?: string;
+  deliveryTimeframe?: string;
+  features?: string[];
+  isFeatured?: boolean;
+}
+
+export function buildPricingReply(tiers: ChatPricingTier[]): string {
+  if (!tiers || tiers.length === 0) {
+    return `🏷️ **Transparent Fixed Pricing**
+No hourly billing, no scope creep: one number agreed upfront, 50% to start and 50% on verified launch.
+
+I don't have the current package list loaded — **reply 4** and an engineer will send the exact figures for your scope.`;
+  }
+
+  const lines = tiers.map((tier) => {
+    const delivery = tier.deliveryTimeframe ? ` · ${tier.deliveryTimeframe}` : "";
+    const popular = tier.isFeatured ? " *(Most popular)*" : "";
+    const summary = tier.description ? `\n  ${tier.description}` : "";
+    return `• **${tier.name} — ${tier.price}**${popular}${delivery}${summary}`;
+  });
+
+  return `🏷️ **Transparent Fixed Pricing (AED)**
+No hourly billing. No scope creep. 50% upfront, 50% on verified launch.
+
+${lines.join("\n\n")}
+
+*Reply **4** to discuss your project or share your email to get a custom scope.*`;
+}
+
 export function processChatFlow(
   userMessage: string,
-  state: ChatFlowState = { currentMenu: "main" }
+  state: ChatFlowState = { currentMenu: "main" },
+  tiers?: ChatPricingTier[]
 ): ChatFlowResult {
   const text = userMessage.trim();
   const lower = text.toLowerCase();
@@ -121,19 +163,16 @@ All delivered in days with 100% code ownership and 30-day post-launch warranty:
 1. **AI Chatbots & WhatsApp Assistants**
    • 24/7 Meta Cloud API WhatsApp bots in English & Arabic.
    • Automated appointment booking & CRM lead capture.
-   • Delivery: 3-5 days · From **AED 2,000**.
 
 2. **Custom Web & Admin Dashboards**
    • Replace spreadsheets with secure Next.js portals.
    • Real-time Postgres/Supabase, role-based access, and analytics.
-   • Delivery: 5-7 days · From **AED 4,500**.
 
 3. **Autonomous AI Workflow Agents**
    • Agents that scrape leads, parse PDFs, and trigger webhooks.
    • Replaces repetitive human admin tasks.
-   • Delivery: 7-10 days · From **AED 9,500**.
 
-*Reply with **2** for Pricing, **3** for Projects, or **4** to speak with an engineer.*`;
+*Reply **2** for current pricing, **3** for Projects, or **4** to speak with an engineer.*`;
 
     return {
       reply,
@@ -152,19 +191,7 @@ All delivered in days with 100% code ownership and 30-day post-launch warranty:
     lower.includes("how much") ||
     lower.includes("quote")
   ) {
-    const reply = `🏷️ **Transparent Fixed Pricing (AED)**
-No hourly billing. No scope creep. 50% upfront, 50% on verified launch.
-
-• **Starter Package — AED 2,000**
-  Single WhatsApp or Web assistant · FAQ training · Google Sheets / Email alerts · 3-5 days.
-
-• **Growth Package — AED 4,500**
-  Multi-channel bot + Custom Admin Dashboard · Supabase DB · 5-7 days. *(Most Popular)*
-
-• **Enterprise Package — AED 9,500**
-  Autonomous Multi-Agent System · Custom APIs · Full bespoke engineering · 7-10 days.
-
-*Reply **4** to discuss your project or share your email to get a custom scope.*`;
+    const reply = buildPricingReply(tiers ?? []);
 
     return {
       reply,

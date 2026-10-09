@@ -9,6 +9,18 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+/**
+ * Never prerender or cache the admin area.
+ *
+ * Without this, Next attempted to statically render these routes at build time;
+ * the auth check needs request headers, so every build emitted a
+ * "Dynamic server usage" error and an UnauthorizedError from requireAdmin().
+ * More importantly, administrative data must always be read per-request —
+ * a cached admin page could serve one operator's data to another.
+ */
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function AdminLayout({
   children,
 }: {

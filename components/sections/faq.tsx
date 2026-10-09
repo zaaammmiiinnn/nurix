@@ -51,6 +51,7 @@ export function FaqSection({ faqs }: FaqSectionProps = {}) {
       aria-labelledby="faq-heading"
     >
       <SectionHeader
+          id="faq-heading"
         label="06 / FAQ"
         title="Questions. Answered."
         description="Everything you need to know about our sprints, pricing, contracts, and IP ownership."

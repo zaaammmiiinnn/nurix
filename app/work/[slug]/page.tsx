@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Clock, ShieldCheck, Building, Sparkles } from "lucide-react";
-import { getProjects, getProjectBySlug } from "@/lib/data/db-queries";
+import { getProjectBySlug } from "@/lib/data/db-queries";
 import { BreadcrumbJsonLd } from "@/components/seo/json-ld";
 import { SITE_URL } from "@/lib/config";
 
@@ -10,16 +10,26 @@ interface Props {
   params: { slug: string };
 }
 
-export async function generateStaticParams() {
-  const projects = await getProjects();
-  return projects.map((p) => ({
-    slug: p.slug,
-  }));
-}
+/**
+ * Render case studies per request.
+ *
+ * `generateStaticParams` was removed deliberately. With it present, Next
+ * pre-rendered a route shell and answered unknown slugs with HTTP 200 plus the
+ * not-found UI — a soft 404 that search engines index, because the 200 headers
+ * were flushed before `notFound()` could change the status. Rendering per request
+ * gives a genuine 404 and also means projects edited in the admin panel appear
+ * immediately instead of waiting for a rebuild.
+ */
+export const dynamic = "force-dynamic";
+export const dynamicParams = true;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const project = await getProjectBySlug(params.slug);
-  if (!project) return { title: "Project Not Found" };
+  // Call notFound() here rather than returning a "Project Not Found" title.
+  // Metadata resolves before the page body is streamed, so a notFound() raised
+  // only in the component leaves the response status at 200 — a soft 404 that
+  // search engines happily index. Raising it during metadata yields a real 404.
+  if (!project) notFound();
 
   return {
     title: project.title,

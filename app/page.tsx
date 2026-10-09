@@ -1,6 +1,7 @@
 import dynamic from "next/dynamic";
 import { HeroSection } from "@/components/sections/hero";
 import { TrustStrip } from "@/components/sections/trust-strip";
+import { FeaturedWork } from "@/components/sections/featured-work";
 import { LocalBusinessJsonLd, FaqJsonLd } from "@/components/seo/json-ld";
 
 // Dynamically import below-the-fold sections for optimized initial hydration & TBT
@@ -14,10 +15,9 @@ const HowItWorks = dynamic(
   { ssr: true }
 );
 
-const FeaturedWork = dynamic(
-  () => import("@/components/sections/featured-work").then((mod) => mod.FeaturedWork),
-  { ssr: true }
-);
+// FeaturedWork is an async Server Component (it reads projects from the database
+// so the case-study links resolve), so it is imported statically — next/dynamic
+// with { ssr: true } is for client components and does not await async RSCs.
 
 const PricingTeaser = dynamic(
   () => import("@/components/sections/pricing-teaser").then((mod) => mod.PricingTeaser),
@@ -40,6 +40,19 @@ const FinalCta = dynamic(
 );
 
 import { getFaqs, getPricingTiers } from "@/lib/data/db-queries";
+import { SITE_URL } from "@/lib/config";
+
+// The homepage owns its canonical explicitly, now that the root layout no longer
+// applies one to every route.
+export const metadata = {
+  alternates: {
+    canonical: SITE_URL,
+    languages: {
+      "en-AE": SITE_URL,
+      "x-default": SITE_URL,
+    },
+  },
+};
 
 export default async function HomePage() {
   const [faqs, pricingTiers] = await Promise.all([
@@ -48,7 +61,11 @@ export default async function HomePage() {
   ]);
 
   const mappedFaqs = faqs.map((f) => ({ q: f.question, a: f.answer }));
-  const mappedTiers = pricingTiers.map((t) => ({
+
+  // The homepage section is a 3-up teaser that links to /pricing for the full
+  // list. Pass at most three tiers, always keeping the featured one so the
+  // "Most popular" card is present.
+  const allTiers = pricingTiers.map((t) => ({
     name: t.name,
     price: t.price.replace(/[^0-9,]/g, "") || t.price,
     description: t.description,
@@ -57,6 +74,11 @@ export default async function HomePage() {
     popular: t.isFeatured,
     cta: `Start with ${t.name}`,
   }));
+
+  const featured = allTiers.filter((t) => t.popular);
+  const rest = allTiers.filter((t) => !t.popular);
+  const mappedTiers =
+    allTiers.length <= 3 ? allTiers : [...featured, ...rest].slice(0, 3);
 
   return (
     <>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import { processChatFlow, ChatFlowState } from "@/lib/chat-flow";
+import { getPricingTiers } from "@/lib/data/db-queries";
 import {
   getOrCreateSession,
   saveMemorySession,
@@ -75,7 +76,18 @@ export async function POST(req: NextRequest) {
     // 2. Automated Bot Reply if session is in 'bot' mode
     if (session.status === "bot") {
       const currentState = (session.metadata || { currentMenu: "main" }) as ChatFlowState;
-      const flowResult = processChatFlow(content, currentState);
+
+      // Pass the live pricing tiers so the bot quotes exactly what /pricing shows.
+      // Previously the bot carried its own hardcoded figures that contradicted the
+      // pricing page.
+      let tiers: Awaited<ReturnType<typeof getPricingTiers>> = [];
+      try {
+        tiers = await getPricingTiers();
+      } catch (err) {
+        console.warn("[chat] pricing tiers unavailable; bot will not quote figures:", err);
+      }
+
+      const flowResult = processChatFlow(content, currentState, tiers);
 
       const botNow = new Date().toISOString();
       const botMsgId = `msg-${Date.now()}-bot`;

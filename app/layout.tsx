@@ -63,13 +63,10 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  alternates: {
-    canonical: SITE_URL,
-    languages: {
-      "en-AE": SITE_URL,
-      "x-default": SITE_URL,
-    },
-  },
+  // NOTE: no `alternates` here on purpose. A root-level canonical is inherited by
+  // every page that does not declare its own, which previously canonicalised
+  // not-found.tsx, /sign-in, /sign-up and /admin/login to the homepage. Each
+  // public page now declares its own canonical.
   openGraph: {
     title: "NeuralWaves — AI that ships.",
     description:
@@ -96,12 +93,12 @@ export const metadata: Metadata = {
     creator: "@neuralwaves_in",
     images: ["/opengraph-image"],
   },
+  // Only the googleBot preview directives are set here. Declaring index/follow at
+  // the root as well caused Next to emit several conflicting <meta name="robots">
+  // tags on routes that override robots (e.g. the 404 page). The default for a
+  // public site is already indexable; robots.ts handles the crawl rules.
   robots: {
-    index: true,
-    follow: true,
     googleBot: {
-      index: true,
-      follow: true,
       "max-video-preview": -1,
       "max-image-preview": "large",
       "max-snippet": -1,

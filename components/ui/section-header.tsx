@@ -9,6 +9,12 @@ interface SectionHeaderProps {
   description?: string | React.ReactNode;
   align?: "left" | "center";
   className?: string;
+  /**
+   * Applied to the <h2>. Sections reference this via aria-labelledby, which was
+   * previously pointing at ids that were never rendered — six dangling
+   * references across the site, so assistive tech could not name those regions.
+   */
+  id?: string;
 }
 
 export function SectionHeader({
@@ -17,6 +23,7 @@ export function SectionHeader({
   description,
   align = "left",
   className = "",
+  id,
 }: SectionHeaderProps) {
   const isCenter = align === "center";
 
@@ -44,7 +51,10 @@ export function SectionHeader({
       </div>
 
       {/* Title */}
-      <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-[-0.03em] text-zinc-100 leading-[1.08] mb-4">
+      <h2
+        id={id}
+        className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-[-0.03em] text-zinc-100 leading-[1.08] mb-4"
+      >
         {title}
       </h2>
 

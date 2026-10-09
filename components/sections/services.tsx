@@ -209,6 +209,7 @@ export function ServicesSection() {
       aria-labelledby="services-heading"
     >
       <SectionHeader
+          id="services-heading"
         label="01 / SERVICES"
         title="Three things we do. Done properly."
         description="We don't do 50 different things. We master conversational bots, client dashboards, and autonomous workflow engines for UAE companies."

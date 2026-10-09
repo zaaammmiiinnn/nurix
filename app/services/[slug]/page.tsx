@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MessageSquare, LayoutDashboard, Bot, Check, ArrowRight, MessageCircle, Clock, ShieldCheck, Zap } from "lucide-react";
-import { getServiceBySlug, getServices, getSiteSettings } from "@/lib/data/db-queries";
+import { getServiceBySlug, getSiteSettings } from "@/lib/data/db-queries";
 import { ServiceJsonLd, BreadcrumbJsonLd } from "@/components/seo/json-ld";
 import { SITE_URL } from "@/lib/config";
 
@@ -10,22 +10,29 @@ interface Props {
   params: { slug: string };
 }
 
+/**
+ * Render service pages per request.
+ *
+ * `generateStaticParams` was removed deliberately: with it present Next answered
+ * unknown slugs with HTTP 200 plus the not-found UI (a soft 404 that search
+ * engines index), because the 200 headers were flushed before `notFound()` could
+ * set the status.
+ */
+export const dynamic = "force-dynamic";
+export const dynamicParams = true;
+
 const ICON_MAP: Record<string, typeof MessageSquare> = {
   chatbots: MessageSquare,
   dashboards: LayoutDashboard,
   agents: Bot,
 };
 
-export async function generateStaticParams() {
-  const services = await getServices();
-  return services.map((s) => ({
-    slug: s.slug,
-  }));
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const service = await getServiceBySlug(params.slug);
-  if (!service) return { title: "Service Not Found" };
+  // Raise the 404 during metadata resolution so the response carries a real 404
+  // status. Doing it only in the page body leaves the status at 200 (a soft 404),
+  // because metadata streams before the component runs.
+  if (!service) notFound();
 
   return {
     title: service.title,

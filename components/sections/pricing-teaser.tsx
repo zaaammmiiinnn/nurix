@@ -66,6 +66,21 @@ interface PricingTeaserProps {
 export function PricingTeaser({ tiers }: PricingTeaserProps = {}) {
   const items = tiers && tiers.length > 0 ? tiers : TIERS;
 
+  /**
+   * The homepage now passes every tier in the database (previously 4), but this
+   * template was hard-wired to three columns with `items-center`, so a fourth
+   * card wrapped onto its own row and broke the "Most popular" centring.
+   * Choose the column count from the item count instead.
+   */
+  const gridCols =
+    items.length >= 4
+      ? "lg:grid-cols-4"
+      : items.length === 3
+        ? "lg:grid-cols-3"
+        : items.length === 2
+          ? "lg:grid-cols-2"
+          : "";
+
   return (
     <section
       id="pricing"
@@ -74,6 +89,7 @@ export function PricingTeaser({ tiers }: PricingTeaserProps = {}) {
     >
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-16">
         <SectionHeader
+          id="pricing-heading"
           label="04 / PRICING"
           title="Transparent pricing. No surprises."
           description="Transparent scoped pricing with zero hourly rate creep. 50% upfront to kick off, 50% only when you approve delivery."
@@ -92,8 +108,8 @@ export function PricingTeaser({ tiers }: PricingTeaserProps = {}) {
         </Link>
       </div>
 
-      {/* 3 Tiers side-by-side with middle elevated */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center pt-4">
+      {/* Tiers side-by-side; column count follows the number of tiers */}
+      <div className={`grid grid-cols-1 ${gridCols} gap-8 items-center pt-4`}>
         {items.map((tier) => (
           <div
             key={tier.name}

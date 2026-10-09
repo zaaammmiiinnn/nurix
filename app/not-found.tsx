@@ -4,6 +4,13 @@ import { Home, MessageSquare } from "lucide-react";
 export const metadata = {
   title: "404 — Page Not Found",
   description: "The requested page does not exist or has been moved.",
+  // Must never be indexed. Next 14 streams the response, so a notFound() raised
+  // by a dynamic route still carries an HTTP 200 status; without this, unknown
+  // /work/* and /services/* URLs would be treated as real pages. This also
+  // prevents the root layout's canonical (the homepage) from being inherited and
+  // telling search engines that every bad URL is the homepage.
+  robots: { index: false, follow: false },
+  alternates: { canonical: null },
 };
 
 export default function NotFound() {

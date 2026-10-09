@@ -56,6 +56,7 @@ export function HowItWorks() {
       aria-labelledby="how-heading"
     >
       <SectionHeader
+          id="how-heading"
         label="02 / PROCESS"
         title="From brief to live in 5 days."
         description="No 3-month consulting cycles. A crisp 4-step delivery pipeline engineered for speed and certainty."
