@@ -95,11 +95,18 @@ export function ChatWidget() {
     }
   }, []);
 
+  // 2. Fetch session and initial history.
+  //
+  // Deferred until the visitor actually opens the widget. This used to run on
+  // mount for every visitor, and /api/chat/session calls getOrCreateSession — so
+  // every page view, including bounces, inserted a chat_sessions row and began
+  // polling. A visitor who never engages now creates no session row and makes no
+  // repeated requests.
   useEffect(() => {
-    if (visitorId) {
+    if (visitorId && isOpen && !session) {
       fetchSessionHistory(visitorId);
     }
-  }, [visitorId, fetchSessionHistory]);
+  }, [visitorId, isOpen, session, fetchSessionHistory]);
 
   // 3. Scroll to bottom when messages change
   const scrollToBottom = useCallback(() => {

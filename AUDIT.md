@@ -3,7 +3,52 @@
 **Audited:** 9 Oct 2026 · **Commit:** `460582b` · **Working tree:** clean · **Scope:** whole repo
 **Method:** full static read of all source, RLS schema, config, docs and build output; `tsc --noEmit` clean; `next build` succeeds (43 routes); DNS/WHOIS and external-link checks; four independent parallel audits cross-checked against first-hand evidence.
 
-**Nothing was modified. This file is the only thing the audit added.**
+---
+
+## ✅ RESOLUTION STATUS (added after the fixes were implemented)
+
+Everything below this line is the **original audit as written**, kept for reference. This section records what has since been fixed. Commits are on `main`; each was verified with `tsc`, `eslint` and a production build, and where noted by exercising a built server over HTTP.
+
+### P0 security — all resolved
+
+| # | Issue | Resolution |
+|---|---|---|
+| P0-1 | Chat PII world-readable/writable (`USING (true)`) | Permissive policies dropped in `schema.sql`, the Phase 12 migration, and a new idempotent migration. Verified at runtime: `400`/`[]` for anon reads. |
+| P0-2 | Cookie bypass on `/api/admin/*` | Fallback deleted; both routes fail closed. Verified: `Cookie: __session=1` now returns **401**. |
+| P0-3 | 22 of 24 admin actions unguarded | `requireAdmin()` added to every export in all 8 action modules. `db-queries.ts` no longer imports admin actions, so public reads and admin writes are separate. |
+| P0-4 | Verification gate defeated in `verifyAdminAccess()` | Now considers **verified** emails only. Hardcoded admin addresses removed from source and from the login page, which was displaying the allowlist publicly. |
+| P0-5 | WhatsApp webhook accepted forged POSTs | `X-Hub-Signature-256` HMAC verified over the raw body with `timingSafeEqual`; hardcoded `VERIFY_TOKEN` fallback removed; idempotency added. |
+| P0-6 | Cron failed open | Fails closed with `503` when `CRON_SECRET` is unset; bearer compared with `timingSafeEqual`. |
+| P0-7 | Next 14.2.35 EOL + `--dangerouslyUseUnsupportedNextVersion` | Upgraded to **Next 15.5.27 + React 19**; flag removed. `npm audit` critical count went **1 → 0**. The full OpenNext Cloudflare build now succeeds with no override. |
+
+### Functional and commercial — resolved
+
+- Homepage case-study links: all three 404s fixed; the section now renders real database rows. Verified all rendered links return 200.
+- Chat-vs-pricing contradiction: the bot formats the live tiers. A third drifting price list in the contact form was removed.
+- Admin edits not reaching the site: contact page, footer, nav, hero, CTA and chat widget now read admin settings; sitemap and service metadata read the database.
+- False success reporting and the seven fabricated demo leads: removed; Supabase errors now propagate.
+- WhatsApp: outbound send path implemented (`lib/whatsapp/send.ts`); `leads.email` made nullable so the fabricated `@wa.neuralwaves.in` addresses are gone.
+- Writes that claimed success on failure: errors now returned and surfaced.
+- Trust claims: "12+ projects" → real count; "Verified Outcome" on demos → labelled demo; "Google Meet link generated" removed; delivery promises no longer contradictory.
+- Unused social proof: testimonials section added and rendering.
+- Soft 404s on unknown `/work/*` and `/services/*` URLs: now `noindex` with no canonical, so they cannot be indexed.
+- Positioning: footer reads "Engineered in India · Serving the UAE".
+
+### P1 — resolved
+
+Security headers (HSTS, nosniff, frame options, referrer, permissions) and `poweredByHeader: false`; CSP shipped **report-only**; `/privacy` and `/terms` added and linked; schema hardening (CHECK constraints, missing triggers/indexes, `search_path` pin, idempotent seeds); accessibility (SectionHeader ids for six dangling `aria-labelledby`, form `aria-describedby`/`aria-invalid`/`role="alert"` with focus management, Escape-closable dialogs); hero renders real values without JS; CI workflow added; dead Vercel analytics and 312 KB of unused assets removed; single canonical origin via `lib/config.ts`.
+
+### ⚠️ Still outstanding — you must do these
+
+1. **Apply the database migrations.** The RLS fix and schema hardening are delivered as SQL files; nothing changes in your live database until they run. Use `supabase db push`, or paste `supabase/migrations/20261009_fix_chat_rls_public_pii.sql` and `20261009_harden_schema.sql` into the SQL editor, then re-run the P0-1 curl and confirm it returns `[]`.
+2. **Register `neuralwaves.in`.** Still unregistered. The live site is currently served from a `workers.dev` hostname while the code's canonical fallback points at the unregistered domain — set `NEXT_PUBLIC_SITE_URL` to whichever host you actually serve, and note `app/api/og`, `sitemap` and `robots` all follow it.
+3. **Set `ADMIN_EMAILS` as a Worker secret.** It was removed from `wrangler.toml` because committing the allowlist is what an attacker targets. The admin check fails closed, so **the admin panel is inaccessible until you set it**: `npx wrangler secret put ADMIN_EMAILS`.
+4. **The cron still will not run** without a `scheduled` handler — a Cloudflare Cron Trigger does not make an HTTP request, and OpenNext's generated Worker only exports `fetch`. Two options are documented in `wrangler.toml`.
+5. **Rate limiting and bot protection** on the enquiry forms are still absent (the in-memory `Map` is per-isolate on Workers and the key is attacker-controlled). Use Cloudflare Rate Limiting rules plus Turnstile. An unauthenticated `POST` to the Supabase REST endpoint can also insert leads directly; consider revoking the anon insert policy now that submissions go through the server.
+6. **Clerk 5.7.6 → 7.x** and **Tailwind 3 → 4** remain as majors; the remaining `npm audit` highs are the dev toolchain plus a Clerk advisory that concerns organizations/billing/reverification, none of which this app uses.
+7. **`next lint` is deprecated** and removed in Next 16; migrate to the ESLint CLI before that upgrade.
+8. **`/services/{chatbots,dashboards,agents}` duplicate `/services/[slug]`** (static routes shadow the dynamic one). They are in sync now, but consolidating them would remove ~600 lines of near-copies.
+9. **The chat widget is still mounted in the root layout** and polls every 3–10s per visitor. Lazy-load it on interaction if you want the page-weight back.
 
 ---
 

@@ -42,8 +42,30 @@ NEXT_PUBLIC_WHATSAPP_NUMBER = "918840936715"
 # Weekly lead digest.
 #
 # The previous configuration declared this schedule in vercel.json only, which
-# Cloudflare Workers ignores — so the digest never actually ran in production.
-# The endpoint also fails closed without CRON_SECRET; set that secret with:
+# Cloudflare Workers ignores entirely, so the digest never ran in production.
+#
+# ⚠️  This trigger alone is NOT sufficient. A Cloudflare Cron Trigger invokes the
+#     Worker's `scheduled` handler; it does not make an HTTP request. The Worker
+#     that @opennextjs/cloudflare generates exports only `fetch`, so a scheduled
+#     event has nothing to handle it and /api/cron/lead-digest is never called.
+#
+# Pick one:
+#
+#   (a) Add a small second Worker whose scheduled handler fetches the endpoint
+#       with the bearer token, e.g.
+#
+#         export default {
+#           async scheduled(_event, env) {
+#             await fetch("https://<your-host>/api/cron/lead-digest", {
+#               headers: { Authorization: `Bearer ${env.CRON_SECRET}` },
+#             });
+#           },
+#         };
+#
+#   (b) Extend the generated Worker to forward `scheduled` to your own handler by
+#       wrapping `.open-next/worker.js` in a custom entry point.
+#
+# The endpoint fails closed without CRON_SECRET, so either way:
 #   npx wrangler secret put CRON_SECRET
 [triggers]
 crons = ["0 8 * * 1"]
