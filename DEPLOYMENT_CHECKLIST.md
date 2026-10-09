@@ -1,7 +1,9 @@
 # Production Deployment Guide & Checklist — NEURALWAVES
 
 > **Target Domain:** [https://NeuralWaves.in](https://NeuralWaves.in)  
-> **Tech Stack:** Next.js 14 (App Router), Supabase (PostgreSQL + Auth + RLS), Vercel, Resend, Meta WhatsApp Cloud API.
+> **Tech Stack:** Next.js 15 (App Router), Supabase (PostgreSQL + RLS; Clerk provides authentication), Cloudflare Workers via @opennextjs/cloudflare, Resend, Meta WhatsApp Cloud API.
+>
+> **⚠️ This document is out of date.** It describes a Vercel deployment, but the app deploys to Cloudflare Workers (`wrangler.toml`, `scripts/build.js`). The Vercel-specific steps below (project import, Vercel env vars, Vercel Cron, Vercel Analytics) do not apply. Use `npx wrangler secret put <NAME>` for environment variables and the `[triggers]` block in `wrangler.toml` for the cron schedule.
 
 ---
 
@@ -167,8 +169,8 @@ ON CONFLICT (email) DO UPDATE SET role = 'superadmin';
 
 ---
 
-### Step 15: Activate Vercel Analytics & Speed Insights
-- In your Vercel Dashboard, enable **Analytics** and **Speed Insights** tabs to monitor Core Web Vitals (LCP, INP, CLS) in production.
+### Step 15: Analytics
+- `@vercel/analytics` and `@vercel/speed-insights` were removed: they are inert on Cloudflare Workers, so they collected nothing while still loading third-party scripts. Add a Workers-compatible analytics provider (e.g. Cloudflare Web Analytics) and disclose it in `/privacy` if you want traffic data.
 
 ---
 
@@ -180,7 +182,7 @@ ON CONFLICT (email) DO UPDATE SET role = 'superadmin';
 
 ### 2. Edge Runtime vs Node Runtime for OpenGraph
 - **The Issue**: Node.js canvas libraries are heavy and fail on Vercel Edge.
-- **Our Architecture**: Both `app/opengraph-image.tsx` and `app/api/og/route.tsx` export `export const runtime = "edge"`, rendering SVGs and HTML via `@vercel/og` with sub-50ms response times and zero cold starts.
+- **Our Architecture**: `app/opengraph-image.tsx` and `app/api/og/route.tsx` use `ImageResponse` from `next/og`. Neither exports `runtime = "edge"`, and `@vercel/og` is not a dependency. Verify OG rendering against the actual deploy target (Workers needs WASM for image generation).
 
 ### 3. Middleware Matcher Recursion
 - **The Issue**: Matchers covering `/_next` or static files cause loops or block static asset chunk serving.

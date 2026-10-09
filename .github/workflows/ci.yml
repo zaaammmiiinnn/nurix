@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# The repo previously had no CI at all. Nothing built or type-checked on push, so
+# nothing would have caught that the project was pinned to an end-of-life Next.js
+# release with a critical advisory — the only gatekeeper was a version check that
+# the build script explicitly disabled.
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        # .npmrc sets legacy-peer-deps, matching local installs.
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        # `next lint` is deprecated in Next 16 in favour of the ESLint CLI; switch
+        # this to `npx eslint .` when you move to Next 16.
+        run: npx next lint
+
+      - name: Build
+        run: npm run build:next
+        env:
+          # Build-time placeholders. Real values live in Cloudflare Worker secrets.
+          NEXT_PUBLIC_SITE_URL: https://example.com
+
+      - name: Dependency audit (informational)
+        # Fails only on critical advisories, so a dev-toolchain high does not block
+        # every PR while still catching something like the Nextjs advisory that
+        # motivated this workflow.
+        run: npm audit --audit-level=critical
+        continue-on-error: false

@@ -17,13 +17,13 @@ NeuralWaves is a specialized AI automation studio based in Dubai, UAE. We engine
 
 ## Tech Stack & Architecture
 
-- **Frontend & Routing**: [Next.js 14](https://nextjs.org) (App Router, Server Actions, Edge Runtime OG image generator)
-- **Styling & System**: [Tailwind CSS](https://tailwindcss.com), Custom Signal Design System (`#07070A`, `#8B5CF6`, `#22D3EE`), `@vercel/font` Inter + Geist Mono
+- **Frontend & Routing**: [Next.js 15](https://nextjs.org) (App Router, Server Actions, dynamic OG image generation via `next/og`)
+- **Styling & System**: [Tailwind CSS](https://tailwindcss.com), Custom Signal Design System (`#07070A`, `#8B5CF6`, `#22D3EE`), `next/font` (Inter + Geist Mono, self-hosted)
 - **Motion & Interaction**: [Framer Motion](https://www.framer.com/motion) with global `prefers-reduced-motion` compliance
 - **Database & Auth**: [Supabase](https://supabase.com) (PostgreSQL 15, Row Level Security, Magic Link Auth, Real-time)
 - **Email Ingestion**: [Resend](https://resend.com)
 - **WhatsApp**: Official Meta WhatsApp Business Cloud API (`/api/whatsapp/webhook`)
-- **Hosting & Analytics**: [Vercel](https://vercel.com) with Edge Network, Speed Insights, and Analytics
+- **Hosting**: [Cloudflare Workers](https://workers.cloudflare.com) via `@opennextjs/cloudflare` (see `wrangler.toml`). No third-party analytics is currently active.
 
 ---
 
@@ -96,7 +96,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## Admin Panel Access
 
 1. Navigate to [http://localhost:3000/admin/login](http://localhost:3000/admin/login).
-2. For local evaluation without configured Supabase credentials, click **1-Click Demo Login** to explore the pre-seeded pipeline.
+2. Sign in with an email listed in `ADMIN_EMAILS`. There is no demo login or bypass — the admin check fails closed.
 3. For production access with Supabase Auth:
    - Request a magic link to your email.
    - Run the promotion query in Supabase SQL Editor:
@@ -108,14 +108,24 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## Deployment to Vercel
+## Deployment to Cloudflare Workers
 
-Follow the complete step-by-step checklist documented in [DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md).
+The application builds to a Cloudflare Worker with `@opennextjs/cloudflare`. Environment variables come from Cloudflare Worker secrets and the `[vars]` block in `wrangler.toml` — not from a `.env` file.
 
 ```bash
-npm run build
+npm run build     # opennextjs-cloudflare build
+npm run deploy:cloudflare
 ```
-Verify that all 23 static and dynamic routes compile with zero errors.
+
+Set secrets before deploying (the admin panel is inaccessible until `ADMIN_EMAILS` exists):
+
+```bash
+npx wrangler secret put ADMIN_EMAILS
+npx wrangler secret put CLERK_SECRET_KEY
+npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+npx wrangler secret put RESEND_API_KEY
+npx wrangler secret put CRON_SECRET
+```
 
 ---
 
