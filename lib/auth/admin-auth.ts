@@ -57,6 +57,7 @@ export function getAuthorizedAdminEmails(): Set<string> {
   // Built-in project administrators
   allowed.add("askarizamin110@gmail.com");
   allowed.add("neuralwaves.official@gmail.com");
+  allowed.add("support@neuralwaves.in");
 
   return allowed;
 }

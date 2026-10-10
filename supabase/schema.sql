@@ -686,7 +686,7 @@ WHERE NOT EXISTS (SELECT 1 FROM public.faqs);
 INSERT INTO public.site_settings (key, value, description)
 VALUES
 ('whatsapp_number', '+918840936715', 'Primary WhatsApp contact number in E.164 format'),
-('contact_email', 'hello@example.com', 'Official contact & inbound lead notification email'),
+('contact_email', 'support@neuralwaves.in', 'Official contact & inbound lead notification email'),
 ('contact_phone', '+91-8840936715', 'Official contact phone line'),
 ('calendar_url', 'https://cal.com/neuralwaves/15min', 'Cal.com or Calendly scope booking link'),
 ('social_linkedin', 'https://linkedin.com/company/neuralwaves', 'Company LinkedIn page'),

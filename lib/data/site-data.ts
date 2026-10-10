@@ -74,7 +74,7 @@ export const SITE_CONFIG = {
     // domain, and replace the India phone/WhatsApp number with a UAE number if you
     // are selling as a Dubai studio. See AUDIT.md section 1 on positioning — the
     // copy says Dubai while these details say India.
-    email: "zaminaskari.work@gmail.com",
+    email: "support@neuralwaves.in",
     phone: "+91-8840936715",
     whatsapp: "+91-8840936715",
     whatsappDisplay: "+91-8840936715",
