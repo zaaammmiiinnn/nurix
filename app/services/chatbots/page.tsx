@@ -4,6 +4,9 @@ import { MessageSquare, Check, ArrowRight, MessageCircle, Clock, ShieldCheck, Za
 import { SERVICES_DATA } from "@/lib/data/site-data";
 import { ServiceJsonLd, BreadcrumbJsonLd } from "@/components/seo/json-ld";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const FALLBACK_SERVICE = SERVICES_DATA[0]; // chatbots
 
 /**

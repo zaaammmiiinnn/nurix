@@ -1,4 +1,4 @@
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 import { HeroSection } from "@/components/sections/hero";
 import { TrustStrip } from "@/components/sections/trust-strip";
 import { FeaturedWork } from "@/components/sections/featured-work";
@@ -6,12 +6,12 @@ import { TestimonialsSection } from "@/components/sections/testimonials";
 import { LocalBusinessJsonLd, FaqJsonLd } from "@/components/seo/json-ld";
 
 // Dynamically import below-the-fold sections for optimized initial hydration & TBT
-const ServicesSection = dynamic(
+const ServicesSection = nextDynamic(
   () => import("@/components/sections/services").then((mod) => mod.ServicesSection),
   { ssr: true }
 );
 
-const HowItWorks = dynamic(
+const HowItWorks = nextDynamic(
   () => import("@/components/sections/how-it-works").then((mod) => mod.HowItWorks),
   { ssr: true }
 );
@@ -20,28 +20,31 @@ const HowItWorks = dynamic(
 // so the case-study links resolve), so it is imported statically — next/dynamic
 // with { ssr: true } is for client components and does not await async RSCs.
 
-const PricingTeaser = dynamic(
+const PricingTeaser = nextDynamic(
   () => import("@/components/sections/pricing-teaser").then((mod) => mod.PricingTeaser),
   { ssr: true }
 );
 
-const WhyNeuralWaves = dynamic(
+const WhyNeuralWaves = nextDynamic(
   () => import("@/components/sections/why-neuralwaves").then((mod) => mod.WhyNeuralWaves),
   { ssr: true }
 );
 
-const FaqSection = dynamic(
+const FaqSection = nextDynamic(
   () => import("@/components/sections/faq").then((mod) => mod.FaqSection),
   { ssr: true }
 );
 
-const FinalCta = dynamic(
+const FinalCta = nextDynamic(
   () => import("@/components/sections/final-cta").then((mod) => mod.FinalCta),
   { ssr: true }
 );
 
-import { getFaqs, getPricingTiers, getProjects } from "@/lib/data/db-queries";
+import { getFaqs, getPricingTiers, getProjects, getServices } from "@/lib/data/db-queries";
 import { SITE_URL } from "@/lib/config";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 // The homepage owns its canonical explicitly, now that the root layout no longer
 // applies one to every route.
@@ -56,10 +59,11 @@ export const metadata = {
 };
 
 export default async function HomePage() {
-  const [faqs, pricingTiers, projects] = await Promise.all([
+  const [faqs, pricingTiers, projects, services] = await Promise.all([
     getFaqs(),
     getPricingTiers(),
     getProjects(),
+    getServices(),
   ]);
 
   // Real count of shipped builds for the hero (excluding demo builds).
@@ -96,7 +100,7 @@ export default async function HomePage() {
       <TrustStrip />
 
       {/* Below the Fold Components */}
-      <ServicesSection />
+      <ServicesSection services={services} />
       <HowItWorks />
       <FeaturedWork />
       <PricingTeaser tiers={mappedTiers} />

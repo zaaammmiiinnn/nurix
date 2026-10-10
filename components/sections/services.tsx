@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, useInView } from "framer-motion";
 import { MessageSquare, LayoutDashboard, Bot, ArrowRight } from "lucide-react";
 import { SectionHeader } from "@/components/ui/section-header";
+import type { ServiceItem } from "@/lib/data/site-data";
 
 // Card wrapper with radial cursor spotlight effect
 function SpotlightCard({
@@ -201,7 +202,20 @@ function AgentsMockup() {
   );
 }
 
-export function ServicesSection() {
+export function ServicesSection({ services }: { services?: ServiceItem[] } = {}) {
+  const chatbot = services?.find((s) => s.slug === "chatbots");
+  const dashboard = services?.find((s) => s.slug === "dashboards");
+  const agent = services?.find((s) => s.slug === "agents");
+
+  const chatbotTitle = chatbot?.title || "AI Chatbots & WhatsApp Automation";
+  const chatbotDesc = chatbot?.description || "Menu bots, AI replies, and human handoff — on the app your customers already use.";
+
+  const dashboardTitle = dashboard?.title || "Web & Admin Dashboards";
+  const dashboardDesc = dashboard?.description || "Custom dashboards for the operations you're running on spreadsheets.";
+
+  const agentTitle = agent?.title || "AI Agents for Business";
+  const agentDesc = agent?.description || "Lead gen, scraping, reporting. Agents that work while you sleep.";
+
   return (
     <section
       id="services"
@@ -227,10 +241,10 @@ export function ServicesSection() {
                 </div>
                 <div>
                   <h3 className="text-2xl font-medium text-white mb-2">
-                    AI Chatbots & WhatsApp Automation
+                    {chatbotTitle}
                   </h3>
                   <p className="text-sm text-zinc-400 leading-relaxed">
-                    Menu bots, AI replies, and human handoff — on the app your customers already use.
+                    {chatbotDesc}
                   </p>
                 </div>
                 <Link
@@ -262,10 +276,10 @@ export function ServicesSection() {
               </div>
               <div>
                 <h3 className="text-xl font-medium text-white mb-2">
-                  Web & Admin Dashboards
+                  {dashboardTitle}
                 </h3>
                 <p className="text-sm text-zinc-400 leading-relaxed">
-                  Custom dashboards for the operations you&apos;re running on spreadsheets.
+                  {dashboardDesc}
                 </p>
               </div>
               <DashboardMockup />
@@ -296,10 +310,10 @@ export function ServicesSection() {
               </div>
               <div>
                 <h3 className="text-xl font-medium text-white mb-2">
-                  AI Agents for Business
+                  {agentTitle}
                 </h3>
                 <p className="text-sm text-zinc-400 leading-relaxed">
-                  Lead gen, scraping, reporting. Agents that work while you sleep.
+                  {agentDesc}
                 </p>
               </div>
               <AgentsMockup />

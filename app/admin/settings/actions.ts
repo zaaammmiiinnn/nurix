@@ -12,7 +12,7 @@ export interface SettingRecord {
 }
 
 // In-memory fallback
-let localSettingsCache: Record<string, string> = {
+const localSettingsCache: Record<string, string> = {
   whatsapp_number: SITE_CONFIG.contact.whatsapp,
   contact_email: SITE_CONFIG.contact.email,
   contact_phone: SITE_CONFIG.contact.phone,
@@ -61,24 +61,21 @@ export async function updateAdminSettings(
         .upsert(upsertRows, { onConflict: "key" });
 
       if (!error) {
-        revalidatePath("/admin/settings");
-        revalidatePath("/");
-        revalidatePath("/contact");
+        try {
+          revalidatePath("/admin/settings");
+          revalidatePath("/");
+          revalidatePath("/contact");
+        } catch {}
         return { success: true };
       }
-      console.warn("Supabase upsert error (falling back to cache):", error?.message);
+      return { success: false, message: error?.message || "Failed to update settings in database" };
     } catch (err: unknown) {
-      console.warn("Supabase network error (falling back to cache):", err);
+      console.error("Supabase settings update error:", err);
+      return { success: false, message: err instanceof Error ? err.message : "Database error" };
     }
   }
 
-  localSettingsCache = { ...localSettingsCache, ...settings };
-  try {
-    revalidatePath("/admin/settings");
-    revalidatePath("/");
-    revalidatePath("/contact");
-  } catch {}
-  return { success: true };
+  return { success: false, message: "Database is unconfigured" };
 }
 
 export async function deleteAdminSetting(
@@ -94,23 +91,20 @@ export async function deleteAdminSetting(
         .eq("key", key);
 
       if (!error) {
-        revalidatePath("/admin/settings");
-        revalidatePath("/");
-        revalidatePath("/contact");
+        try {
+          revalidatePath("/admin/settings");
+          revalidatePath("/");
+          revalidatePath("/contact");
+        } catch {}
         return { success: true };
       }
-      console.warn("Supabase delete error (falling back to cache):", error?.message);
+      return { success: false, message: error?.message || "Failed to delete setting from database" };
     } catch (err: unknown) {
-      console.warn("Supabase network error (falling back to cache):", err);
+      console.error("Supabase settings delete error:", err);
+      return { success: false, message: err instanceof Error ? err.message : "Database error" };
     }
   }
 
-  delete localSettingsCache[key];
-  try {
-    revalidatePath("/admin/settings");
-    revalidatePath("/");
-    revalidatePath("/contact");
-  } catch {}
-  return { success: true };
+  return { success: false, message: "Database is unconfigured" };
 }
 

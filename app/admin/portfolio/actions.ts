@@ -34,7 +34,7 @@ export interface AdminProject {
 }
 
 // In-memory fallback cache when Supabase is not configured
-let localProjectsCache: AdminProject[] = PROJECTS_DATA.map((p, idx) => ({
+const localProjectsCache: AdminProject[] = PROJECTS_DATA.map((p, idx) => ({
   id: `mock-proj-${idx + 1}`,
   slug: p.slug,
   title: p.title,
@@ -97,13 +97,6 @@ export async function createAdminProject(
 ): Promise<{ success: boolean; project?: AdminProject; message?: string }> {
   await requireAdmin();
 
-  const newProject: AdminProject = {
-    ...project,
-    id: `proj-${Date.now()}`,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
-
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const { data, error } = await supabaseAdmin
@@ -136,18 +129,14 @@ export async function createAdminProject(
         safeRevalidate("/");
         return { success: true, project: data };
       }
-      console.warn("Supabase insert error (falling back to cache):", error?.message);
+      return { success: false, message: error?.message || "Failed to create project" };
     } catch (err: unknown) {
-      console.warn("Supabase network error (falling back to cache):", err);
+      console.error("Supabase insert error:", err);
+      return { success: false, message: err instanceof Error ? err.message : "Database error" };
     }
   }
 
-  // Fallback in-memory
-  localProjectsCache = [newProject, ...localProjectsCache];
-  safeRevalidate("/admin/portfolio");
-  safeRevalidate("/work");
-  safeRevalidate("/");
-  return { success: true, project: newProject };
+  return { success: false, message: "Database is unconfigured" };
 }
 
 export async function updateAdminProject(
@@ -172,23 +161,14 @@ export async function updateAdminProject(
         safeRevalidate("/");
         return { success: true };
       }
-      console.warn("Supabase update error (falling back to cache):", error?.message);
+      return { success: false, message: error?.message || "Failed to update project" };
     } catch (err: unknown) {
-      console.warn("Supabase network error (falling back to cache):", err);
+      console.error("Supabase update error:", err);
+      return { success: false, message: err instanceof Error ? err.message : "Database error" };
     }
   }
 
-  // Fallback in-memory
-  localProjectsCache = localProjectsCache.map((p) =>
-    p.id === id || p.slug === project.slug
-      ? { ...p, ...project, updated_at: new Date().toISOString() }
-      : p
-  );
-
-  safeRevalidate("/admin/portfolio");
-  safeRevalidate("/work");
-  safeRevalidate("/");
-  return { success: true };
+  return { success: false, message: "Database is unconfigured" };
 }
 
 export async function deleteAdminProject(
@@ -205,17 +185,14 @@ export async function deleteAdminProject(
         safeRevalidate("/");
         return { success: true };
       }
-      console.warn("Supabase delete error (falling back to cache):", error?.message);
+      return { success: false, message: error?.message || "Failed to delete project" };
     } catch (err: unknown) {
-      console.warn("Supabase network error (falling back to cache):", err);
+      console.error("Supabase delete error:", err);
+      return { success: false, message: err instanceof Error ? err.message : "Database error" };
     }
   }
 
-  localProjectsCache = localProjectsCache.filter((p) => p.id !== id);
-  safeRevalidate("/admin/portfolio");
-  safeRevalidate("/work");
-  safeRevalidate("/");
-  return { success: true };
+  return { success: false, message: "Database is unconfigured" };
 }
 
 /**

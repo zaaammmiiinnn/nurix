@@ -20,7 +20,7 @@ export interface AdminPricingTier {
 }
 
 // In-memory fallback
-let localPricingCache: AdminPricingTier[] = PRICING_TIERS_DATA.map((t, idx) => ({
+const localPricingCache: AdminPricingTier[] = PRICING_TIERS_DATA.map((t, idx) => ({
   id: `mock-tier-${idx + 1}`,
   name: t.name,
   price: t.price,
@@ -72,12 +72,6 @@ export async function createAdminPricingTier(
 ): Promise<{ success: boolean; tier?: AdminPricingTier; message?: string }> {
   await requireAdmin();
 
-  const newTier: AdminPricingTier = {
-    ...tier,
-    id: `tier-${Date.now()}`,
-    created_at: new Date().toISOString(),
-  };
-
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const { data, error } = await supabaseAdmin
@@ -106,19 +100,14 @@ export async function createAdminPricingTier(
         } catch {}
         return { success: true, tier: data };
       }
-      console.warn("Supabase insert error (falling back to local cache):", error?.message);
+      return { success: false, message: error?.message || "Failed to create tier in database" };
     } catch (err: unknown) {
-      console.warn("Supabase network error (falling back to local cache):", err);
+      console.error("Supabase insert error:", err);
+      return { success: false, message: err instanceof Error ? err.message : "Database error" };
     }
   }
 
-  localPricingCache = [...localPricingCache, newTier];
-  try {
-    revalidatePath("/admin/pricing");
-    revalidatePath("/pricing");
-    revalidatePath("/");
-  } catch {}
-  return { success: true, tier: newTier };
+  return { success: false, message: "Database is unconfigured" };
 }
 
 export async function updateAdminPricingTier(
@@ -154,22 +143,14 @@ export async function updateAdminPricingTier(
         } catch {}
         return { success: true };
       }
-      console.warn("Supabase update error (falling back to local cache):", error?.message);
+      return { success: false, message: error?.message || "Failed to update tier in database" };
     } catch (err: unknown) {
-      console.warn("Supabase network error (falling back to local cache):", err);
+      console.error("Supabase update error:", err);
+      return { success: false, message: err instanceof Error ? err.message : "Database error" };
     }
   }
 
-  localPricingCache = localPricingCache.map((t) =>
-    t.id === id || t.name === tier.name ? { ...t, ...tier } : t
-  );
-
-  try {
-    revalidatePath("/admin/pricing");
-    revalidatePath("/pricing");
-    revalidatePath("/");
-  } catch {}
-  return { success: true };
+  return { success: false, message: "Database is unconfigured" };
 }
 
 export async function deleteAdminPricingTier(
@@ -192,17 +173,12 @@ export async function deleteAdminPricingTier(
         } catch {}
         return { success: true };
       }
-      console.warn("Supabase delete error (falling back to local cache):", error?.message);
+      return { success: false, message: error?.message || "Failed to delete tier from database" };
     } catch (err: unknown) {
-      console.warn("Supabase network error (falling back to local cache):", err);
+      console.error("Supabase delete error:", err);
+      return { success: false, message: err instanceof Error ? err.message : "Database error" };
     }
   }
 
-  localPricingCache = localPricingCache.filter((t) => t.id !== id);
-  try {
-    revalidatePath("/admin/pricing");
-    revalidatePath("/pricing");
-    revalidatePath("/");
-  } catch {}
-  return { success: true };
+  return { success: false, message: "Database is unconfigured" };
 }

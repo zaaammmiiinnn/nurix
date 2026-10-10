@@ -5,6 +5,9 @@ import { BreadcrumbJsonLd, FaqJsonLd } from "@/components/seo/json-ld";
 import { getPricingTiers, getFaqs, getSiteSettings } from "@/lib/data/db-queries";
 import { SITE_URL } from "@/lib/config";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: "Pricing — Fixed Price AI & Automation",
   description:

@@ -3,6 +3,9 @@ import Link from "next/link";
 import { MessageSquare, LayoutDashboard, Bot, ArrowRight, Check, MessageCircle } from "lucide-react";
 import { BreadcrumbJsonLd } from "@/components/seo/json-ld";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: "Services",
   description:

@@ -11,7 +11,7 @@ import {
   type PricingTier,
   type FaqItem,
 } from "./site-data";
-import { supabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
+import { supabaseAdmin, supabase } from "@/lib/supabase";
 
 /**
  * Public content reads.
@@ -77,7 +77,7 @@ const DEFAULT_SETTINGS: Record<string, string> = {
 };
 
 function db() {
-  return isSupabaseConfigured && supabaseAdmin ? supabaseAdmin : null;
+  return supabaseAdmin || supabase;
 }
 
 function asStringArray(value: unknown): string[] {

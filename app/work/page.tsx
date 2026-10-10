@@ -35,6 +35,9 @@ export const metadata: Metadata = {
 import { getProjects } from "@/lib/data/db-queries";
 import { SITE_URL } from "@/lib/config";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function WorkPage() {
   const projects = await getProjects();
 

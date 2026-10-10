@@ -29,7 +29,7 @@ export interface AdminService {
 }
 
 // In-memory fallback
-let localServicesCache: AdminService[] = SERVICES_DATA.map((s, idx) => ({
+const localServicesCache: AdminService[] = SERVICES_DATA.map((s, idx) => ({
   id: `mock-srv-${idx + 1}`,
   slug: s.slug,
   title: s.title,
@@ -83,12 +83,6 @@ export async function createAdminService(
 ): Promise<{ success: boolean; service?: AdminService; message?: string }> {
   await requireAdmin();
 
-  const newService: AdminService = {
-    ...service,
-    id: `srv-${Date.now()}`,
-    created_at: new Date().toISOString(),
-  };
-
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const { data, error } = await supabaseAdmin
@@ -116,18 +110,14 @@ export async function createAdminService(
         safeRevalidate("/");
         return { success: true, service: data };
       }
-      console.warn("Supabase insert error (falling back to cache):", error?.message);
+      return { success: false, message: error?.message || "Failed to insert service" };
     } catch (err: unknown) {
-      console.warn("Supabase network error (falling back to cache):", err);
+      console.error("Supabase insert error:", err);
+      return { success: false, message: err instanceof Error ? err.message : "Database error" };
     }
   }
 
-  localServicesCache = [...localServicesCache, newService];
-  safeRevalidate("/admin/services");
-  safeRevalidate("/services");
-  safeRevalidate(`/services/${service.slug}`);
-  safeRevalidate("/");
-  return { success: true, service: newService };
+  return { success: false, message: "Database is unconfigured" };
 }
 
 export async function updateAdminService(
@@ -161,20 +151,14 @@ export async function updateAdminService(
         safeRevalidate("/");
         return { success: true };
       }
-      console.warn("Supabase update error (falling back to cache):", error?.message);
+      return { success: false, message: error?.message || "Failed to update service" };
     } catch (err: unknown) {
-      console.warn("Supabase network error (falling back to cache):", err);
+      console.error("Supabase update error:", err);
+      return { success: false, message: err instanceof Error ? err.message : "Database error" };
     }
   }
 
-  localServicesCache = localServicesCache.map((s) =>
-    s.id === id || s.slug === service.slug ? { ...s, ...service } : s
-  );
-
-  safeRevalidate("/admin/services");
-  safeRevalidate("/services");
-  safeRevalidate("/");
-  return { success: true };
+  return { success: false, message: "Database is unconfigured" };
 }
 
 export async function deleteAdminService(
@@ -191,15 +175,12 @@ export async function deleteAdminService(
         safeRevalidate("/");
         return { success: true };
       }
-      console.warn("Supabase delete error (falling back to cache):", error?.message);
+      return { success: false, message: error?.message || "Failed to delete service" };
     } catch (err: unknown) {
-      console.warn("Supabase network error (falling back to cache):", err);
+      console.error("Supabase delete error:", err);
+      return { success: false, message: err instanceof Error ? err.message : "Database error" };
     }
   }
 
-  localServicesCache = localServicesCache.filter((s) => s.id !== id);
-  safeRevalidate("/admin/services");
-  safeRevalidate("/services");
-  safeRevalidate("/");
-  return { success: true };
+  return { success: false, message: "Database is unconfigured" };
 }

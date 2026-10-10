@@ -15,7 +15,7 @@ export interface AdminFaq {
   created_at?: string;
 }
 
-let localFaqsCache: AdminFaq[] = FAQS_DATA.map((f, idx) => ({
+const localFaqsCache: AdminFaq[] = FAQS_DATA.map((f, idx) => ({
   id: `mock-faq-${idx + 1}`,
   question: f.question,
   answer: f.answer,
@@ -59,12 +59,6 @@ export async function createAdminFaq(
 ): Promise<{ success: boolean; faq?: AdminFaq; message?: string }> {
   await requireAdmin();
 
-  const newFaq: AdminFaq = {
-    ...faq,
-    id: `faq-${Date.now()}`,
-    created_at: new Date().toISOString(),
-  };
-
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const { data, error } = await supabaseAdmin
@@ -82,24 +76,21 @@ export async function createAdminFaq(
         .single();
 
       if (!error && data) {
-        revalidatePath("/admin/faqs");
-        revalidatePath("/");
-        revalidatePath("/pricing");
+        try {
+          revalidatePath("/admin/faqs");
+          revalidatePath("/");
+          revalidatePath("/pricing");
+        } catch {}
         return { success: true, faq: data };
       }
-      console.warn("Supabase insert error (falling back to cache):", error?.message);
+      return { success: false, message: error?.message || "Failed to create FAQ" };
     } catch (err: unknown) {
-      console.warn("Supabase network error (falling back to cache):", err);
+      console.error("Supabase insert error:", err);
+      return { success: false, message: err instanceof Error ? err.message : "Database error" };
     }
   }
 
-  localFaqsCache = [...localFaqsCache, newFaq];
-  try {
-    revalidatePath("/admin/faqs");
-    revalidatePath("/");
-    revalidatePath("/pricing");
-  } catch {}
-  return { success: true, faq: newFaq };
+  return { success: false, message: "Database is unconfigured" };
 }
 
 export async function updateAdminFaq(
@@ -123,27 +114,21 @@ export async function updateAdminFaq(
         .eq("id", id);
 
       if (!error) {
-        revalidatePath("/admin/faqs");
-        revalidatePath("/");
-        revalidatePath("/pricing");
+        try {
+          revalidatePath("/admin/faqs");
+          revalidatePath("/");
+          revalidatePath("/pricing");
+        } catch {}
         return { success: true };
       }
-      console.warn("Supabase update error (falling back to cache):", error?.message);
+      return { success: false, message: error?.message || "Failed to update FAQ" };
     } catch (err: unknown) {
-      console.warn("Supabase network error (falling back to cache):", err);
+      console.error("Supabase update error:", err);
+      return { success: false, message: err instanceof Error ? err.message : "Database error" };
     }
   }
 
-  localFaqsCache = localFaqsCache.map((f) =>
-    f.id === id ? { ...f, ...faq } : f
-  );
-
-  try {
-    revalidatePath("/admin/faqs");
-    revalidatePath("/");
-    revalidatePath("/pricing");
-  } catch {}
-  return { success: true };
+  return { success: false, message: "Database is unconfigured" };
 }
 
 export async function deleteAdminFaq(
@@ -159,22 +144,19 @@ export async function deleteAdminFaq(
         .eq("id", id);
 
       if (!error) {
-        revalidatePath("/admin/faqs");
-        revalidatePath("/");
-        revalidatePath("/pricing");
+        try {
+          revalidatePath("/admin/faqs");
+          revalidatePath("/");
+          revalidatePath("/pricing");
+        } catch {}
         return { success: true };
       }
-      console.warn("Supabase delete error (falling back to cache):", error?.message);
+      return { success: false, message: error?.message || "Failed to delete FAQ" };
     } catch (err: unknown) {
-      console.warn("Supabase network error (falling back to cache):", err);
+      console.error("Supabase delete error:", err);
+      return { success: false, message: err instanceof Error ? err.message : "Database error" };
     }
   }
 
-  localFaqsCache = localFaqsCache.filter((f) => f.id !== id);
-  try {
-    revalidatePath("/admin/faqs");
-    revalidatePath("/");
-    revalidatePath("/pricing");
-  } catch {}
-  return { success: true };
+  return { success: false, message: "Database is unconfigured" };
 }

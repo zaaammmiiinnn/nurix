@@ -35,6 +35,9 @@ export const metadata: Metadata = {
 import { getSiteSettings } from "@/lib/data/db-queries";
 import { SITE_URL } from "@/lib/config";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function AboutPage() {
   const siteSettings = await getSiteSettings();
   return (

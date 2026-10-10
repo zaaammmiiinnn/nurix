@@ -12,7 +12,8 @@ import { getSiteSettings } from "@/lib/data/db-queries";
  *
  * Never add secrets here — no keys, tokens or allowlists.
  */
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET() {
   const settings = await getSiteSettings();
@@ -28,7 +29,7 @@ export async function GET() {
     },
     {
       headers: {
-        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+        "Cache-Control": "no-store, max-age=0, must-revalidate",
       },
     },
   );

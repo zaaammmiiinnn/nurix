@@ -17,7 +17,7 @@ export interface AdminTestimonial {
   created_at?: string;
 }
 
-let localTestimonialsCache: AdminTestimonial[] = [
+const localTestimonialsCache: AdminTestimonial[] = [
   {
     id: "mock-test-1",
     client_name: "Tariq Mansour",
@@ -93,12 +93,6 @@ export async function createAdminTestimonial(
 ): Promise<{ success: boolean; testimonial?: AdminTestimonial; message?: string }> {
   await requireAdmin();
 
-  const newTestimonial: AdminTestimonial = {
-    ...testimonial,
-    id: `test-${Date.now()}`,
-    created_at: new Date().toISOString(),
-  };
-
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
       const { data, error } = await supabaseAdmin
@@ -119,22 +113,20 @@ export async function createAdminTestimonial(
         .single();
 
       if (!error && data) {
-        revalidatePath("/admin/testimonials");
-        revalidatePath("/");
+        try {
+          revalidatePath("/admin/testimonials");
+          revalidatePath("/");
+        } catch {}
         return { success: true, testimonial: data };
       }
-      console.warn("Supabase insert error (falling back to cache):", error?.message);
+      return { success: false, message: error?.message || "Failed to create testimonial" };
     } catch (err: unknown) {
-      console.warn("Supabase network error (falling back to cache):", err);
+      console.error("Supabase insert error:", err);
+      return { success: false, message: err instanceof Error ? err.message : "Database error" };
     }
   }
 
-  localTestimonialsCache = [...localTestimonialsCache, newTestimonial];
-  try {
-    revalidatePath("/admin/testimonials");
-    revalidatePath("/");
-  } catch {}
-  return { success: true, testimonial: newTestimonial };
+  return { success: false, message: "Database is unconfigured" };
 }
 
 export async function updateAdminTestimonial(
@@ -163,25 +155,20 @@ export async function updateAdminTestimonial(
         .eq("id", id);
 
       if (!error) {
-        revalidatePath("/admin/testimonials");
-        revalidatePath("/");
+        try {
+          revalidatePath("/admin/testimonials");
+          revalidatePath("/");
+        } catch {}
         return { success: true };
       }
-      console.warn("Supabase update error (falling back to cache):", error?.message);
+      return { success: false, message: error?.message || "Failed to update testimonial" };
     } catch (err: unknown) {
-      console.warn("Supabase network error (falling back to cache):", err);
+      console.error("Supabase update error:", err);
+      return { success: false, message: err instanceof Error ? err.message : "Database error" };
     }
   }
 
-  localTestimonialsCache = localTestimonialsCache.map((t) =>
-    t.id === id ? { ...t, ...testimonial } : t
-  );
-
-  try {
-    revalidatePath("/admin/testimonials");
-    revalidatePath("/");
-  } catch {}
-  return { success: true };
+  return { success: false, message: "Database is unconfigured" };
 }
 
 export async function deleteAdminTestimonial(
@@ -197,20 +184,18 @@ export async function deleteAdminTestimonial(
         .eq("id", id);
 
       if (!error) {
-        revalidatePath("/admin/testimonials");
-        revalidatePath("/");
+        try {
+          revalidatePath("/admin/testimonials");
+          revalidatePath("/");
+        } catch {}
         return { success: true };
       }
-      console.warn("Supabase delete error (falling back to cache):", error?.message);
+      return { success: false, message: error?.message || "Failed to delete testimonial" };
     } catch (err: unknown) {
-      console.warn("Supabase network error (falling back to cache):", err);
+      console.error("Supabase delete error:", err);
+      return { success: false, message: err instanceof Error ? err.message : "Database error" };
     }
   }
 
-  localTestimonialsCache = localTestimonialsCache.filter((t) => t.id !== id);
-  try {
-    revalidatePath("/admin/testimonials");
-    revalidatePath("/");
-  } catch {}
-  return { success: true };
+  return { success: false, message: "Database is unconfigured" };
 }
