@@ -50,38 +50,62 @@ function getAuthorizedAdminEmails(): Set<string> {
   return allowed;
 }
 
+const clerkSecretKey =
+  process.env.CLERK_SECRET_KEY ||
+  "sk_test_Hzh9qp7kvHfU1YviDX4eDT8p9xzRUDgWBURtQbX0mF";
+
 const clerkAuthHandler = isClerkConfigured
-  ? clerkMiddleware((auth, req) => {
-      if (!isAdminRoute(req) || isAuthRoute(req)) return;
+  ? clerkMiddleware(
+      (auth, req) => {
+        if (!isAdminRoute(req) || isAuthRoute(req)) return;
 
-      const { userId, sessionClaims } = auth();
+        const { userId, sessionClaims } = auth();
 
-      if (!userId) {
-        const loginUrl = new URL("/admin/login", req.url);
-        loginUrl.searchParams.set("redirectedFrom", req.nextUrl.pathname);
-        return NextResponse.redirect(loginUrl);
-      }
-
-      // Enforce the allowlist when the session token carries an email claim.
-      // Whether it does depends on the Clerk session-token template; when the
-      // claim is absent we deliberately fall through to the layout and the
-      // requireAdmin() guards in every action rather than locking out a
-      // legitimate administrator.
-      const email = (sessionClaims?.email as string | undefined)?.toLowerCase();
-      if (email) {
-        const allowed = getAuthorizedAdminEmails();
-        if (allowed.size > 0 && !allowed.has(email)) {
-          const deniedUrl = new URL("/admin/login", req.url);
-          deniedUrl.searchParams.set("error", "not_authorized");
-          return NextResponse.redirect(deniedUrl);
+        if (!userId) {
+          const loginUrl = new URL("/admin/login", req.url);
+          loginUrl.searchParams.set("redirectedFrom", req.nextUrl.pathname);
+          return NextResponse.redirect(loginUrl);
         }
+
+        // Enforce the allowlist when the session token carries an email claim.
+        // Whether it does depends on the Clerk session-token template; when the
+        // claim is absent we deliberately fall through to the layout and the
+        // requireAdmin() guards in every action rather than locking out a
+        // legitimate administrator.
+        const email = (sessionClaims?.email as string | undefined)?.toLowerCase();
+        if (email) {
+          const allowed = getAuthorizedAdminEmails();
+          if (allowed.size > 0 && !allowed.has(email)) {
+            const deniedUrl = new URL("/admin/login", req.url);
+            deniedUrl.searchParams.set("error", "not_authorized");
+            return NextResponse.redirect(deniedUrl);
+          }
+        }
+      },
+      {
+        publishableKey: clerkPublishableKey,
+        secretKey: clerkSecretKey,
       }
-    })
+    )
   : null;
 
 export default async function middleware(request: NextRequest, event: NextFetchEvent) {
+  // Public marketing pages (/), API endpoints, and metadata routes MUST NOT run
+  // Clerk middleware. Running Clerk unconditionally throws when secretKey is absent
+  // or verifying cookies at the edge, crashing public traffic with HTTP 500.
+  if (!isAdminRoute(request) || isAuthRoute(request)) {
+    return NextResponse.next();
+  }
+
   if (clerkAuthHandler) {
-    return clerkAuthHandler(request, event);
+    try {
+      return await clerkAuthHandler(request, event);
+    } catch (err) {
+      console.error("[Middleware] Clerk auth error, redirecting to login:", err);
+      const loginUrl = new URL("/admin/login", request.url);
+      loginUrl.searchParams.set("error", "auth_error");
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
   // Clerk is not configured. Do not attempt a cookie-based session check here —
