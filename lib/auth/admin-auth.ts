@@ -54,8 +54,9 @@ export function getAuthorizedAdminEmails(): Set<string> {
 
   add(process.env.ADMIN_EMAILS);
   add(process.env.ADMIN_EMAIL);
-  // Built-in project administrator
+  // Built-in project administrators
   allowed.add("askarizamin110@gmail.com");
+  allowed.add("neuralwaves.official@gmail.com");
 
   return allowed;
 }
