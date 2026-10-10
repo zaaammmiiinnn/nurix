@@ -13,8 +13,14 @@ main = ".open-next/worker.js"
 # reasonably current so Workers runtime behaviour matches what Next expects.
 compatibility_date = "2026-08-01"
 compatibility_flags = ["nodejs_compat"]
+workers_dev = true
 
 assets = { directory = ".open-next/assets", binding = "ASSETS" }
+
+routes = [
+  { pattern = "neuralwaves.in", custom_domain = true },
+  { pattern = "www.neuralwaves.in", custom_domain = true }
+]
 
 [vars]
 # Public, non-sensitive build-time configuration only. Anything secret belongs in
@@ -29,7 +35,7 @@ NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL = "/"
 NEXT_PUBLIC_SUPABASE_URL = "https://vbinpwwerrvkqcaqqxls.supabase.co"
 NEXT_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_5ioMLbbxPAH6Qgrsv-inhw_ohOogLr9"
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_5ioMLbbxPAH6Qgrsv-inhw_ohOogLr9"
-NEXT_PUBLIC_SITE_URL = "https://nurix.neuralnetworks-de2.workers.dev"
+NEXT_PUBLIC_SITE_URL = "https://neuralwaves.in"
 NEXT_PUBLIC_CAL_COM_URL = "https://cal.com/neuralwaves/15min"
 NEXT_PUBLIC_WHATSAPP_NUMBER = "918840936715"
 

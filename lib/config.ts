@@ -34,7 +34,7 @@ export const BRAND = {
    */
   deliveryNote: "Engineered in India · Serving clients across the UAE and GCC",
   location: "Dubai, United Arab Emirates",
-  email: "hello@neuralwaves.in",
+  email: "support@neuralwaves.in",
 } as const;
 
 /** Optional Cal.com booking link, if configured. */
