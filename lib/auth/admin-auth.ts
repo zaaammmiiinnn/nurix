@@ -58,6 +58,9 @@ export function getAuthorizedAdminEmails(): Set<string> {
   allowed.add("askarizamin110@gmail.com");
   allowed.add("neuralwaves.official@gmail.com");
   allowed.add("support@neuralwaves.in");
+  allowed.add("zamin@neuralwaves.in");
+  allowed.add("belal@neuralwaves.in");
+  allowed.add("zaminaskari.work@gmail.com");
 
   return allowed;
 }
