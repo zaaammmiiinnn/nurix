@@ -45,6 +45,11 @@ export default async function AdminLayout({
     );
   }
 
+  // If user has a temporary/dummy password, enforce password update
+  if ("mustChangePassword" in authResult && authResult.mustChangePassword) {
+    redirect("/admin/change-password");
+  }
+
   // User is authenticated, verified, and authorized!
   return (
     <AdminShell

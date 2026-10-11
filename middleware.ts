@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest, type NextFetchEvent } from "next/server";
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { verifyAdminSessionToken } from "@/lib/auth/admin-session";
 
 /**
  * Route protection for the admin area.
@@ -103,6 +104,27 @@ export default async function middleware(request: NextRequest, event: NextFetchE
     return NextResponse.next();
   }
 
+  // 1. Check direct database admin session cookie
+  const sessionCookie = request.cookies.get("nw_admin_session")?.value;
+  if (sessionCookie) {
+    const session = await verifyAdminSessionToken(sessionCookie);
+    if (session) {
+      const allowed = getAuthorizedAdminEmails();
+      if (allowed.has(session.email.toLowerCase())) {
+        const { pathname } = request.nextUrl;
+        if (
+          session.mustChangePassword &&
+          !pathname.startsWith("/admin/change-password")
+        ) {
+          const changePwdUrl = new URL("/admin/change-password", request.url);
+          return NextResponse.redirect(changePwdUrl);
+        }
+        return NextResponse.next();
+      }
+    }
+  }
+
+  // 2. Delegate to Clerk if configured
   if (clerkAuthHandler) {
     try {
       return await clerkAuthHandler(request, event);

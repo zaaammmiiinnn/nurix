@@ -2,7 +2,8 @@
 
 import React from "react";
 import { UserButton, SignOutButton } from "@clerk/nextjs";
-import { LogOut } from "lucide-react";
+import { LogOut, KeyRound } from "lucide-react";
+import Link from "next/link";
 import { signOutAdmin } from "@/app/admin/login/actions";
 
 interface AdminUserNavProps {
@@ -36,10 +37,18 @@ export function AdminUserNav({ adminEmail, isClerkAuth }: AdminUserNavProps) {
           </div>
         </div>
 
+        <Link
+          href="/admin/change-password"
+          className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono text-zinc-400 hover:text-violet-300 hover:bg-violet-500/10 transition-colors"
+        >
+          <KeyRound size={14} />
+          Change Password
+        </Link>
+
         <SignOutButton redirectUrl="/admin/login">
           <button
             type="button"
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-mono text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
           >
             <LogOut size={14} />
             Sign Out
@@ -63,10 +72,18 @@ export function AdminUserNav({ adminEmail, isClerkAuth }: AdminUserNavProps) {
         </span>
       </div>
 
+      <Link
+        href="/admin/change-password"
+        className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono text-zinc-400 hover:text-violet-300 hover:bg-violet-500/10 transition-colors"
+      >
+        <KeyRound size={14} />
+        Change Password
+      </Link>
+
       <form action={signOutAdmin}>
         <button
           type="submit"
-          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-mono text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+          className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
         >
           <LogOut size={14} />
           Sign Out

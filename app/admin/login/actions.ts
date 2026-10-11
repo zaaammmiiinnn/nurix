@@ -3,7 +3,271 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { isEmailAuthorizedAdmin } from "@/lib/auth/admin-auth";
+import { supabaseAdmin } from "@/lib/supabase";
+import {
+  isEmailAuthorizedAdmin,
+  isDummyPassword,
+} from "@/lib/auth/admin-auth";
+import {
+  setAdminSessionCookie,
+  getAdminSession,
+  clearAdminSessionCookie,
+} from "@/lib/auth/admin-session";
+
+const CLERK_SECRET_KEY =
+  process.env.CLERK_SECRET_KEY ||
+  "sk_test_Hzh9qp7kvHfU1YviDX4eDT8p9xzRUDgWBURtQbX0mF";
+
+/**
+ * Direct Database Admin Login with Email & Password.
+ * Authenticates against the Supabase `public.admins` table.
+ */
+export async function loginWithAdminPassword(formData: FormData) {
+  try {
+    const email = formData.get("email")?.toString().trim().toLowerCase();
+    const password = formData.get("password")?.toString();
+
+    if (!email || !password) {
+      return {
+        success: false,
+        error: "Please provide both email address and password.",
+      };
+    }
+
+    // 1. Verify email authorization against whitelist
+    const isAuthorized = await isEmailAuthorizedAdmin(email);
+    if (!isAuthorized) {
+      return {
+        success: false,
+        error: "This email address is not registered on the administrator whitelist.",
+      };
+    }
+
+    if (!supabaseAdmin) {
+      return {
+        success: false,
+        error: "Database connection unavailable. Please check system configuration.",
+      };
+    }
+
+    // 2. Fetch admin record from Supabase
+    const { data: adminRecord, error: dbError } = await supabaseAdmin
+      .from("admins")
+      .select("id, email, role, Password")
+      .ilike("email", email)
+      .maybeSingle();
+
+    if (dbError || !adminRecord) {
+      return {
+        success: false,
+        error: "Administrator account not found in database.",
+      };
+    }
+
+    // 3. Verify password
+    const storedPassword = (adminRecord.Password || "").toString().trim();
+    const inputPassword = password.trim();
+
+    if (!storedPassword || storedPassword !== inputPassword) {
+      return {
+        success: false,
+        error: "Incorrect password. Please verify your credentials.",
+      };
+    }
+
+    // 4. Check if password is dummy/temporary
+    const mustChange = isDummyPassword(storedPassword);
+
+    // 5. Issue tamper-proof admin session cookie
+    await setAdminSessionCookie({
+      email: adminRecord.email,
+      role: adminRecord.role || "superadmin",
+      mustChangePassword: mustChange,
+    });
+
+    return {
+      success: true,
+      redirectUrl: mustChange ? "/admin/change-password" : "/admin",
+      mustChangePassword: mustChange,
+    };
+  } catch (err: unknown) {
+    console.error("[AdminLogin] unexpected error:", err);
+    return {
+      success: false,
+      error:
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred during authentication.",
+    };
+  }
+}
+
+/**
+ * Synchronizes password update to Clerk so both Supabase and Clerk stay in sync.
+ */
+async function syncPasswordToClerk(email: string, newPassword: string): Promise<boolean> {
+  try {
+    if (!CLERK_SECRET_KEY || CLERK_SECRET_KEY.includes("YOUR_")) return false;
+
+    // 1. Find Clerk user by email
+    const searchRes = await fetch(
+      `https://api.clerk.com/v1/users?email_address=${encodeURIComponent(email)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${CLERK_SECRET_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!searchRes.ok) return false;
+    const users = await searchRes.json();
+
+    if (Array.isArray(users) && users.length > 0) {
+      const userId = users[0].id;
+      // 2. Update password in Clerk
+      const updateRes = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${CLERK_SECRET_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          password: newPassword,
+          skip_password_checks: true,
+        }),
+      });
+
+      return updateRes.ok;
+    }
+    return false;
+  } catch (e) {
+    console.warn("[syncPasswordToClerk] Failed to sync to Clerk:", e);
+    return false;
+  }
+}
+
+/**
+ * Change Administrator Password.
+ * Updates password in Supabase `admins` table and Clerk user database.
+ */
+export async function changeAdminPassword(formData: FormData) {
+  try {
+    const session = await getAdminSession();
+    if (!session || !session.email) {
+      return {
+        success: false,
+        error: "Session expired. Please sign in again.",
+        redirect: "/admin/login",
+      };
+    }
+
+    const currentPassword = formData.get("currentPassword")?.toString().trim();
+    const newPassword = formData.get("newPassword")?.toString().trim();
+    const confirmPassword = formData.get("confirmPassword")?.toString().trim();
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return {
+        success: false,
+        error: "All password fields are required.",
+      };
+    }
+
+    if (newPassword !== confirmPassword) {
+      return {
+        success: false,
+        error: "New password and confirmation do not match.",
+      };
+    }
+
+    if (newPassword.length < 8) {
+      return {
+        success: false,
+        error: "New password must be at least 8 characters long.",
+      };
+    }
+
+    if (isDummyPassword(newPassword)) {
+      return {
+        success: false,
+        error: "Please choose a unique, custom password instead of a default dummy password.",
+      };
+    }
+
+    if (newPassword === currentPassword) {
+      return {
+        success: false,
+        error: "New password must be different from your current password.",
+      };
+    }
+
+    if (!supabaseAdmin) {
+      return {
+        success: false,
+        error: "Database client unavailable.",
+      };
+    }
+
+    // 1. Verify current password matches database
+    const { data: adminRecord, error: selectError } = await supabaseAdmin
+      .from("admins")
+      .select("id, email, Password")
+      .ilike("email", session.email)
+      .maybeSingle();
+
+    if (selectError || !adminRecord) {
+      return {
+        success: false,
+        error: "Admin record not found.",
+      };
+    }
+
+    const storedCurrent = (adminRecord.Password || "").toString().trim();
+    if (storedCurrent !== currentPassword) {
+      return {
+        success: false,
+        error: "Current password is incorrect.",
+      };
+    }
+
+    // 2. Update password in Supabase database
+    const { error: updateError } = await supabaseAdmin
+      .from("admins")
+      .update({ Password: newPassword })
+      .ilike("email", session.email);
+
+    if (updateError) {
+      console.error("[changeAdminPassword] Supabase update failed:", updateError);
+      return {
+        success: false,
+        error: "Failed to update password in database. Please try again.",
+      };
+    }
+
+    // 3. Synchronize to Clerk in background
+    await syncPasswordToClerk(session.email, newPassword);
+
+    // 4. Refresh session cookie with mustChangePassword = false
+    await setAdminSessionCookie({
+      email: session.email,
+      role: session.role,
+      mustChangePassword: false,
+    });
+
+    return {
+      success: true,
+      message: "Password updated successfully! Welcome to the Admin Portal.",
+      redirectUrl: "/admin",
+    };
+  } catch (err: unknown) {
+    console.error("[changeAdminPassword] error:", err);
+    return {
+      success: false,
+      error:
+        err instanceof Error ? err.message : "Failed to update password.",
+    };
+  }
+}
 
 export async function sendMagicLink(email: string, redirectToOrigin: string) {
   try {
@@ -64,7 +328,7 @@ export async function sendMagicLink(email: string, redirectToOrigin: string) {
     return {
       success: false,
       message:
-        "Supabase is not configured for Magic Links. Please sign in via Clerk or configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local.",
+        "Supabase is not configured for Magic Links. Please sign in with your Email & Password.",
     };
   } catch (err: unknown) {
     console.error("sendMagicLink unexpected error:", err);
@@ -82,9 +346,15 @@ export async function signOutAdmin() {
   );
 
   if (isConfigured) {
-    const supabase = await createClient();
-    await supabase.auth.signOut();
+    try {
+      const supabase = await createClient();
+      await supabase.auth.signOut();
+    } catch {
+      // Ignore
+    }
   }
+
+  await clearAdminSessionCookie();
 
   const cookieStore = await cookies();
   cookieStore.delete("nurix_admin_demo_session");

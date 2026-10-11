@@ -1,55 +1,59 @@
 "use client";
 
 import React, { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Mail,
   ArrowRight,
   Loader2,
   ShieldAlert,
-  CheckCircle2,
   Lock,
   ShieldCheck,
-  KeyRound,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { toast } from "sonner";
-import { SignIn } from "@clerk/nextjs";
-import { dark } from "@clerk/themes";
-import { sendMagicLink } from "../actions";
 import { Logo } from "@/components/ui/logo";
+import { loginWithAdminPassword } from "../actions";
 
 export default function AdminLoginPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const errorParam = searchParams.get("error");
   const rejectedEmail = searchParams.get("email");
 
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [magicLinkSent, setMagicLinkSent] = useState(false);
 
-  const clerkKey =
-    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
-    "pk_test_c3Ryb25nLWRvZ2Zpc2gtMzU0Ni5jbGVyay5hY2NvdW50cy5kZXYk";
-  const isClerkEnabled = Boolean(
-    clerkKey &&
-      !clerkKey.includes("YOUR_") &&
-      !clerkKey.includes("placeholder") &&
-      clerkKey.startsWith("pk_")
-  );
-
-  const handleMagicLink = async (e: React.FormEvent) => {
+  const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email || !password) {
+      toast.error("Please enter both email and password.");
+      return;
+    }
 
     setLoading(true);
     try {
-      const res = await sendMagicLink(email, window.location.origin);
+      const formData = new FormData();
+      formData.set("email", email);
+      formData.set("password", password);
+
+      const res = await loginWithAdminPassword(formData);
+
       if (res.success) {
-        toast.success(res.message);
-        setMagicLinkSent(true);
+        if (res.mustChangePassword) {
+          toast.info("Temporary password detected. Please set your permanent password.");
+          router.push(res.redirectUrl || "/admin/change-password");
+        } else {
+          toast.success("Signed in successfully!");
+          router.push(res.redirectUrl || "/admin");
+        }
+        router.refresh();
       } else {
-        toast.error(res.message || "Failed to send magic link");
+        toast.error(res.error || "Authentication failed.");
       }
     } catch {
       toast.error("An unexpected error occurred. Please try again.");
@@ -102,135 +106,91 @@ export default function AdminLoginPage() {
           </div>
         )}
 
-        {/* Card: Clerk or Fallback */}
+        {/* Login Card */}
         <div className="rounded-2xl border border-white/[0.08] bg-gradient-to-br from-white/[0.04] to-white/[0.01] p-6 shadow-2xl space-y-6">
-          {isClerkEnabled ? (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-xs font-mono text-zinc-400 pb-2 border-b border-white/[0.06]">
-                <Lock size={14} className="text-violet-400" />
-                <span>Clerk Verified Admin Sign In</span>
-              </div>
+          <div className="flex items-center gap-2 text-xs font-mono text-zinc-400 pb-2 border-b border-white/[0.06]">
+            <Lock size={14} className="text-violet-400" />
+            <span>Administrator Sign In</span>
+          </div>
 
-              <div className="flex justify-center w-full">
-                <SignIn
-                  path="/admin/login"
-                  routing="path"
-                  fallbackRedirectUrl="/admin"
-                  forceRedirectUrl="/admin"
-                  appearance={{
-                    baseTheme: dark,
-                    variables: {
-                      colorPrimary: "#8B5CF6",
-                      colorBackground: "transparent",
-                      colorInputBackground: "rgba(255, 255, 255, 0.04)",
-                      colorInputText: "#ffffff",
-                      colorText: "#ffffff",
-                      colorTextSecondary: "#a1a1aa",
-                      borderRadius: "0.75rem",
-                    },
-                    elements: {
-                      rootBox: "w-full",
-                      card: "bg-transparent shadow-none border-none p-0 w-full",
-                      headerTitle: "text-white text-base font-semibold",
-                      headerSubtitle: "text-zinc-400 text-xs font-mono",
-                      socialButtonsBlockButton:
-                        "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] text-white text-xs py-2.5 transition-all",
-                      socialButtonsBlockButtonText: "text-zinc-200 font-medium text-xs",
-                      formButtonPrimary:
-                        "bg-violet-600 hover:bg-violet-500 text-white font-semibold text-xs py-2.5 shadow-lg shadow-violet-600/30 transition-all",
-                      formFieldInput:
-                        "bg-white/[0.04] border border-white/[0.08] text-white text-xs rounded-xl focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/60",
-                      footerActionLink: "text-violet-400 hover:text-violet-300 text-xs",
-                      footer: "hidden",
-                    },
-                  }}
+          <form onSubmit={handlePasswordLogin} className="space-y-4">
+            {/* Email Field */}
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-400">
+                Email Address
+              </label>
+              <div className="relative">
+                <Mail
+                  size={15}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"
+                />
+                <input
+                  type="email"
+                  required
+                  autoComplete="username"
+                  placeholder="admin@neuralwaves.in"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/60 transition-colors"
                 />
               </div>
             </div>
-          ) : (
-            /* Clerk Not Configured Banner + Magic Link Alternative */
-            <div className="space-y-5">
-              <div className="rounded-xl border border-violet-500/20 bg-violet-950/20 p-4 text-xs space-y-2 text-zinc-300">
-                <div className="flex items-center gap-2 font-semibold text-white">
-                  <KeyRound size={15} className="text-violet-400" />
-                  Clerk Authentication Setup
-                </div>
-                <p className="text-zinc-400 leading-relaxed text-[11px]">
-                  Clerk is configured for admin access. To sign in with Clerk, add your API keys to <code className="text-violet-300 font-mono">.env.local</code>:
-                </p>
-                <div className="p-2.5 rounded-lg bg-black/60 border border-white/[0.08] text-[10px] font-mono text-violet-300 leading-relaxed">
-                  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...<br />
-                  CLERK_SECRET_KEY=sk_test_...
-                </div>
-                <p className="text-[10px] text-zinc-500 font-mono">
-                  {/* The allowlist must not be displayed on an unauthenticated
-                      page — it told anyone who loaded /admin/login exactly which
-                      addresses to target. */}
-                  Access is limited to addresses configured in ADMIN_EMAILS.
-                </p>
+
+            {/* Password Field */}
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-400">
+                Password
+              </label>
+              <div className="relative">
+                <Lock
+                  size={15}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"
+                />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  autoComplete="current-password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/60 transition-colors"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
               </div>
-
-              {magicLinkSent ? (
-                <div className="text-center space-y-4 py-4">
-                  <div className="w-12 h-12 rounded-full bg-violet-500/10 border border-violet-500/30 flex items-center justify-center mx-auto text-violet-400">
-                    <CheckCircle2 size={24} />
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="text-lg font-medium text-white">Check your email</h3>
-                    <p className="text-xs text-zinc-400 max-w-xs mx-auto">
-                      We sent a magic sign-in link to <span className="text-white font-mono">{email}</span>. Click the link to log in.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setMagicLinkSent(false)}
-                    className="text-xs font-mono text-violet-400 hover:underline pt-2 block mx-auto"
-                  >
-                    Use another email
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleMagicLink} className="space-y-4 pt-2 border-t border-white/[0.06]">
-                  <div className="space-y-1.5">
-                    <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-400">
-                      Supabase Admin Email Magic Link
-                    </label>
-                    <div className="relative">
-                      <Mail
-                        size={16}
-                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"
-                      />
-                      <input
-                        type="email"
-                        required
-                        placeholder="you@company.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/60 transition-colors"
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3 px-4 rounded-xl text-xs font-semibold uppercase tracking-wider text-white btn-glow flex items-center justify-center gap-2 disabled:opacity-50 transition-all"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 size={15} className="animate-spin" />
-                        Sending Magic Link...
-                      </>
-                    ) : (
-                      <>
-                        Send Magic Link
-                        <ArrowRight size={15} />
-                      </>
-                    )}
-                  </button>
-                </form>
-              )}
             </div>
-          )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 px-4 rounded-xl text-xs font-semibold uppercase tracking-wider text-white btn-glow flex items-center justify-center gap-2 disabled:opacity-50 transition-all mt-6"
+            >
+              {loading ? (
+                <>
+                  <Loader2 size={15} className="animate-spin" />
+                  Verifying Credentials...
+                </>
+              ) : (
+                <>
+                  Sign In to Admin Portal
+                  <ArrowRight size={15} />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Security notice */}
+          <div className="pt-2 border-t border-white/[0.06] text-center">
+            <p className="text-[10px] font-mono text-zinc-500">
+              Encrypted credentials are authenticated directly against authorized administrator records.
+            </p>
+          </div>
         </div>
 
         {/* Back to site */}

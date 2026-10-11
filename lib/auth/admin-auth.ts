@@ -2,11 +2,14 @@ import { currentUser } from "@clerk/nextjs/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { createClient } from "@/lib/supabase/server";
 
+import { getAdminSession } from "./admin-session";
+
 export type AdminAuthResult =
   | {
       status: "authorized";
       email: string;
-      authProvider: "clerk" | "supabase";
+      authProvider: "clerk" | "supabase" | "database";
+      mustChangePassword?: boolean;
       user?: unknown;
     }
   | {
@@ -19,13 +22,33 @@ export type AdminAuthResult =
   | {
       status: "unauthorized";
       email: string;
-      authProvider: "clerk" | "supabase";
+      authProvider: "clerk" | "supabase" | "database";
       user?: unknown;
       message: string;
     }
   | {
       status: "unauthenticated";
     };
+
+export const DUMMY_PASSWORDS = new Set([
+  "admin_1@",
+  "admin_neural@",
+  "zamin_admin@",
+  "zamin.work_admin@",
+  "zamin_personalmail",
+  "belal_admin@-2",
+  "dummy123",
+  "admin123",
+  "password123",
+]);
+
+export function isDummyPassword(pw: string): boolean {
+  if (!pw) return false;
+  const trimmed = pw.trim();
+  if (DUMMY_PASSWORDS.has(trimmed)) return true;
+  if (trimmed.endsWith("_admin@") || trimmed.endsWith("_personalmail")) return true;
+  return false;
+}
 
 /**
  * Returns true if Clerk publishable key is present in environment
@@ -100,6 +123,28 @@ export async function isEmailAuthorizedAdmin(email: string): Promise<boolean> {
  * Enforces Clerk authentication, email verification status, and admin whitelist check.
  */
 export async function verifyAdminAccess(): Promise<AdminAuthResult> {
+  // 1. Check direct database admin session cookie
+  const adminSession = await getAdminSession();
+  if (adminSession) {
+    const isAuthorized = await isEmailAuthorizedAdmin(adminSession.email);
+    if (isAuthorized) {
+      return {
+        status: "authorized",
+        email: adminSession.email,
+        authProvider: "database",
+        mustChangePassword: Boolean(adminSession.mustChangePassword),
+        user: { email: adminSession.email, role: adminSession.role },
+      };
+    }
+    return {
+      status: "unauthorized",
+      email: adminSession.email,
+      authProvider: "database",
+      message: "Account not authorized in admins table.",
+    };
+  }
+
+  // 2. Fall back to Clerk authentication if configured
   const clerkActive = isClerkConfigured();
 
   if (clerkActive) {
@@ -118,18 +163,10 @@ export async function verifyAdminAccess(): Promise<AdminAuthResult> {
         user.emailAddresses[0]?.emailAddress ||
         "";
 
-      // 1. Collect VERIFIED email addresses only.
-      //
-      // SECURITY: this list must never include unverified addresses. Previously
-      // the candidate list included every attached address and the verification
-      // requirement was only applied when the account had zero verified
-      // addresses — so a user holding one verified email of their own plus any
-      // unverified address matching an admin whitelist entry was granted access.
       const verifiedEmails = emailObjects
         .filter((e) => e.verification?.status === "verified")
         .map((e) => e.emailAddress.toLowerCase());
 
-      // 2. Unverified accounts cannot be admins. Prompt them to verify.
       if (verifiedEmails.length === 0) {
         return {
           status: "unverified",
@@ -141,13 +178,30 @@ export async function verifyAdminAccess(): Promise<AdminAuthResult> {
         };
       }
 
-      // 3. Authorize only against a VERIFIED address on the whitelist.
       for (const verifiedEmail of verifiedEmails) {
         if (await isEmailAuthorizedAdmin(verifiedEmail)) {
+          // Check if database records flag dummy password
+          let mustChange = false;
+          if (supabaseAdmin) {
+            try {
+              const { data } = await supabaseAdmin
+                .from("admins")
+                .select("Password")
+                .ilike("email", verifiedEmail)
+                .maybeSingle();
+              if (data?.Password && isDummyPassword(data.Password)) {
+                mustChange = true;
+              }
+            } catch {
+              // Ignore check error
+            }
+          }
+
           return {
             status: "authorized",
             email: verifiedEmail,
             authProvider: "clerk",
+            mustChangePassword: mustChange,
             user,
           };
         }
