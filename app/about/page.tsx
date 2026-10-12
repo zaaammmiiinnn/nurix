@@ -1,48 +1,47 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, MapPin, ShieldCheck, Clock } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { BreadcrumbJsonLd } from "@/components/seo/json-ld";
-
-export const metadata: Metadata = {
-  title: "About — Dubai AI Automation Studio",
-  description:
-    "NeuralWaves is a Dubai-based AI automation studio building production chatbots, dashboards, and AI agents for UAE SMEs. Fast, fixed-price, delivered in days.",
-  alternates: {
-    canonical: `${SITE_URL}/about`,
-    languages: {
-      "en-AE": `${SITE_URL}/about`,
-    },
-  },
-  openGraph: {
-    title: "About — NeuralWaves AI Studio Dubai",
-    description: "Fast, fixed-price AI automation for UAE businesses. Delivered in days, not months.",
-    url: `${SITE_URL}/about`,
-    images: [
-      {
-        url: "/api/og?title=About%20NeuralWaves&subtitle=Dubai-based%20AI%20automation%20studio.&badge=ABOUT%20US",
-        width: 1200,
-        height: 630,
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "About — NeuralWaves",
-    description: "Dubai-based AI automation studio. We ship AI.",
-  },
-};
-
-import { getSiteSettings } from "@/lib/data/db-queries";
 import { SITE_URL } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function AboutPage() {
-  const siteSettings = await getSiteSettings();
+export const metadata: Metadata = {
+  title: "About — NeuralWaves",
+  description:
+    "Good software should make business simpler. NeuralWaves builds practical AI systems and custom digital tools for businesses across India and the UAE.",
+  alternates: {
+    canonical: `${SITE_URL}/about`,
+  },
+};
+
+const PRINCIPLES = [
+  {
+    tag: "PRINCIPLE 01",
+    title: "Utility Over Novelty",
+    desc: "We do not build AI toys or speculative chat gimmicks. We measure software exclusively by the manual hours eliminated, leads captured, and operational errors prevented.",
+  },
+  {
+    tag: "PRINCIPLE 02",
+    title: "Direct Engineering Access",
+    desc: "Clients collaborate directly with senior full-stack and systems engineers. We eliminate the telephone game of non-technical account managers and bloated agency hierarchies.",
+  },
+  {
+    tag: "PRINCIPLE 03",
+    title: "Absolute Scope Discipline",
+    desc: "Every sprint starts with a fixed-scope technical blueprint and locked price. We do not engage in open-ended hourly billing or surprise milestone change orders.",
+  },
+  {
+    tag: "PRINCIPLE 04",
+    title: "100% Client Ownership",
+    desc: "You own every line of code, database schema, and deployment configuration. Deployed directly into your corporate cloud accounts with zero proprietary vendor lock-in.",
+  },
+];
+
+export default function AboutPage() {
   return (
-    <div className="pt-28 pb-32 min-h-screen relative overflow-hidden">
-      {/* Structured SEO */}
+    <div className="pt-32 pb-36 min-h-screen bg-canvas">
       <BreadcrumbJsonLd
         items={[
           { name: "Home", url: "/" },
@@ -50,116 +49,116 @@ export default async function AboutPage() {
         ]}
       />
 
-      {/* Background glow */}
-      <div
-        className="absolute top-20 left-1/2 -translate-x-1/2 w-[750px] h-[500px] rounded-full blur-[140px] pointer-events-none opacity-20"
-        style={{
-          background: "radial-gradient(circle, #8B5CF6 0%, #22D3EE 50%, transparent 75%)",
-        }}
-        aria-hidden="true"
-      />
-
-      <div className="max-w-4xl mx-auto px-6 md:px-8 relative z-10">
+      <div className="container-editorial">
         {/* Breadcrumb nav */}
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 font-mono text-xs text-zinc-500 mb-8">
-          <Link href="/" className="hover:text-white transition-colors">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 font-mono text-xs text-olive mb-10">
+          <Link href="/" className="hover:text-charcoal transition-colors">
             HOME
           </Link>
-          <span aria-hidden="true">/</span>
-          <span className="text-zinc-300">ABOUT</span>
+          <span className="text-stone">/</span>
+          <span className="text-charcoal uppercase">ABOUT</span>
         </nav>
 
-        {/* Hero */}
-        <div className="mb-20 max-w-3xl">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="w-6 h-[1px] bg-violet-500/40 inline-block" aria-hidden="true" />
-            <span className="font-mono text-xs uppercase tracking-widest text-violet-400">
-              04 / ABOUT NEURALWAVES
-            </span>
+        {/* Hero Section */}
+        <div className="mb-20 md:mb-28 max-w-4xl">
+          <div className="inline-flex items-center gap-2 mb-4">
+            <span className="w-1.5 h-1.5 bg-charcoal inline-block" />
+            <p className="mono-label text-olive tracking-widest text-[11px] uppercase">
+              ABOUT NEURALWAVES // MISSION & PHILOSOPHY
+            </p>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-[-0.04em] text-white leading-[1.05] mb-6">
-            We build AI that ships.
+          <h1 className="font-display font-medium text-4xl sm:text-5xl md:text-6xl text-charcoal tracking-tight leading-[1.08] mb-8">
+            Good software should make business simpler.
           </h1>
 
-          <p className="text-lg sm:text-xl text-zinc-400 font-normal leading-relaxed">
-            Most software agencies spend months producing slide decks, wireframes, and bloated retainers. NeuralWaves was founded on a simple premise: UAE businesses need working software in production, delivered in days.
+          <p className="text-lg sm:text-xl md:text-2xl text-charcoal/80 font-normal leading-relaxed font-sans max-w-3xl mb-6">
+            NeuralWaves builds practical AI systems and custom digital tools that help teams reduce repetitive work, improve visibility, and deliver better service.
+          </p>
+
+          <p className="text-sm sm:text-base text-olive leading-relaxed font-sans max-w-2xl">
+            We operate as a focused engineering studio partnering with growing businesses in the UAE and India. We replace disconnected spreadsheets, manual data entry, and delayed communication with robust, production-grade automated systems.
           </p>
         </div>
 
-        {/* Studio Tenets */}
-        <div className="space-y-12 mb-20">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 rounded-2xl border border-white/[0.08] bg-[#0A0A0F] space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400">
-                <Clock size={20} />
-              </div>
-              <h2 className="text-lg font-semibold text-white tracking-tight">5-Day Turnaround</h2>
-              <p className="text-xs text-zinc-400 leading-relaxed">
-                We work in intense 5-to-10 day engineering sprints. We don&apos;t take on more than 3 client sprints at a time.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl border border-white/[0.08] bg-[#0A0A0F] space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                <ShieldCheck size={20} />
-              </div>
-              <h2 className="text-lg font-semibold text-white tracking-tight">100% Fixed Quotes</h2>
-              <p className="text-xs text-zinc-400 leading-relaxed">
-                No open-ended billing or surprise hourly invoices. 50% deposit to initiate, 50% on verified production delivery.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl border border-white/[0.08] bg-[#0A0A0F] space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
-                <MapPin size={20} />
-              </div>
-              <h2 className="text-lg font-semibold text-white tracking-tight">UAE & GCC Native</h2>
-              <p className="text-xs text-zinc-400 leading-relaxed">
-                Based in Dubai. We understand WhatsApp commerce, local payment gateways, Khaleeji Arabic nuances, and UAE regulations.
-              </p>
-            </div>
+        {/* Operating Model & Cross-Border Reality */}
+        <div className="border border-stone bg-white p-8 md:p-14 mb-20 space-y-8">
+          <div className="max-w-2xl">
+            <span className="mono-label text-[10px] text-olive uppercase">THE OPERATING MODEL</span>
+            <h2 className="font-display font-medium text-2xl sm:text-3xl text-charcoal mt-2">
+              Cross-Border Engineering Focused on India & UAE
+            </h2>
           </div>
 
-          {/* Narrative */}
-          <div className="p-8 sm:p-10 rounded-2xl border border-white/[0.08] bg-[#0A0A0F] space-y-6">
-            <h2 className="text-2xl font-bold text-white tracking-tight">Why NeuralWaves Exists</h2>
-            <div className="space-y-4 text-zinc-300 leading-relaxed text-sm sm:text-base">
-              <p>
-                In 2026, generative AI models have become commodities. Anyone can query an LLM via an API. The bottleneck is no longer model intelligence—it is operational engineering.
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-xs sm:text-sm text-olive leading-relaxed font-sans">
+            <div>
+              <p className="mb-4">
+                We bridge high-velocity software engineering with deep regional commercial context. In the UAE, customer commerce and service inquiries live almost entirely on WhatsApp, demanding bilingual English and Arabic capabilities with official Meta Cloud API compliance.
               </p>
               <p>
-                How do you wire an AI assistant to your WhatsApp Business Cloud account with zero downtime? How do you ensure it never hallucinates property prices or inventory levels? How do you build an internal dashboard your team actually enjoys using instead of fighting Excel sheets?
-              </p>
-              <p>
-                That is what NeuralWaves builds. Production-grade software that automates real workflows and returns measurable time and revenue to business owners across Dubai, Abu Dhabi, and the Northern Emirates.
+                In India, operational teams require high-concurrency systems, robust data parsing, and integrations that connect internal teams without friction.
               </p>
             </div>
-
-            <div className="pt-4 border-t border-white/[0.06] flex items-center gap-3 text-xs font-mono text-zinc-400">
-              <MapPin size={14} className="text-violet-400" />
-              <span>{siteSettings.studio_address || "DIFC Gate Precinct, Dubai, United Arab Emirates"}</span>
+            <div>
+              <p className="mb-4">
+                We operate as a remote-first, engineering-led organization. We do not maintain theatrical corporate offices in DIFC or Silicon Oasis just to justify inflated consulting fees.
+              </p>
+              <p>
+                Instead, our clients receive direct, low-latency access to the developers writing their software, working across Gulf Standard Time (GST) and Indian Standard Time (IST).
+              </p>
             </div>
           </div>
         </div>
 
-        {/* CTA */}
-        <div className="p-10 rounded-2xl border border-violet-500/30 bg-gradient-to-r from-violet-950/20 via-[#0A0A0F] to-cyan-950/20 text-center space-y-4 shadow-2xl">
-          <h2 className="text-2xl font-bold text-white tracking-tight">
-            Have a workflow you want automated?
-          </h2>
-          <p className="text-sm text-zinc-400 max-w-lg mx-auto">
-            Book a 15-minute scoping call. We&apos;ll tell you honestly if AI is the right tool for your problem.
-          </p>
-          <div className="pt-2">
-            <Link
-              href="/contact"
-              className="btn-glow inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-xs font-semibold uppercase tracking-wider text-white"
-            >
-              Book a call
-              <ArrowRight size={14} />
-            </Link>
+        {/* Engineering Tenets Grid */}
+        <div className="mb-20">
+          <div className="mb-10 max-w-2xl">
+            <span className="mono-label text-[10px] text-olive uppercase">CORE TENETS</span>
+            <h2 className="font-display font-medium text-3xl text-charcoal mt-2">
+              How We Approach Engineering
+            </h2>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {PRINCIPLES.map((p, idx) => (
+              <div key={idx} className="p-8 border border-stone bg-white space-y-3">
+                <span className="mono-label text-[10px] text-olive uppercase">{p.tag}</span>
+                <h3 className="font-display font-medium text-xl text-charcoal">{p.title}</h3>
+                <p className="text-xs sm:text-sm text-olive leading-relaxed font-sans">{p.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Responsible, Practical AI Governance */}
+        <div className="border border-stone bg-white p-8 md:p-12 mb-20 space-y-4">
+          <div className="flex items-center gap-2 text-xs font-mono text-charcoal font-semibold">
+            <ShieldCheck className="w-4 h-4 text-charcoal" />
+            <span>RESPONSIBLE & PRACTICAL AI GOVERNANCE</span>
+          </div>
+          <p className="text-xs sm:text-sm text-olive leading-relaxed font-sans max-w-3xl">
+            Large language models are probabilistic engines. We engineer deterministic wrappers around foundation models: enforcing rigid JSON schemas, validating foreign keys, evaluating business thresholds, and providing clear human intervention paths whenever uncertainty exceeds tolerance limits.
+          </p>
+        </div>
+
+        {/* Bottom CTA Block */}
+        <div className="border border-charcoal bg-charcoal text-white p-8 sm:p-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+          <div className="space-y-2 max-w-xl">
+            <span className="mono-label text-[10px] text-stone/70 uppercase">START A CONVERSATION</span>
+            <h3 className="font-display font-medium text-2xl sm:text-3xl text-white">
+              Ready to eliminate operational busywork?
+            </h3>
+            <p className="text-xs sm:text-sm text-stone/80 font-sans leading-relaxed">
+              Tell us about your processes and systems. We’ll help you determine whether custom AI automation makes economic sense for your business.
+            </p>
+          </div>
+
+          <Link
+            href="/contact"
+            className="px-6 py-3.5 bg-white text-charcoal font-mono text-xs uppercase tracking-wider font-semibold hover:bg-stone transition-colors shrink-0"
+          >
+            Discuss a Project →
+          </Link>
         </div>
       </div>
     </div>

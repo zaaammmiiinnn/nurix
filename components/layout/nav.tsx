@@ -1,49 +1,47 @@
 "use client";
 
 import Link from "next/link";
-import { useSiteConfig, toDialable } from "@/lib/hooks/use-site-config";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { motion, useScroll, useMotionValueEvent } from "framer-motion";
-import { Menu, X, ArrowUpRight, Shield } from "lucide-react";
+import { useScroll, useMotionValueEvent } from "framer-motion";
+import { Menu, X, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ScrollProgressBar } from "@/components/ui/scroll-progress";
 import { Logo } from "@/components/ui/logo";
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  SignUpButton,
-  UserButton,
-} from "@clerk/nextjs";
+import { useSiteConfig, toDialable } from "@/lib/hooks/use-site-config";
 
 const NAV_LINKS = [
+  { href: "/", label: "Home" },
   { href: "/services", label: "Services" },
   { href: "/work", label: "Work" },
   { href: "/pricing", label: "Pricing" },
   { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
 ];
 
-// Admin-controlled WhatsApp number, resolved at runtime so edits in the
-// admin panel take effect. This was a hardcoded literal in seven files.
-const FALLBACK_WA_NUMBER = "918840936715";
-
 export function Nav() {
-  const siteConfig = useSiteConfig({
-    whatsappNumber: FALLBACK_WA_NUMBER,
-    email: "",
-    phone: "",
-    calendarUrl: "",
-    address: "",
-    linkedin: "",
-  });
-  const waUrl = `https://wa.me/${toDialable(siteConfig.whatsappNumber)}?text=Hi%20NeuralWaves%2C%20I%20need%20help%20with%20automation`;
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { scrollY } = useScroll();
 
-  // Escape closes the mobile menu, which is presented as a modal dialog.
+  const siteConfig = useSiteConfig({
+    whatsappNumber: "918840936715",
+    email: "support@neuralwaves.in",
+    phone: "+91-8840936715",
+    calendarUrl: "https://cal.com/neuralwaves/15min",
+    address: "",
+    linkedin: "",
+  });
+  const waUrl = `https://wa.me/${toDialable(siteConfig.whatsappNumber)}?text=Hi%20NeuralWaves%2C%20I%20want%20to%20discuss%20a%20project`;
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    setScrolled(latest > 24);
+  });
+
+  // Close mobile nav on route change or escape
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
   useEffect(() => {
     if (!mobileOpen) return;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -53,197 +51,155 @@ export function Nav() {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [mobileOpen]);
 
-  const { scrollY } = useScroll();
-
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    setScrolled(latest > 40);
-  });
-
-  // Close mobile nav on route change
+  // Prevent scroll when mobile menu is open
   useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
 
+  // Do not render marketing navigation on admin pages
   if (pathname?.startsWith("/admin")) return null;
 
   return (
     <>
-      <ScrollProgressBar />
       <header
         className={cn(
-          "fixed top-0 left-0 right-0 z-40 transition-all duration-300",
+          "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
           scrolled
-            ? "bg-[#07070A]/80 backdrop-blur-xl border-b border-white/[0.08] shadow-[0_4px_30px_rgba(0,0,0,0.5)] py-0"
-            : "bg-transparent border-b border-transparent py-2"
+            ? "bg-[#F5F3ED]/90 backdrop-blur-md border-b border-[#DCDAD2] py-3.5 shadow-[0_1px_3px_rgba(34,35,32,0.02)]"
+            : "bg-transparent border-b border-transparent py-5"
         )}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div
-            className={cn(
-              "flex items-center justify-between transition-all duration-300",
-              scrolled ? "h-14" : "h-18"
-            )}
-          >
-            {/* Wordmark & Icon */}
-            <Logo size="md" />
+        <div className="container-editorial flex items-center justify-between">
+          {/* Left: Brand Wordmark */}
+          <Logo size="md" theme="light" />
 
-            {/* Desktop nav links */}
-            <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
-              {NAV_LINKS.map((link) => (
+          {/* Center: Editorial Navigation Links */}
+          <nav
+            className="hidden md:flex items-center gap-1.5 bg-[#FFFFFF]/70 border border-[#DCDAD2] rounded-full px-3 py-1 shadow-sm"
+            aria-label="Main navigation"
+          >
+            {NAV_LINKS.map((link) => {
+              const isActive =
+                link.href === "/"
+                  ? pathname === "/"
+                  : pathname === link.href || pathname.startsWith(link.href + "/");
+
+              return (
                 <Link
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "px-3.5 py-1.5 text-sm rounded-lg transition-all duration-150 font-normal",
-                    pathname === link.href || pathname.startsWith(link.href + "/")
-                      ? "text-white bg-white/[0.08]"
-                      : "text-zinc-400 hover:text-white hover:bg-white/[0.04]"
+                    "px-3.5 py-1.5 text-xs font-medium rounded-full transition-all duration-150",
+                    isActive
+                      ? "bg-[#222320] text-[#F5F3ED]"
+                      : "text-[#73766D] hover:text-[#222320] hover:bg-[#F5F3ED]"
                   )}
                 >
                   {link.label}
                 </Link>
-              ))}
-            </nav>
+              );
+            })}
+          </nav>
 
-            {/* Desktop CTA */}
-            <div className="hidden md:flex items-center gap-3">
-              <SignedOut>
-                <SignInButton mode="modal">
-                  <button className="px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-300 hover:text-white hover:bg-white/[0.06] transition-all">
-                    Sign in
-                  </button>
-                </SignInButton>
-                <SignUpButton mode="modal">
-                  <button className="px-3 py-1.5 rounded-lg text-xs font-medium text-violet-300 hover:text-white border border-violet-500/30 hover:bg-violet-500/10 transition-all">
-                    Sign up
-                  </button>
-                </SignUpButton>
-              </SignedOut>
-
-              <SignedIn>
-                <UserButton
-                  afterSignOutUrl="/"
-                  appearance={{
-                    elements: {
-                      userButtonAvatarBox: "w-7 h-7 ring-1 ring-violet-500/40",
-                    },
-                  }}
-                />
-              </SignedIn>
-
-              <Link
-                href="/admin"
-                title="Admin Ops Portal"
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono text-zinc-400 hover:text-white border border-white/[0.06] hover:border-violet-500/30 hover:bg-white/[0.04] transition-all"
-              >
-                <Shield size={12} className="text-violet-400" />
-                <span>Admin</span>
-              </Link>
-              <Link
-                href={waUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs font-mono uppercase tracking-wider text-zinc-400 hover:text-white transition-colors duration-150 flex items-center gap-1"
-              >
-                WhatsApp
-                <ArrowUpRight size={12} className="opacity-70" />
-              </Link>
-              <Link
-                href="/contact"
-                className="btn-glow px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white rounded-lg"
-              >
-                Book a call
-              </Link>
-            </div>
-
-            {/* Mobile hamburger */}
-            <button
-              className="md:hidden p-2 text-zinc-400 hover:text-white transition-colors"
-              onClick={() => setMobileOpen((v) => !v)}
-              aria-label={mobileOpen ? "Close menu" : "Open menu"}
-              aria-expanded={mobileOpen}
-              aria-controls="mobile-nav"
-            >
-              {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile nav drawer */}
-        {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            id="mobile-nav"
-            className="md:hidden bg-[#0F0F14]/95 backdrop-blur-2xl border-t border-white/[0.08] px-4 pb-6 pt-4 space-y-1 shadow-2xl"
-            role="dialog"
-            aria-label="Mobile navigation"
-          >
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "block px-3 py-2.5 text-sm rounded-lg transition-colors duration-150",
-                  pathname === link.href
-                    ? "text-white bg-white/10"
-                    : "text-zinc-400 hover:text-white"
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
+          {/* Right: Primary CTA */}
+          <div className="hidden md:flex items-center gap-3">
             <Link
-              href="/admin"
-              className="flex items-center gap-2 px-3 py-2.5 text-sm rounded-lg transition-colors duration-150 text-zinc-400 hover:text-white font-mono"
+              href="/contact"
+              className="btn-editorial-primary text-xs tracking-tight"
             >
-              <Shield size={14} className="text-violet-400" />
-              <span>Admin Ops</span>
+              <span>Discuss a Project</span>
+              <ArrowUpRight size={13} className="opacity-80" />
+            </Link>
+          </div>
+
+          {/* Mobile Menu Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="md:hidden p-2 text-[#222320] hover:bg-[#FFFFFF] border border-[#DCDAD2] rounded-lg transition-colors"
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
+          >
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile Drawer Navigation */}
+      {mobileOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Mobile Navigation"
+          className="fixed inset-0 z-40 bg-[#F5F3ED] flex flex-col justify-between pt-24 pb-8 px-6 md:hidden animate-in fade-in duration-200"
+        >
+          {/* Navigation Links */}
+          <div className="space-y-6">
+            <div className="mono-label text-[#73766D] border-b border-[#DCDAD2] pb-3">
+              Index
+            </div>
+            <nav className="flex flex-col space-y-4" aria-label="Mobile navigation">
+              {NAV_LINKS.map((link, idx) => {
+                const isActive =
+                  link.href === "/"
+                    ? pathname === "/"
+                    : pathname === link.href || pathname.startsWith(link.href + "/");
+
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                      "flex items-center justify-between py-2 text-2xl font-serif tracking-tight border-b border-[#DCDAD2]/50",
+                      isActive ? "text-[#222320] font-medium" : "text-[#73766D]"
+                    )}
+                  >
+                    <span>{link.label}</span>
+                    <span className="font-mono text-xs text-[#73766D]">
+                      0{idx + 1}
+                    </span>
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+
+          {/* Bottom Actions */}
+          <div className="space-y-3 pt-6 border-t border-[#DCDAD2]">
+            <Link
+              href="/contact"
+              onClick={() => setMobileOpen(false)}
+              className="w-full btn-editorial-primary justify-center py-3.5 text-sm"
+            >
+              <span>Discuss a Project</span>
+              <ArrowUpRight size={14} />
             </Link>
 
-            {/* Mobile Auth Controls */}
-            <div className="pt-2 pb-1">
-              <SignedOut>
-                <div className="grid grid-cols-2 gap-2">
-                  <SignInButton mode="modal">
-                    <button className="w-full py-2 text-xs font-medium text-zinc-200 border border-white/10 rounded-lg hover:bg-white/5 transition-all text-center">
-                      Sign in
-                    </button>
-                  </SignInButton>
-                  <SignUpButton mode="modal">
-                    <button className="w-full py-2 text-xs font-medium text-violet-300 border border-violet-500/30 rounded-lg hover:bg-violet-500/10 transition-all text-center">
-                      Sign up
-                    </button>
-                  </SignUpButton>
-                </div>
-              </SignedOut>
-              <SignedIn>
-                <div className="flex items-center justify-between px-3 py-2 bg-white/[0.04] rounded-lg border border-white/[0.08]">
-                  <span className="text-xs text-zinc-400">Account</span>
-                  <UserButton afterSignOutUrl="/" />
-                </div>
-              </SignedIn>
+            <a
+              href={waUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full btn-editorial-secondary justify-center py-3.5 text-sm"
+            >
+              <span>WhatsApp Direct</span>
+              <ArrowUpRight size={14} />
+            </a>
+
+            <div className="flex items-center justify-between pt-2 text-[11px] font-mono text-[#73766D]">
+              <span>UAE & INDIA ENGINEERING STUDIO</span>
+              <span>support@neuralwaves.in</span>
             </div>
-            <div className="pt-4 flex flex-col gap-3">
-              <Link
-                href={waUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-ghost-border w-full text-center px-4 py-2.5 text-sm font-medium text-white rounded-lg"
-              >
-                WhatsApp us
-              </Link>
-              <Link
-                href="/contact"
-                className="btn-glow w-full text-center px-4 py-2.5 text-sm font-medium text-white rounded-lg"
-              >
-                Book a call
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </header>
+          </div>
+        </div>
+      )}
     </>
   );
 }

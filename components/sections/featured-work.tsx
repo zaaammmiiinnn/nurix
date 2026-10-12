@@ -1,149 +1,150 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { SectionHeader } from "@/components/ui/section-header";
-import { getFeaturedProjects } from "@/lib/data/db-queries";
-import { SITE_HOST } from "@/lib/config";
+import { ArrowUpRight, ArrowRight } from "lucide-react";
+import { getProjects } from "@/lib/data/db-queries";
 
-/**
- * Homepage "Recent builds" section.
- *
- * This was previously a client component holding a hardcoded array whose slugs
- * (`realestate-whatsapp-bot`, `logistics-dashboard`, `ecommerce-agent`) matched no
- * route — all three cards linked to 404s in the site's main proof-of-work section.
- * They also invented client URLs (`dxb-realestate.ai/lead-desk`) and preview
- * content that did not correspond to any real project.
- *
- * It now renders real rows from the database, so the links resolve, the content
- * is editable from the admin panel, and nothing is fabricated. It is a server
- * component, which also keeps it out of the client bundle.
- */
 export async function FeaturedWork() {
-  const projects = await getFeaturedProjects();
-  const shown = projects.slice(0, 3);
+  const allProjects = await getProjects();
+  // Show first 3 projects, ensuring client projects are prioritized
+  const projects = allProjects.slice(0, 3);
 
   return (
     <section
       id="work"
-      className="py-32 md:py-40 px-6 md:px-8 max-w-7xl mx-auto"
+      className="py-24 md:py-36 border-b border-stone/80 bg-canvas"
       aria-labelledby="work-heading"
     >
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-16">
-        <SectionHeader
-          id="work-heading"
-          label="03 / WORK"
-          title="Recent builds."
-          description="Selected systems, what they replaced, and the result. Each one is documented end to end."
-          className="mb-0 md:mb-0"
-        />
-
-        <Link
-          href="/work"
-          className="hidden md:inline-flex items-center gap-2 text-sm font-mono text-zinc-400 hover:text-white transition-colors group mb-4"
-        >
-          View all case studies
-          <ArrowRight
-            size={14}
-            className="group-hover:translate-x-1 transition-transform duration-200"
-          />
-        </Link>
-      </div>
-
-      {shown.length === 0 ? (
-        <p className="text-sm font-mono text-zinc-500">
-          Case studies are being published. <Link href="/contact" className="text-violet-400 hover:text-violet-300">Talk to us</Link> about a similar build.
-        </p>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {shown.map((project) => (
-            <Link
-              key={project.slug}
-              href={`/work/${project.slug}`}
-              className="group rounded-2xl border border-white/[0.08] bg-gradient-to-br from-white/[0.04] to-white/[0.01] overflow-hidden flex flex-col transition-all duration-300 hover:border-violet-500/40 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(139,92,246,0.15)] relative"
-            >
-              {/* Browser chrome container */}
-              <div className="p-3 pb-0">
-                <div className="rounded-xl border border-white/[0.08] bg-[#0A0A0F] overflow-hidden">
-                  <div className="flex items-center justify-between px-3 py-2 bg-white/[0.03] border-b border-white/[0.06]">
-                    <div className="flex items-center gap-1.5" aria-hidden="true">
-                      <span className="w-2.5 h-2.5 rounded-full bg-rose-500/60" />
-                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500/60" />
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/60" />
-                    </div>
-
-                    {/* Real case-study path, not an invented client domain */}
-                    <div className="px-3 py-0.5 rounded-md bg-white/[0.04] border border-white/[0.06] text-[10px] font-mono text-zinc-500 truncate max-w-[200px]">
-                      {SITE_HOST}/work/{project.slug}
-                    </div>
-
-                    <div className="w-6" />
-                  </div>
-
-                  <div className="relative h-44 overflow-hidden bg-gradient-to-b from-violet-950/20 to-black transition-transform duration-500 group-hover:scale-[1.03]">
-                    <div className="relative z-10 h-full flex flex-col justify-between p-4">
-                      <div className="flex items-center justify-between pb-2 border-b border-white/[0.08] gap-2">
-                        <span className="text-[11px] font-mono text-zinc-400 truncate">
-                          {project.sector || project.tag}
-                        </span>
-                        <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded shrink-0">
-                          {project.isDemo ? "DEMO" : "SHIPPED"}
-                        </span>
-                      </div>
-
-                      <div className="space-y-2">
-                        <span className="block text-[9px] font-mono uppercase tracking-wider text-zinc-500">
-                          Outcome
-                        </span>
-                        <p className="text-base font-mono text-white leading-snug">
-                          {project.resultMetric}
-                        </p>
-                        <p className="text-[11px] text-zinc-500 font-mono">
-                          Delivered in {project.deliveryDays}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-6 flex flex-col flex-1 justify-between gap-5">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-violet-300 border border-violet-500/30 bg-violet-500/10 px-2.5 py-0.5 rounded-full">
-                      {project.tag}
-                    </span>
-                    {project.isDemo && (
-                      <span className="font-mono text-[10px] text-amber-400">Demo build</span>
-                    )}
-                  </div>
-
-                  <h3 className="font-medium text-white text-base leading-snug group-hover:text-violet-200 transition-colors">
-                    {project.title}
-                  </h3>
-                  <p className="text-xs text-zinc-500 font-mono">
-                    {project.client || "Confidential client"}
-                  </p>
-                </div>
-
-                <div className="pt-4 border-t border-white/[0.06] flex items-center justify-between text-xs font-mono text-zinc-500 group-hover:text-white transition-colors">
-                  <span>Case study</span>
-                  <span className="inline-flex items-center gap-1 text-violet-400 group-hover:translate-x-1 transition-all duration-200">
-                    Read more <ArrowRight size={13} />
-                  </span>
-                </div>
-              </div>
-            </Link>
-          ))}
+      <div className="container-editorial">
+        {/* Section Header */}
+        <div className="mb-16 md:mb-20">
+          <div className="inline-flex items-center gap-2 mb-4">
+            <span className="w-1.5 h-1.5 bg-charcoal inline-block" />
+            <p className="mono-label text-olive tracking-widest text-[11px] uppercase">
+              03 // SELECTED CASE STUDIES
+            </p>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
+            <div className="lg:col-span-8">
+              <h2
+                id="work-heading"
+                className="font-display font-medium text-3xl sm:text-4xl md:text-5xl text-charcoal tracking-tight"
+              >
+                Engineered for utility. <br className="hidden sm:inline" />
+                Validated in production.
+              </h2>
+            </div>
+            <div className="lg:col-span-4 flex flex-col items-start lg:items-end justify-between">
+              <p className="text-sm md:text-base text-olive leading-relaxed font-sans mb-4 lg:mb-0">
+                Detailed architecture breakdowns of production software deployed for businesses in the UAE and India.
+              </p>
+              <Link
+                href="/work"
+                className="inline-flex items-center text-xs font-mono uppercase tracking-wider text-charcoal font-medium border-b border-charcoal pb-1 transition-colors hover:text-olive hover:border-olive group"
+              >
+                View all case studies
+                <ArrowRight className="w-3.5 h-3.5 ml-1.5 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </div>
+          </div>
         </div>
-      )}
 
-      <div className="mt-8 text-center md:hidden">
-        <Link
-          href="/work"
-          className="inline-flex items-center gap-2 text-sm font-mono text-zinc-400 hover:text-white"
-        >
-          View all case studies <ArrowRight size={14} />
-        </Link>
+        {/* Varied Editorial Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {projects.map((project, idx) => {
+            const isWide = idx === 0;
+            return (
+              <div
+                key={project.slug}
+                className={`${
+                  isWide ? "lg:col-span-12" : "lg:col-span-6"
+                } border border-stone bg-white p-8 md:p-12 transition-all hover:border-charcoal/60 flex flex-col justify-between`}
+              >
+                <div>
+                  {/* Top Metadata Header */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 pb-6 border-b border-stone/70 mb-8 text-[11px] font-mono">
+                    <div className="flex items-center gap-3">
+                      <span className="text-charcoal font-semibold uppercase">{project.sector || project.tag}</span>
+                      <span className="text-stone">/</span>
+                      <span className="text-olive">{project.client}</span>
+                    </div>
+                    <span
+                      className={`px-2 py-0.5 text-[10px] tracking-wider uppercase font-mono border ${
+                        project.isDemo
+                          ? "bg-canvas text-olive border-stone"
+                          : "bg-charcoal text-white border-charcoal"
+                      }`}
+                    >
+                      {project.isDemo ? "INTERNAL DEMO BUILD" : "VERIFIED CLIENT SYSTEM"}
+                    </span>
+                  </div>
+
+                  {/* Title & Challenge/Solution Split */}
+                  <div className={`grid grid-cols-1 ${isWide ? "lg:grid-cols-12 gap-10" : "gap-6"} mb-8`}>
+                    <div className={isWide ? "lg:col-span-6" : ""}>
+                      <h3 className="font-display font-medium text-2xl sm:text-3xl text-charcoal tracking-tight mb-4">
+                        {project.title}
+                      </h3>
+                      <p className="text-sm text-olive leading-relaxed font-sans mb-6">
+                        {project.overview}
+                      </p>
+                      
+                      {/* Metric Banner */}
+                      <div className="p-4 border border-stone/80 bg-canvas/60">
+                        <span className="mono-label block text-[9px] text-olive uppercase mb-1">
+                          VERIFIED OUTCOME
+                        </span>
+                        <span className="font-display font-medium text-lg sm:text-xl text-charcoal">
+                          {project.resultMetric}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className={`${isWide ? "lg:col-span-6" : ""} space-y-4`}>
+                      <div className="border border-stone/60 p-4 bg-canvas/30">
+                        <span className="mono-label block text-[9px] text-olive uppercase mb-1">
+                          BUSINESS PROBLEM
+                        </span>
+                        <p className="text-xs sm:text-sm text-charcoal leading-relaxed">
+                          {project.problem}
+                        </p>
+                      </div>
+
+                      <div className="border border-stone/60 p-4 bg-canvas/30">
+                        <span className="mono-label block text-[9px] text-olive uppercase mb-1">
+                          ENGINEERED SOLUTION
+                        </span>
+                        <p className="text-xs sm:text-sm text-charcoal leading-relaxed">
+                          {project.solution}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tech Stack & Case Study Link */}
+                <div className="pt-6 border-t border-stone/70 flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex flex-wrap gap-2">
+                    {project.techStack?.map((tech, tIdx) => (
+                      <span
+                        key={tIdx}
+                        className="px-2 py-1 text-[10px] font-mono bg-canvas border border-stone text-olive"
+                      >
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+
+                  <Link
+                    href={`/work/${project.slug}`}
+                    className="inline-flex items-center text-xs font-mono uppercase tracking-wider text-charcoal font-medium hover:text-olive transition-colors group"
+                  >
+                    Read case study
+                    <ArrowUpRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </Link>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

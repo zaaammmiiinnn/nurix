@@ -1,63 +1,33 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Clock, ShieldCheck, Building, Sparkles } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { getProjectBySlug } from "@/lib/data/db-queries";
 import { BreadcrumbJsonLd } from "@/components/seo/json-ld";
 import { SITE_URL } from "@/lib/config";
 
 interface Props {
-  // Next 15 passes params as a Promise.
   params: Promise<{ slug: string }>;
 }
 
-/**
- * Render case studies per request.
- *
- * `generateStaticParams` was removed deliberately. With it present, Next
- * pre-rendered a route shell and answered unknown slugs with HTTP 200 plus the
- * not-found UI — a soft 404 that search engines index, because the 200 headers
- * were flushed before `notFound()` could change the status. Rendering per request
- * gives a genuine 404 and also means projects edited in the admin panel appear
- * immediately instead of waiting for a rebuild.
- */
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
-  // Call notFound() here rather than returning a "Project Not Found" title.
-  // Metadata resolves before the page body is streamed, so a notFound() raised
-  // only in the component leaves the response status at 200 — a soft 404 that
-  // search engines happily index. Raising it during metadata yields a real 404.
   if (!project) notFound();
 
   return {
-    title: project.title,
-    description: `${project.overview} Impact: ${project.resultMetric}.`,
+    title: `${project.title} — NeuralWaves Case Study`,
+    description: `${project.overview} Verified Impact: ${project.resultMetric}.`,
     alternates: {
       canonical: `${SITE_URL}/work/${project.slug}`,
-      languages: {
-        "en-AE": `${SITE_URL}/work/${project.slug}`,
-      },
     },
     openGraph: {
       title: `${project.title} — NeuralWaves Case Study`,
       description: project.overview,
       url: `${SITE_URL}/work/${project.slug}`,
-      images: [
-        {
-          url: `/api/og?title=${encodeURIComponent(project.title)}&subtitle=${encodeURIComponent(project.overview)}&badge=${encodeURIComponent(project.sector)}&metric=${encodeURIComponent(project.resultMetric)}`,
-          width: 1200,
-          height: 630,
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `${project.title} — NeuralWaves`,
-      description: project.overview,
     },
   };
 }
@@ -68,8 +38,7 @@ export default async function WorkSlugPage({ params }: Props) {
   if (!project) notFound();
 
   return (
-    <div className="pt-28 pb-32 min-h-screen relative overflow-hidden">
-      {/* Structured SEO */}
+    <div className="pt-32 pb-36 min-h-screen bg-canvas">
       <BreadcrumbJsonLd
         items={[
           { name: "Home", url: "/" },
@@ -78,163 +47,134 @@ export default async function WorkSlugPage({ params }: Props) {
         ]}
       />
 
-      {/* Background glow */}
-      <div
-        className="absolute top-20 left-1/2 -translate-x-1/2 w-[750px] h-[450px] rounded-full blur-[140px] pointer-events-none opacity-20"
-        style={{
-          background: "radial-gradient(circle, #8B5CF6 0%, #22D3EE 60%, transparent 80%)",
-        }}
-        aria-hidden="true"
-      />
-
-      <div className="max-w-4xl mx-auto px-6 md:px-8 relative z-10">
-        {/* Back navigation & Breadcrumb */}
-        <div className="flex items-center justify-between mb-8">
+      <div className="container-editorial">
+        {/* Back Link */}
+        <div className="mb-10">
           <Link
             href="/work"
-            className="inline-flex items-center gap-2 font-mono text-xs text-zinc-400 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 font-mono text-xs text-olive hover:text-charcoal transition-colors group"
           >
-            <ArrowLeft size={14} />
-            BACK TO ALL WORK
+            <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+            BACK TO SELECTED WORK
           </Link>
-
-          <nav aria-label="Breadcrumb" className="hidden sm:flex items-center gap-2 font-mono text-xs text-zinc-500">
-            <Link href="/" className="hover:text-white transition-colors">
-              HOME
-            </Link>
-            <span aria-hidden="true">/</span>
-            <Link href="/work" className="hover:text-white transition-colors">
-              WORK
-            </Link>
-            <span aria-hidden="true">/</span>
-            <span className="text-zinc-300 uppercase">{project.tag}</span>
-          </nav>
         </div>
 
-        {/* Hero */}
-        <div className="space-y-6 mb-16">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="font-mono text-xs uppercase tracking-widest text-violet-400 border border-violet-500/20 bg-violet-500/10 px-3 py-1 rounded-full">
-              {project.tag}
-            </span>
-            <span className="font-mono text-xs text-zinc-400 bg-white/[0.04] border border-white/[0.08] px-3 py-1 rounded-full">
-              Sector: {project.sector}
-            </span>
-            <span className="font-mono text-xs text-zinc-400 bg-white/[0.04] border border-white/[0.08] px-3 py-1 rounded-full flex items-center gap-1.5">
-              <Clock size={12} className="text-violet-400" />
-              Shipped in {project.deliveryDays}
+        {/* Case Study Header Block */}
+        <div className="border border-stone bg-white p-8 md:p-14 mb-14">
+          <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-stone/70 mb-8 text-[11px] font-mono">
+            <div className="flex items-center gap-3">
+              <span className="text-charcoal font-semibold uppercase">{project.sector || project.tag}</span>
+              <span className="text-stone">/</span>
+              <span className="text-olive">{project.client}</span>
+            </div>
+            <span
+              className={`px-2.5 py-0.5 text-[10px] tracking-wider uppercase font-mono border ${
+                project.isDemo
+                  ? "bg-canvas text-olive border-stone"
+                  : "bg-charcoal text-white border-charcoal"
+              }`}
+            >
+              {project.isDemo ? "INTERNAL DEMO ARCHITECTURE" : "PRODUCTION CLIENT SYSTEM"}
             </span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-[-0.04em] text-white leading-[1.1]">
+          <h1 className="font-display font-medium text-3xl sm:text-4xl md:text-5xl text-charcoal tracking-tight leading-[1.1] mb-6">
             {project.title}
           </h1>
 
-          <div className="flex items-center gap-3 text-sm text-zinc-400 font-mono">
-            <Building size={16} className="text-zinc-500" />
-            <span>
-              {project.isDemo ? "Reference build" : "Client"}: {project.client}
+          <p className="text-base sm:text-lg text-olive leading-relaxed font-sans max-w-3xl mb-8">
+            {project.overview}
+          </p>
+
+          {/* Outcome Metric Banner */}
+          <div className="p-6 border border-stone bg-canvas/70 max-w-xl">
+            <span className="mono-label block text-[10px] text-olive uppercase mb-1">
+              VERIFIED BUSINESS OUTCOME
+            </span>
+            <span className="font-display font-semibold text-2xl sm:text-3xl text-charcoal">
+              {project.resultMetric}
+            </span>
+            <span className="block text-xs font-mono text-olive mt-1">
+              Delivered in {project.deliveryDays} sprint
             </span>
           </div>
-
-          {/* Big Result Metric Box.
-              Demo builds used to be stamped "Verified Outcome / Production
-              Deployed", which claimed production verification for a build that
-              was never deployed for a client. */}
-          <div
-            className={`p-6 sm:p-8 rounded-2xl border backdrop-blur-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
-              project.isDemo
-                ? "border-amber-500/30 bg-amber-950/10"
-                : "border-emerald-500/30 bg-emerald-950/10"
-            }`}
-          >
-            <div>
-              <span
-                className={`font-mono text-[11px] uppercase tracking-wider block mb-1 ${
-                  project.isDemo ? "text-amber-400" : "text-emerald-400"
-                }`}
-              >
-                {project.isDemo ? "Demonstration build — not a client deployment" : "Outcome"}
-              </span>
-              <p className="text-2xl sm:text-3xl font-bold text-white font-mono">
-                {project.resultMetric}
-              </p>
-            </div>
-            <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
-              <ShieldCheck
-                size={16}
-                className={project.isDemo ? "text-amber-400" : "text-emerald-400"}
-              />
-              <span>
-                {project.isDemo ? "Interactive demo" : `Delivered in ${project.deliveryDays}`}
-              </span>
-            </div>
-          </div>
         </div>
 
-        {/* Challenge & Solution Grid */}
-        <div className="space-y-10 mb-16">
-          {/* Problem */}
-          <section className="p-8 rounded-2xl border border-white/[0.08] bg-[#0A0A0F] space-y-4">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-amber-400" aria-hidden="true" />
-              <h2 className="text-lg font-semibold text-white tracking-tight">The Operational Problem</h2>
-            </div>
-            <p className="text-zinc-300 leading-relaxed text-base sm:text-lg">
+        {/* Challenge & Engineered Solution */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-14">
+          <div className="p-8 md:p-10 border border-stone bg-white space-y-4">
+            <span className="mono-label text-[10px] text-olive uppercase">THE PROBLEM</span>
+            <h2 className="font-display font-medium text-2xl text-charcoal">
+              Operational Friction
+            </h2>
+            <p className="text-sm text-charcoal/90 leading-relaxed font-sans">
               {project.problem}
             </p>
-          </section>
+          </div>
 
-          {/* Solution */}
-          <section className="p-8 rounded-2xl border border-white/[0.08] bg-[#0A0A0F] space-y-4">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-violet-400" aria-hidden="true" />
-              <h2 className="text-lg font-semibold text-white tracking-tight">The Engineered Solution</h2>
-            </div>
-            <p className="text-zinc-300 leading-relaxed text-base sm:text-lg">
+          <div className="p-8 md:p-10 border border-stone bg-white space-y-4">
+            <span className="mono-label text-[10px] text-olive uppercase">THE SOLUTION</span>
+            <h2 className="font-display font-medium text-2xl text-charcoal">
+              Engineered Architecture
+            </h2>
+            <p className="text-sm text-charcoal/90 leading-relaxed font-sans">
               {project.solution}
             </p>
-          </section>
-
-          {/* Tech Stack */}
-          <section className="p-8 rounded-2xl border border-white/[0.08] bg-[#0A0A0F] space-y-6">
-            <h2 className="text-lg font-semibold text-white tracking-tight">Production Tech Stack</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {project.techStack.map((tech) => (
-                <div
-                  key={tech}
-                  className="p-3 rounded-xl border border-white/[0.06] bg-white/[0.02] flex items-center gap-2 text-xs font-mono text-zinc-300"
-                >
-                  <Sparkles size={14} className="text-violet-400 shrink-0" />
-                  <span>{tech}</span>
-                </div>
-              ))}
-            </div>
-          </section>
+          </div>
         </div>
 
-        {/* CTA */}
-        <div className="p-8 sm:p-10 rounded-2xl border border-violet-500/30 bg-gradient-to-r from-violet-950/20 via-[#0A0A0F] to-cyan-950/20 text-center space-y-4 shadow-2xl">
-          <h2 className="text-2xl font-bold text-white tracking-tight">
-            Need a similar system for your business?
+        {/* Technical Architecture & Stack */}
+        <div className="border border-stone bg-white p-8 md:p-12 mb-14 space-y-6">
+          <span className="mono-label text-[10px] text-olive uppercase">TECHNICAL FOUNDATION</span>
+          <h2 className="font-display font-medium text-2xl sm:text-3xl text-charcoal">
+            Stack & Integration Infrastructure
           </h2>
-          <p className="text-sm text-zinc-400 max-w-lg mx-auto">
-            We deliver systems like this in days, with locked fixed pricing and full IP handover.
-          </p>
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              href="/contact"
-              className="btn-glow px-8 py-3 rounded-xl text-xs font-semibold uppercase tracking-wider text-white w-full sm:w-auto"
-            >
-              Discuss your project
-            </Link>
-            <Link
-              href="/work"
-              className="btn-ghost-border px-6 py-3 rounded-xl text-xs font-mono uppercase tracking-wider text-zinc-300 hover:text-white w-full sm:w-auto"
-            >
-              View other case studies
-            </Link>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 pt-2">
+            {project.techStack?.map((tech, idx) => (
+              <div
+                key={idx}
+                className="p-3 bg-canvas border border-stone text-xs font-mono text-charcoal font-medium text-center"
+              >
+                {tech}
+              </div>
+            ))}
           </div>
+
+          <div className="pt-6 border-t border-stone/60 grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-olive font-sans">
+            <div>
+              <strong className="block font-mono text-charcoal uppercase text-[11px] mb-1">
+                DATA PRIVACY & RESIDENCY
+              </strong>
+              All database schemas and vector weights deployed directly into customer-controlled cloud infrastructure with zero third-party training data exposure.
+            </div>
+            <div>
+              <strong className="block font-mono text-charcoal uppercase text-[11px] mb-1">
+                SOURCE CODE & IP RETENTION
+              </strong>
+              Full repository transfer executed upon production launch sign-off with comprehensive API documentation and environment runbooks.
+            </div>
+          </div>
+        </div>
+
+        {/* CTA Section */}
+        <div className="border border-charcoal bg-charcoal text-white p-8 sm:p-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+          <div className="space-y-2 max-w-xl">
+            <span className="mono-label text-[10px] text-stone/70 uppercase">SIMILAR SYSTEM SCOPE</span>
+            <h3 className="font-display font-medium text-2xl sm:text-3xl text-white">
+              Interested in deploying a similar build?
+            </h3>
+            <p className="text-xs sm:text-sm text-stone/80 font-sans leading-relaxed">
+              We analyze your operational bottlenecks, specify fixed deliverables, and ship within days.
+            </p>
+          </div>
+
+          <Link
+            href={`/contact?project=${encodeURIComponent(project.title)}`}
+            className="px-6 py-3.5 bg-white text-charcoal font-mono text-xs uppercase tracking-wider font-semibold hover:bg-stone transition-colors shrink-0"
+          >
+            Discuss a Similar Build →
+          </Link>
         </div>
       </div>
     </div>

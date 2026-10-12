@@ -1,54 +1,29 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { BreadcrumbJsonLd } from "@/components/seo/json-ld";
-
-export const metadata: Metadata = {
-  title: "Selected Work — Projects Shipped for UAE Businesses",
-  description:
-    "Real AI projects shipped for UAE businesses in real estate, F&B, healthcare, and logistics. High impact, fixed price, delivered in days.",
-  alternates: {
-    canonical: `${SITE_URL}/work`,
-    languages: {
-      "en-AE": `${SITE_URL}/work`,
-    },
-  },
-  openGraph: {
-    title: "Selected Work — NeuralWaves",
-    description: "Real AI projects shipped for UAE businesses. Real results, real clients.",
-    url: `${SITE_URL}/work`,
-    images: [
-      {
-        url: "/api/og?title=Selected%20Work&subtitle=Real%20projects%20shipped%20for%20UAE%20businesses.&badge=CASE%20STUDIES",
-        width: 1200,
-        height: 630,
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Selected Work — NeuralWaves",
-    description: "AI projects shipped for UAE businesses. Fixed price. Delivered in days.",
-  },
-};
-
+import { ProjectGallery } from "@/components/work/project-gallery";
 import { getProjects } from "@/lib/data/db-queries";
 import { SITE_URL } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+export const metadata: Metadata = {
+  title: "Work & Case Studies — NeuralWaves",
+  description:
+    "Production AI systems and custom digital software shipped for businesses in India & the UAE. Verified outcomes, system architectures, and technical breakdowns.",
+  alternates: {
+    canonical: `${SITE_URL}/work`,
+  },
+};
+
 export default async function WorkPage() {
   const projects = await getProjects();
-
-  // Derive the counts from the actual data. The page previously claimed
-  // "12+ Projects Shipped" while showing four, two of which are labelled demos —
-  // an easily-checked claim that undermines trust rather than building it.
   const shipped = projects.filter((p) => !p.isDemo).length;
   const demos = projects.filter((p) => p.isDemo).length;
+
   return (
-    <div className="pt-28 pb-32 min-h-screen relative overflow-hidden">
-      {/* Structured SEO */}
+    <div className="pt-32 pb-36 min-h-screen bg-canvas">
       <BreadcrumbJsonLd
         items={[
           { name: "Home", url: "/" },
@@ -56,143 +31,68 @@ export default async function WorkPage() {
         ]}
       />
 
-      {/* Background glow */}
-      <div
-        className="absolute top-20 left-1/2 -translate-x-1/2 w-[750px] h-[500px] rounded-full blur-[140px] pointer-events-none opacity-20"
-        style={{
-          background: "radial-gradient(circle, #8B5CF6 0%, #22D3EE 50%, transparent 75%)",
-        }}
-        aria-hidden="true"
-      />
-
-      <div className="max-w-7xl mx-auto px-6 md:px-8 relative z-10">
+      <div className="container-editorial">
         {/* Breadcrumb nav */}
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 font-mono text-xs text-zinc-500 mb-8">
-          <Link href="/" className="hover:text-white transition-colors">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 font-mono text-xs text-olive mb-10">
+          <Link href="/" className="hover:text-charcoal transition-colors">
             HOME
           </Link>
-          <span aria-hidden="true">/</span>
-          <span className="text-zinc-300">WORK</span>
+          <span className="text-stone">/</span>
+          <span className="text-charcoal uppercase">WORK</span>
         </nav>
 
         {/* Hero */}
-        <div className="mb-20 max-w-3xl">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="w-6 h-[1px] bg-violet-500/40 inline-block" aria-hidden="true" />
-            <span className="font-mono text-xs uppercase tracking-widest text-violet-400">
-              02 / PORTFOLIO
-            </span>
+        <div className="mb-16 md:mb-24 max-w-4xl">
+          <div className="inline-flex items-center gap-2 mb-4">
+            <span className="w-1.5 h-1.5 bg-charcoal inline-block" />
+            <p className="mono-label text-olive tracking-widest text-[11px] uppercase">
+              PORTFOLIO // VERIFIED IMPLEMENTATIONS
+            </p>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-[-0.04em] text-white leading-[1.05] mb-6">
-            Shipped for real businesses.
+          <h1 className="font-display font-medium text-4xl sm:text-5xl md:text-6xl text-charcoal tracking-tight leading-[1.08] mb-6">
+            Shipped for real businesses. <br className="hidden sm:inline" />
+            <span className="text-charcoal/70">Documented end-to-end.</span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-zinc-400 font-normal leading-relaxed">
-            No speculative pitch decks or vaporware. Every case study below documents what we replaced, what we built, and what changed as a result.
+          <p className="text-base sm:text-lg md:text-xl text-olive leading-relaxed font-sans max-w-2xl mb-8">
+            No speculative prototypes or conceptual vaporware. Every case study below details the operational friction replaced, the technical architecture deployed, and the verified outcome.
           </p>
 
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-4 text-xs font-mono text-zinc-400">
+          <div className="flex flex-wrap items-center gap-6 pt-2 text-xs font-mono text-olive border-t border-stone/80">
             <span>
-              {shipped} shipped {shipped === 1 ? "build" : "builds"}
+              <strong className="text-charcoal font-semibold">{shipped}</strong> VERIFIED CLIENT {shipped === 1 ? "BUILD" : "BUILDS"}
             </span>
             {demos > 0 && (
-              <>
-                <span aria-hidden="true">•</span>
-                <span>{demos} interactive {demos === 1 ? "demo" : "demos"}</span>
-              </>
+              <span>
+                <strong className="text-charcoal font-semibold">{demos}</strong> INTERNAL DEMO {demos === 1 ? "BUILD" : "BUILDS"}
+              </span>
             )}
-            <span aria-hidden="true">•</span>
-            <span>100% fixed quotes</span>
+            <span>UAE & INDIA REGION</span>
           </div>
         </div>
 
-        {/* Projects Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-28">
-          {projects.map((project) => (
-            <article
-              key={project.slug}
-              className="rounded-2xl border border-white/[0.08] bg-[#0A0A0F] hover:border-violet-500/40 transition-all duration-200 p-8 flex flex-col justify-between group shadow-xl hover:shadow-violet-900/10"
-            >
-              <div>
-                {/* Meta badge row */}
-                <div className="flex items-center justify-between gap-4 mb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[11px] uppercase tracking-wider text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2.5 py-1 rounded-md">
-                      {project.tag}
-                    </span>
-                    <span className="font-mono text-xs text-zinc-500">
-                      {project.sector}
-                    </span>
-                  </div>
-                  <span className="font-mono text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
-                    {project.resultMetric}
-                  </span>
-                </div>
+        {/* Filterable Project Gallery */}
+        <ProjectGallery projects={projects} />
 
-                {/* Title */}
-                <h2 className="text-2xl font-bold text-white tracking-tight mb-3 group-hover:text-violet-200 transition-colors">
-                  <Link href={`/work/${project.slug}`}>
-                    {project.title}
-                  </Link>
-                </h2>
-
-                <p className="text-xs font-mono text-zinc-400 mb-4">
-                  Client: {project.client}
-                </p>
-
-                <p className="text-sm text-zinc-300 leading-relaxed mb-6">
-                  {project.overview}
-                </p>
-
-                {/* Tech stack pills */}
-                <div className="flex flex-wrap gap-1.5 mb-8">
-                  {project.techStack.map((tech) => (
-                    <span
-                      key={tech}
-                      className="font-mono text-[11px] text-zinc-400 bg-white/[0.04] border border-white/[0.06] px-2.5 py-1 rounded-md"
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Card Footer Link */}
-              <div className="pt-4 border-t border-white/[0.06] flex items-center justify-between">
-                <span className="font-mono text-xs text-zinc-500">
-                  Sprint: {project.deliveryDays}
-                </span>
-
-                <Link
-                  href={`/work/${project.slug}`}
-                  className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-violet-400 hover:text-white transition-colors group-hover:translate-x-1 transition-transform"
-                >
-                  Read Case Study
-                  <ArrowRight size={14} />
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
-
-        {/* Call to action */}
-        <div className="p-10 rounded-2xl border border-white/[0.08] bg-[#0A0A0F] text-center max-w-3xl mx-auto space-y-4">
-          <h2 className="text-2xl font-bold text-white tracking-tight">
-            Want to see your workflow in our next sprint?
-          </h2>
-          <p className="text-sm text-zinc-400">
-            Tell us what repetitive process is slowing your team down. We&apos;ll scope the build and deliver in days.
-          </p>
-          <div className="pt-2">
-            <Link
-              href="/contact"
-              className="btn-glow inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-xs font-semibold uppercase tracking-wider text-white"
-            >
-              Start a sprint
-              <ArrowRight size={14} />
-            </Link>
+        {/* Bottom CTA Block */}
+        <div className="mt-24 border border-charcoal bg-charcoal text-white p-8 sm:p-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+          <div className="space-y-2 max-w-xl">
+            <span className="mono-label text-[10px] text-stone/70 uppercase">CUSTOM SCOPING</span>
+            <h3 className="font-display font-medium text-2xl sm:text-3xl text-white">
+              Have a similar operational challenge in your business?
+            </h3>
+            <p className="text-xs sm:text-sm text-stone/80 font-sans leading-relaxed">
+              We review your existing workflow and provide a fixed-price scoping architecture within 4 business hours.
+            </p>
           </div>
+
+          <Link
+            href="/contact"
+            className="px-6 py-3.5 bg-white text-charcoal font-mono text-xs uppercase tracking-wider font-semibold hover:bg-stone transition-colors shrink-0"
+          >
+            Discuss a Project →
+          </Link>
         </div>
       </div>
     </div>

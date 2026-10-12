@@ -2,33 +2,44 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus } from "lucide-react";
-import { SectionHeader } from "@/components/ui/section-header";
+import { Plus, Minus } from "lucide-react";
 
-const FAQS = [
+export const REQUIRED_FAQS = [
   {
-    q: "How fast can you deliver?",
-    a: "Most projects are delivered in 5 working days. Complex builds with custom CRM or ERP integrations take 7 to 10 days. We lock the exact delivery date on our discovery call.",
+    q: "How much does an AI automation project cost?",
+    a: "Our fixed-price project packages start at AED 2,500 (approx. ₹58,000 INR) for single-channel WhatsApp or Web lead bots, AED 3,500 for bilingual CRM-integrated assistants, and AED 7,500 for custom full-stack web dashboards and multi-agent workflows. Custom enterprise systems are scoped upfront with zero hidden fees. Billing is 50% upfront to initiate the sprint and 50% upon verified staging sign-off.",
   },
   {
-    q: "What does 50% upfront mean?",
-    a: "You pay 50% to initiate the sprint and secure dedicated engineering time. The remaining 50% is only billed once the build is deployed, tested, and approved by your team.",
+    q: "How long does development take?",
+    a: "A focused chatbot or lead intake workflow typically ships in 3 to 7 working days. More comprehensive projects—such as multi-branch restaurant portals or multi-agent document extraction engines—generally require 1 to 3 weeks depending on API access and custom integrations. Realistic timelines are locked during the initial discovery stage.",
   },
   {
-    q: "Do you support Arabic?",
-    a: "Yes. All our AI models, chatbots, and dashboards natively support Modern Standard Arabic (MSA) as well as Gulf dialects and English.",
+    q: "Can you integrate with existing business software?",
+    a: "Yes. We build native webhook connections and REST API integrations with CRMs (HubSpot, Salesforce, Zoho, Pipedrive), messaging platforms (Meta WhatsApp Cloud API, Telegram, Slack), scheduling tools (Cal.com, Google Calendar), and databases (PostgreSQL, Supabase, Google Sheets).",
   },
   {
-    q: "What if I need changes after launch?",
-    a: "Every build includes a 14 to 30-day post-launch warranty with instant fixes and revisions. For ongoing changes or feature additions, we offer month-to-month retainers.",
+    q: "Who owns the delivered software?",
+    a: "You do. 100% of custom code, database configurations, architectural blueprints, and prompt logic belong entirely to your company upon final milestone payment. We provide complete repository access and deployment documentation with zero vendor lock-in.",
   },
   {
-    q: "Do you work with WordPress sites?",
-    a: "Yes. We embed custom AI chatbots, lead capture flows, and dashboards seamlessly into WordPress, Webflow, Shopify, or custom Next.js websites via clean script tags or APIs.",
+    q: "Are third-party API and messaging charges included?",
+    a: "Third-party utility charges—such as Meta WhatsApp Business conversation fees (fractions of a cent per conversation) and OpenAI / Anthropic model token consumption—are billed directly to your corporate payment card at actual cost. We do not apply any markup to your third-party API usage.",
   },
   {
-    q: "Who pays WhatsApp/Meta charges?",
-    a: "You pay Meta directly via your own Meta Business Manager at cost (typically a few fils per conversation). We configure and connect your WhatsApp Business Cloud API with zero markup.",
+    q: "Can you support Arabic and English workflows?",
+    a: "Yes. All our conversational systems and interfaces are built to understand Modern Standard Arabic (MSA), regional Gulf dialects (Khaleeji), and English fluently. The AI detects the customer's language dynamically and responds in the identical tone and dialect.",
+  },
+  {
+    q: "Do you provide maintenance and support?",
+    a: "Every deployment includes a 30-day post-launch warranty period covering bug fixes, edge-case tuning, and prompt calibrations. After launch, clients can opt for month-to-month maintenance retainers for continuous monitoring, new feature rollouts, and model updates.",
+  },
+  {
+    q: "How do you protect customer data?",
+    a: "We adhere to strict data-minimization principles. Sensitive customer records are stored securely within your own dedicated cloud infrastructure (e.g. Supabase PostgreSQL with Row Level Security). We never use your proprietary business data or customer transcripts to train public AI foundation models.",
+  },
+  {
+    q: "What happens when an AI system needs human intervention?",
+    a: "Our systems feature deterministic confidence score evaluations and explicit human-handover protocols. When an inquiry falls outside predefined guardrails or requests executive negotiation, the bot flags the conversation, pauses automated replies, and alerts a human team member via WhatsApp, Slack, or email with full conversational context.",
   },
 ];
 
@@ -37,7 +48,7 @@ interface FaqSectionProps {
 }
 
 export function FaqSection({ faqs }: FaqSectionProps = {}) {
-  const items = faqs && faqs.length > 0 ? faqs : FAQS;
+  const items = faqs && faqs.length > 0 ? faqs : REQUIRED_FAQS;
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   const toggle = (idx: number) => {
@@ -47,63 +58,86 @@ export function FaqSection({ faqs }: FaqSectionProps = {}) {
   return (
     <section
       id="faq"
-      className="py-32 md:py-40 px-6 md:px-8 max-w-4xl mx-auto select-none"
+      className="py-24 md:py-36 border-b border-stone/80 bg-canvas select-none"
       aria-labelledby="faq-heading"
     >
-      <SectionHeader
-          id="faq-heading"
-        label="07 / FAQ"
-        title="Questions. Answered."
-        description="Everything you need to know about our sprints, pricing, contracts, and IP ownership."
-      />
-
-      <div className="space-y-3">
-        {items.map((faq, idx) => {
-          const isOpen = openIndex === idx;
-
-          return (
-            <div
-              key={idx}
-              className="rounded-2xl border border-white/[0.08] bg-white/[0.01] hover:bg-white/[0.02] transition-colors duration-200 overflow-hidden"
-            >
-              <button
-                onClick={() => toggle(idx)}
-                className="w-full flex items-center justify-between p-6 text-left group"
-                aria-expanded={isOpen}
+      <div className="container-editorial">
+        {/* Section Header */}
+        <div className="mb-16 md:mb-20">
+          <div className="inline-flex items-center gap-2 mb-4">
+            <span className="w-1.5 h-1.5 bg-charcoal inline-block" />
+            <p className="mono-label text-olive tracking-widest text-[11px] uppercase">
+              06 // FREQUENTLY ASKED QUESTIONS
+            </p>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
+            <div className="lg:col-span-8">
+              <h2
+                id="faq-heading"
+                className="font-display font-medium text-3xl sm:text-4xl md:text-5xl text-charcoal tracking-tight"
               >
-                <span className="text-base font-medium text-white group-hover:text-violet-200 transition-colors pr-6">
-                  {faq.q}
-                </span>
-
-                {/* Rotating Plus icon (rotates 45deg to X on open) */}
-                <motion.div
-                  animate={{ rotate: isOpen ? 45 : 0 }}
-                  transition={{ duration: 0.25, ease: "easeOut" }}
-                  className="w-7 h-7 rounded-lg bg-white/[0.05] border border-white/[0.08] flex items-center justify-center shrink-0 text-zinc-400 group-hover:text-white group-hover:border-violet-500/30 transition-colors"
-                >
-                  <Plus size={16} />
-                </motion.div>
-              </button>
-
-              <AnimatePresence initial={false}>
-                {isOpen && (
-                  <motion.div
-                    key="content"
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: [0.21, 0.47, 0.32, 0.98] }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-6 pb-6 text-sm text-zinc-400 leading-relaxed border-t border-white/[0.04] pt-4">
-                      {faq.a}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                Clear answers. <br className="hidden sm:inline" />
+                No ambiguous fine print.
+              </h2>
             </div>
-          );
-        })}
+            <div className="lg:col-span-4">
+              <p className="text-sm md:text-base text-olive leading-relaxed font-sans">
+                Everything you need to know regarding pricing, timelines, integrations, IP ownership, and data privacy.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Accordion List */}
+        <div className="space-y-4 max-w-4xl">
+          {items.map((faq, idx) => {
+            const isOpen = openIndex === idx;
+
+            return (
+              <div
+                key={idx}
+                className="border border-stone bg-white transition-colors"
+              >
+                <button
+                  type="button"
+                  onClick={() => toggle(idx)}
+                  className="w-full flex items-center justify-between p-6 sm:p-7 text-left group cursor-pointer"
+                  aria-expanded={isOpen}
+                >
+                  <div className="flex items-center gap-4 pr-4">
+                    <span className="font-mono text-xs text-olive w-6 shrink-0">
+                      {idx + 1 < 10 ? `0${idx + 1}` : idx + 1}
+                    </span>
+                    <span className="font-display font-medium text-base sm:text-lg text-charcoal group-hover:text-olive transition-colors">
+                      {faq.q}
+                    </span>
+                  </div>
+
+                  <div className="w-6 h-6 border border-stone flex items-center justify-center shrink-0 text-charcoal bg-canvas">
+                    {isOpen ? <Minus size={13} /> : <Plus size={13} />}
+                  </div>
+                </button>
+
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      key="content"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.22, ease: "easeOut" }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-6 pb-6 sm:px-7 sm:pb-7 pl-16 text-xs sm:text-sm text-olive leading-relaxed font-sans border-t border-stone/50 pt-4">
+                        {faq.a}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

@@ -19,6 +19,13 @@ const inter = Inter({
   weight: ["400", "500", "600", "700"],
 });
 
+const geistSans = localFont({
+  src: "./fonts/GeistVF.woff",
+  variable: "--font-sans",
+  display: "swap",
+  weight: "100 900",
+});
+
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-mono",
@@ -27,8 +34,8 @@ const geistMono = localFont({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#07070A",
-  colorScheme: "dark",
+  themeColor: "#F5F3ED",
+  colorScheme: "light",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -119,14 +126,14 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${geistMono.variable} dark noise-overlay`}
+      className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} editorial-noise`}
       suppressHydrationWarning
     >
-      <body className="bg-signal-bg text-signal-text antialiased font-sans selection:bg-violet-600/30 selection:text-violet-200">
+      <body className="bg-[#F5F3ED] text-[#222320] antialiased font-sans selection:bg-[#222320] selection:text-[#F5F3ED]">
         {/* Accessible Skip to Main Content Link */}
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-violet-600 focus:text-white focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-2 focus:ring-offset-[#07070A] font-medium text-sm transition-all"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-[#222320] focus:text-[#F5F3ED] focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#222320] focus:ring-offset-2 focus:ring-offset-[#F5F3ED] font-medium text-sm transition-all"
         >
           Skip to main content
         </a>

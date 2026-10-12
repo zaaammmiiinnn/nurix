@@ -1,244 +1,202 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { MessageSquare, LayoutDashboard, Bot, ArrowRight, Check, MessageCircle } from "lucide-react";
+import { ArrowUpRight, Check } from "lucide-react";
 import { BreadcrumbJsonLd } from "@/components/seo/json-ld";
+import { SITE_URL } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  title: "Services",
+  title: "Services — NeuralWaves",
   description:
-    "Three things. Done properly. Custom AI Chatbots, Web & Admin Dashboards, and AI Agents for UAE businesses.",
+    "Disciplined AI engineering and digital systems for businesses in India & the UAE. Conversational WhatsApp bots, autonomous workflows, and custom web apps.",
   alternates: {
     canonical: `${SITE_URL}/services`,
-    languages: {
-      "en-AE": `${SITE_URL}/services`,
-    },
   },
-  openGraph: {
-    title: "Services — NeuralWaves",
+};
+
+const SERVICES = [
+  {
+    number: "01",
+    href: "/services/ai-chatbots",
+    tag: "CONVERSATIONAL COMMERCE",
+    title: "AI Chatbots & WhatsApp Automation",
+    headline: "Turn conversations into completed work.",
     description:
-      "Three things. Done properly. Custom AI Chatbots, Web & Admin Dashboards, and AI Agents for UAE businesses.",
-    url: `${SITE_URL}/services`,
-    images: [
-      {
-        url: "/api/og?title=Services&subtitle=Three%20things.%20Done%20properly.&badge=SERVICES",
-        width: 1200,
-        height: 630,
-      },
+      "Customer communications in the UAE and India start on WhatsApp. We engineer verified Meta Cloud API bots capable of qualification, booking, and catalog navigation in fluent Arabic and English.",
+    deliverables: [
+      "Official Meta WhatsApp Cloud API (zero markup)",
+      "Bilingual Arabic (MSA & Gulf) and English NLP",
+      "Automated bi-directional CRM syncing",
+      "Cal.com & Google Calendar booking",
     ],
+    pricing: "From AED 2,500",
+    delivery: "3–5 days",
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "Services — NeuralWaves",
-    description: "Three things. Done properly. Chatbots, dashboards, and AI agents for UAE businesses.",
+  {
+    number: "02",
+    href: "/services/ai-agents",
+    tag: "AUTONOMOUS WORKFLOWS",
+    title: "AI Agents & Business Workflows",
+    headline: "From repetitive tasks to intelligent workflows.",
+    description:
+      "Autonomous background workers engineered to handle multi-step business operations: lead scraping, document parsing, invoice reconciliation, and daily briefings with strict human approval gates.",
+    deliverables: [
+      "PDF & trade license OCR extraction",
+      "Deterministic policy & business rule guards",
+      "Human-in-the-loop executive sign-off checks",
+      "Immutable audit log telemetry",
+    ],
+    pricing: "From AED 7,500",
+    delivery: "7–10 days",
   },
-};
-import { getServices, getSiteSettings } from "@/lib/data/db-queries";
-import { SITE_URL } from "@/lib/config";
+  {
+    number: "03",
+    href: "/services/web-apps",
+    tag: "OPERATIONAL INTERFACES",
+    title: "Web Applications & Admin Dashboards",
+    headline: "Replace scattered tools with one clear view.",
+    description:
+      "Custom operations portals, internal tools, and client dashboards built on Next.js, PostgreSQL, and low-latency WebSockets to replace fragile spreadsheets.",
+    deliverables: [
+      "Granular Role-Based Access Control (RBAC)",
+      "Real-time WebSocket data streaming",
+      "Mobile-optimized views for field operators",
+      "Full source code & IP handover",
+    ],
+    pricing: "From AED 7,500",
+    delivery: "7–14 days",
+  },
+];
 
-const ICON_MAP: Record<string, typeof MessageSquare> = {
-  chatbots: MessageSquare,
-  dashboards: LayoutDashboard,
-  agents: Bot,
-};
-
-export default async function ServicesPage() {
-  const [servicesData, siteSettings] = await Promise.all([
-    getServices(),
-    getSiteSettings(),
-  ]);
-
-  const waNumber = (siteSettings.whatsapp_number || "918840936715").replace(/[^0-9]/g, "");
-  const waBase = `https://wa.me/${waNumber}`;
-
+export default function ServicesPage() {
   return (
-    <div className="pt-28 pb-32 min-h-screen relative overflow-hidden select-none">
+    <div className="pt-32 pb-36 min-h-screen bg-canvas">
       <BreadcrumbJsonLd
         items={[
           { name: "Home", url: "/" },
           { name: "Services", url: "/services" },
         ]}
       />
-      {/* Background radial gradient */}
-      <div
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[550px] rounded-full blur-[140px] pointer-events-none opacity-20"
-        style={{
-          background: "radial-gradient(circle, #8B5CF6 0%, #22D3EE 50%, transparent 70%)",
-        }}
-        aria-hidden="true"
-      />
 
-      <div className="max-w-7xl mx-auto px-6 md:px-8 relative z-10">
+      <div className="container-editorial">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 font-mono text-xs text-zinc-500 mb-8">
-          <Link href="/" className="hover:text-white transition-colors">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 font-mono text-xs text-olive mb-10">
+          <Link href="/" className="hover:text-charcoal transition-colors">
             HOME
           </Link>
-          <span>/</span>
-          <span className="text-zinc-300">SERVICES</span>
-        </div>
+          <span className="text-stone">/</span>
+          <span className="text-charcoal uppercase">SERVICES</span>
+        </nav>
 
-        {/* Hero */}
-        <div className="mb-24 md:mb-32 max-w-4xl">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="w-6 h-[1px] bg-violet-500/40 inline-block" aria-hidden="true" />
-            <span className="font-mono text-xs uppercase tracking-widest text-zinc-500">
-              01 / SERVICES
-            </span>
+        {/* Hero Section */}
+        <div className="mb-20 md:mb-28 max-w-4xl">
+          <div className="inline-flex items-center gap-2 mb-4">
+            <span className="w-1.5 h-1.5 bg-charcoal inline-block" />
+            <p className="mono-label text-olive tracking-widest text-[11px] uppercase">
+              CAPABILITIES // THREE CORE DOMAINS
+            </p>
           </div>
 
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-semibold tracking-[-0.04em] text-white leading-[0.95] mb-6">
-            Services.
+          <h1 className="font-display font-medium text-4xl sm:text-5xl md:text-6xl text-charcoal tracking-tight leading-[1.08] mb-6">
+            Services. <br className="hidden sm:inline" />
+            <span className="text-charcoal/70">Engineered with precision.</span>
           </h1>
 
-          <p className="text-xl sm:text-2xl text-zinc-400 font-normal leading-relaxed">
-            Three things. Done properly.
+          <p className="text-base sm:text-lg md:text-xl text-olive leading-relaxed font-sans max-w-2xl">
+            We do not offer dozens of generic services. We focus strictly on three high-impact digital systems that eliminate busywork and accelerate commercial operations.
           </p>
         </div>
 
-        {/* 3 Large Service Blocks — Full-width alternating layout with sticky left title */}
-        <div className="space-y-28 md:space-y-40">
-          {servicesData.map((service) => {
-            const Icon = ICON_MAP[service.slug] || MessageSquare;
-            const waUrl = `${waBase}?text=${encodeURIComponent(service.waText)}`;
+        {/* Services List */}
+        <div className="space-y-12 mb-24">
+          {SERVICES.map((service) => (
+            <div
+              key={service.number}
+              className="border border-stone bg-white p-8 md:p-12 lg:p-16 transition-all hover:border-charcoal/60"
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+                <div className="lg:col-span-5 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <span className="w-8 h-8 flex items-center justify-center font-mono text-xs font-semibold text-charcoal bg-canvas border border-stone">
+                      {service.number}
+                    </span>
+                    <span className="mono-label text-[10px] text-olive uppercase">{service.tag}</span>
+                  </div>
 
-            return (
-              <section
-                key={service.slug}
-                id={service.slug}
-                className="border-t border-white/[0.08] pt-16 md:pt-20 scroll-mt-24"
-              >
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-                  {/* Left Column: Sticky Title, Icon, Badge & Link */}
-                  <div className="lg:col-span-5 lg:sticky lg:top-28 space-y-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
-                        <Icon size={26} className="text-violet-400" />
-                      </div>
-                      <span className="font-mono text-xs text-zinc-500 uppercase tracking-widest border border-white/[0.08] px-3 py-1 rounded-full">
-                        Offer {service.number}
-                      </span>
-                    </div>
+                  <h2 className="font-display font-medium text-2xl sm:text-3xl text-charcoal tracking-tight">
+                    {service.title}
+                  </h2>
 
-                    <div className="space-y-3">
-                      <h2 className="text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-white leading-tight">
-                        {service.title}
-                      </h2>
-                      <p className="text-base text-violet-300/90 font-medium">
-                        {service.tagline}
-                      </p>
-                    </div>
+                  <p className="font-display text-base text-charcoal/80 font-normal">
+                    {service.headline}
+                  </p>
 
-                    <div className="flex items-center gap-4 text-xs font-mono text-zinc-400 pt-2">
-                      <span className="bg-white/[0.04] border border-white/[0.08] px-3 py-1.5 rounded-lg">
-                        {service.pricing}
-                      </span>
-                      <span className="bg-white/[0.04] border border-white/[0.08] px-3 py-1.5 rounded-lg">
-                        {service.delivery} delivery
-                      </span>
-                    </div>
+                  <p className="text-xs sm:text-sm text-olive leading-relaxed font-sans">
+                    {service.description}
+                  </p>
 
-                    <div className="pt-2">
-                      <Link
-                        href={`/services/${service.slug}`}
-                        className="inline-flex items-center gap-2 text-sm font-mono text-zinc-300 hover:text-white group transition-colors"
-                      >
-                        Deep dive into {service.title.split("&")[0].trim()}
-                        <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                      </Link>
+                  <div className="pt-4">
+                    <Link
+                      href={service.href}
+                      className="inline-flex items-center text-xs font-mono uppercase tracking-wider text-charcoal font-medium border-b border-charcoal pb-1 transition-colors hover:text-olive hover:border-olive group"
+                    >
+                      Inspect dedicated architecture & simulator
+                      <ArrowUpRight className="w-3.5 h-3.5 ml-1.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="lg:col-span-7 bg-canvas/40 border border-stone/70 p-6 sm:p-8 space-y-6">
+                  <div>
+                    <span className="mono-label block text-[10px] text-olive uppercase mb-3">
+                      KEY PRODUCTION DELIVERABLES
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {service.deliverables.map((item, i) => (
+                        <div key={i} className="flex items-start gap-2 text-xs text-charcoal font-sans">
+                          <Check className="w-3.5 h-3.5 text-charcoal shrink-0 mt-0.5" />
+                          <span>{item}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
-                  {/* Right Column: Deep Narrative, Deliverables Checklist & WhatsApp CTA */}
-                  <div className="lg:col-span-7 space-y-10">
-                    <div className="rounded-2xl border border-white/[0.08] bg-gradient-to-br from-white/[0.04] to-white/[0.01] p-8 sm:p-10 space-y-8">
-                      <div>
-                        <h3 className="font-mono text-xs uppercase tracking-wider text-zinc-500 mb-3">
-                          The Problem & Scope
-                        </h3>
-                        <p className="text-base text-zinc-300 leading-relaxed">
-                          {service.description}
-                        </p>
-                      </div>
-
-                      <div className="space-y-4">
-                        <h3 className="font-mono text-xs uppercase tracking-wider text-zinc-500">
-                          Included Deliverables
-                        </h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                          {service.deliverables.map((item, i) => (
-                            <div key={i} className="flex items-start gap-2.5 text-xs text-zinc-300">
-                              <span className="w-4 h-4 rounded-full bg-violet-500/10 border border-violet-500/30 flex items-center justify-center shrink-0 mt-0.5">
-                                <Check size={10} className="text-violet-400" />
-                              </span>
-                              <span className="leading-snug">{item}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="pt-4 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <a
-                          href={waUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn-glow flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-xs font-semibold uppercase tracking-wider text-white w-full sm:w-auto"
-                        >
-                          <MessageCircle size={15} className="text-emerald-400" />
-                          Discuss this →
-                        </a>
-
-                        <Link
-                          href="/contact"
-                          className="btn-ghost-border flex items-center justify-center px-6 py-3 rounded-xl text-xs font-mono uppercase tracking-wider text-zinc-300 hover:text-white w-full sm:w-auto"
-                        >
-                          Book Scope Call
-                        </Link>
-                      </div>
+                  <div className="pt-4 border-t border-stone/60 flex items-center justify-between text-xs font-mono text-olive">
+                    <div>
+                      <span className="block text-[9px] uppercase text-olive/70">COMMERCIAL SPRINT</span>
+                      <span className="font-semibold text-charcoal">{service.pricing}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[9px] uppercase text-olive/70 text-right">TIMEFRAME</span>
+                      <span className="font-semibold text-charcoal text-right block">{service.delivery}</span>
                     </div>
                   </div>
                 </div>
-              </section>
-            );
-          })}
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* Bottom CTA: "Not sure which fits? Book a 15-min call." */}
-        <div className="mt-36 sm:mt-44 p-10 sm:p-14 rounded-3xl border border-white/[0.08] bg-[#0A0A0F] text-center max-w-4xl mx-auto space-y-6 relative overflow-hidden shadow-2xl">
-          <div
-            className="absolute inset-0 pointer-events-none opacity-20"
-            style={{
-              background: "radial-gradient(circle at center, #8B5CF6 0%, transparent 70%)",
-            }}
-          />
-
-          <div className="relative z-10 space-y-4">
-            <h2 className="text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-white">
-              Not sure which fits?
-            </h2>
-            <p className="text-base sm:text-lg text-zinc-400 max-w-lg mx-auto">
-              Book a 15-minute call. We&apos;ll assess your current operations, identify the highest-leverage automation, and give you a fixed quote.
+        {/* Bottom CTA Block */}
+        <div className="border border-charcoal bg-charcoal text-white p-8 sm:p-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+          <div className="space-y-2 max-w-xl">
+            <span className="mono-label text-[10px] text-stone/70 uppercase">DIRECT CONSULTATION</span>
+            <h3 className="font-display font-medium text-2xl sm:text-3xl text-white">
+              Not sure which system fits your operational bottleneck?
+            </h3>
+            <p className="text-xs sm:text-sm text-stone/80 font-sans leading-relaxed">
+              Schedule a 15-minute engineering feasibility call. We analyze your tech stack and give you a fixed scope quotation with zero sales pitch.
             </p>
-            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                href="/contact"
-                className="btn-glow px-8 py-3.5 rounded-xl text-sm font-semibold text-white w-full sm:w-auto"
-              >
-                Book a 15-min call
-              </Link>
-              <a
-                href={waBase}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-ghost-border px-8 py-3.5 rounded-xl text-sm font-medium text-zinc-300 hover:text-white w-full sm:w-auto flex items-center justify-center gap-2"
-              >
-                <MessageCircle size={16} className="text-emerald-400" />
-                WhatsApp us
-              </a>
-            </div>
           </div>
+
+          <Link
+            href="/contact"
+            className="px-6 py-3.5 bg-white text-charcoal font-mono text-xs uppercase tracking-wider font-semibold hover:bg-stone transition-colors shrink-0"
+          >
+            Discuss a Project →
+          </Link>
         </div>
       </div>
     </div>

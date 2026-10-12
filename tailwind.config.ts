@@ -43,7 +43,34 @@ const config: Config = {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        // Signal brand colors
+        // NeuralWaves Minimal-Luxury Swiss-Editorial Tokens
+        canvas: "#F5F3ED",
+        charcoal: {
+          DEFAULT: "#222320",
+          50: "#F9F9F8",
+          100: "#F0EFEB",
+          200: "#DCDAD2",
+          300: "#B8B5AA",
+          400: "#73766D",
+          500: "#4A4C46",
+          600: "#32332F",
+          700: "#2A2B27",
+          800: "#222320",
+          900: "#1A1B18",
+          950: "#111210",
+        },
+        stone: {
+          DEFAULT: "#DCDAD2",
+          light: "#EFECE4",
+          dark: "#BCB9AE",
+        },
+        olive: {
+          DEFAULT: "#73766D",
+          light: "#8F9288",
+          dark: "#54564F",
+        },
+        surface: "#FFFFFF",
+        // Legacy signal brand colors preserved for admin compatibility
         signal: {
           bg: "#07070A",
           "bg-elev": "#0F0F14",
@@ -55,8 +82,12 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "Inter", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
-        mono: ["'JetBrains Mono'", "'Fira Code'", "monospace"],
+        sans: ["var(--font-sans)", "Inter", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        display: ["var(--font-display)", "var(--font-sans)", "sans-serif"],
+        mono: ["var(--font-mono)", "'IBM Plex Mono'", "'JetBrains Mono'", "monospace"],
+      },
+      maxWidth: {
+        content: "1240px",
       },
       fontSize: {
         "display-2xl": ["4.5rem", { lineHeight: "1.05", letterSpacing: "-0.02em" }],

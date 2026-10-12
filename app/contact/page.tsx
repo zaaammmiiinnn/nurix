@@ -1,700 +1,427 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
-import {
-  MessageCircle,
-  Mail,
-  Phone,
-  Calendar,
-  ArrowRight,
-  CheckCircle2,
-  Loader2,
-  Clock,
-  Sparkles,
-  ChevronRight,
-} from "lucide-react";
+import { MessageCircle, ArrowRight, CheckCircle2, Loader2, ShieldCheck, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { submitLead } from "@/app/actions/lead";
-import { type ContactFormData } from "@/lib/schemas/contact";
-import { SITE_CONFIG } from "@/lib/data/site-data";
 import { useSiteConfig, toDialable } from "@/lib/hooks/use-site-config";
-
-// Contact details come from the admin-controlled settings at runtime; these are
-// the static fallbacks used until /api/site-config resolves. Previously the
-// WhatsApp number, email and phone were hardcoded here, so editing them in the
-// admin panel changed nothing on this page.
-const FALLBACK_CONFIG = {
-  whatsappNumber: SITE_CONFIG.contact.whatsapp,
-  email: SITE_CONFIG.contact.email,
-  phone: SITE_CONFIG.contact.phone,
-  calendarUrl: SITE_CONFIG.contact.calUrl,
-  address: "",
-  linkedin: "",
-};
-
-const TIME_SLOTS = [
-  "10:00 AM",
-  "11:30 AM",
-  "02:00 PM",
-  "03:30 PM",
-  "05:00 PM",
-];
 
 export default function ContactPage() {
   const searchParams = useSearchParams();
+  const siteConfig = useSiteConfig({
+    whatsappNumber: "918840936715",
+    email: "support@neuralwaves.in",
+    phone: "+91-8840936715",
+    calendarUrl: "",
+    address: "",
+    linkedin: "",
+  });
 
-  // Admin-controlled contact details (falls back to the static defaults above).
-  const siteConfig = useSiteConfig(FALLBACK_CONFIG);
-  const waNumber = toDialable(siteConfig.whatsappNumber);
-  const waBaseUrl = `https://wa.me/${waNumber}?text=Hi%20NeuralWaves%2C%20I%20want%20to%20discuss%20an%20AI%20project`;
-  const telHref = `tel:${siteConfig.phone.replace(/\s+/g, "")}`;
+  const waUrl = `https://wa.me/${toDialable(siteConfig.whatsappNumber)}?text=Hi%20NeuralWaves%2C%20I%20want%20to%20discuss%20an%20AI%20project`;
 
-  const [formData, setFormData] = useState<ContactFormData>({
+  const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     company: "",
+    country: "UAE",
     service: "chatbots",
+    budget: "AED 3,500 – 7,500",
     message: "",
     honeypot: "",
   });
 
-  /**
-   * Honour the ?tier= / ?service= params used by the pricing page CTAs.
-   * Previously /pricing linked to /contact?tier=Growth but this page never read
-   * search params, so a buyer who clicked "Get started" on a tier arrived at a
-   * blank, unselected form and had to start over.
-   */
-  useEffect(() => {
-    const rawTier = searchParams.get("tier");
-    const rawService = searchParams.get("service");
-
-    const validServices = ["chatbots", "dashboards", "agents", "not_sure"] as const;
-    type ServiceValue = (typeof validServices)[number];
-    const isService = (v: string | null): v is ServiceValue =>
-      !!v && (validServices as readonly string[]).includes(v);
-
-    setFormData((prev) => {
-      let service = prev.service;
-      if (isService(rawService)) {
-        service = rawService;
-      } else if (rawTier) {
-        // Tier names (Starter / Growth / Business / …) are not service slugs;
-        // record the intent in the brief and leave the choice explicit.
-        service = "not_sure";
-      }
-
-      const tierNote =
-        rawTier && !prev.message
-          ? `I'd like to start with the ${rawTier} package.`
-          : prev.message;
-
-      return { ...prev, service, message: tierNote };
-    });
-  }, [searchParams]);
-
-  const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [showCalendar, setShowCalendar] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
 
-  // Dynamic next 5 business days generator
-  const availableDays = useMemo(() => {
-    const days: Array<{ label: string; dateStr: string; dayName: string }> = [];
-    const today = new Date();
-    const current = new Date(today);
+  useEffect(() => {
+    const pkg = searchParams.get("package") || searchParams.get("tier");
+    const srv = searchParams.get("service");
+    const project = searchParams.get("project");
 
-    // If afternoon, start from tomorrow
-    current.setDate(current.getDate() + 1);
-
-    while (days.length < 5) {
-      const dayOfWeek = current.getDay();
-      // Skip Saturday (6) and Sunday (0)
-      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-        const dayName = current.toLocaleDateString("en-US", { weekday: "short" });
-        const monthDay = current.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-        days.push({
-          label: `${dayName}, ${monthDay}`,
-          dateStr: current.toISOString().split("T")[0],
-          dayName,
-        });
+    setFormData((prev) => {
+      let updatedService = prev.service;
+      if (srv && ["chatbots", "agents", "dashboards", "custom"].includes(srv)) {
+        updatedService = srv;
       }
-      current.setDate(current.getDate() + 1);
-    }
-    return days;
-  }, []);
-
-  const [selectedDay, setSelectedDay] = useState<string>(availableDays[0]?.label || "Tomorrow");
-  const [selectedSlot, setSelectedSlot] = useState<string>("02:00 PM");
-
-  const configuredCalUrl = process.env.NEXT_PUBLIC_CAL_COM_URL;
-  const hasCustomCalUrl =
-    configuredCalUrl &&
-    configuredCalUrl !== "https://cal.com/neuralwaves/15min" &&
-    !configuredCalUrl.includes("cal.com/neuralwaves");
-
-  const useIframeEmbed = Boolean(hasCustomCalUrl);
-
-  const handleSlotSelectionConfirm = (destination: "form" | "whatsapp") => {
-    const slotText = `Preferred Scope Call: ${selectedDay} at ${selectedSlot} (GST / Dubai Time)`;
-
-    if (destination === "whatsapp") {
-      const waText = encodeURIComponent(
-        `Hi NeuralWaves, I would like to book a 15-minute scoping call on ${selectedDay} at ${selectedSlot} (GST).`
-      );
-      window.open(`https://wa.me/${waNumber}?text=${waText}`, "_blank");
-      toast.success("Opening WhatsApp to confirm your slot!");
-    } else {
-      setFormData((prev) => ({
+      let updatedMessage = prev.message;
+      if (pkg && !prev.message) {
+        updatedMessage = `I would like to initiate the ${pkg} sprint package.`;
+      } else if (project && !prev.message) {
+        updatedMessage = `I would like to discuss building a system similar to "${project}".`;
+      }
+      return {
         ...prev,
-        message: prev.message
-          ? `${prev.message}\n\n[${slotText}]`
-          : `[${slotText}] Looking forward to discussing our project scope.`,
-      }));
-      setShowCalendar(false);
-      toast.success("Time slot selected! Complete your contact details below.");
-    }
-  };
+        service: updatedService,
+        message: updatedMessage,
+      };
+    });
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setErrors({});
+    setFieldErrors({});
 
     try {
-      const dataPayload = new FormData();
-      dataPayload.append("name", formData.name.trim());
-      dataPayload.append("email", formData.email.trim());
-      dataPayload.append("phone", formData.phone.trim());
-      if (formData.company) dataPayload.append("company", formData.company.trim());
-      dataPayload.append("service", formData.service);
-      dataPayload.append("message", formData.message.trim());
-      dataPayload.append("website", "");
+      const payload = new FormData();
+      payload.append("name", formData.name.trim());
+      payload.append("email", formData.email.trim());
+      payload.append("phone", formData.phone.trim() || "+97100000000"); // fallback phone if user left empty
+      if (formData.company) payload.append("company", formData.company.trim());
+      
+      const combinedService = `${formData.service} [Market: ${formData.country}, Budget: ${formData.budget}]`;
+      payload.append("service", combinedService);
+      payload.append("message", formData.message.trim());
+      payload.append("website", formData.honeypot); // Honeypot spam test
 
-      const result = await submitLead(dataPayload);
+      const result = await submitLead(payload);
 
       if (result.success) {
-        toast.success("Got it. We'll reply within 4 hours with a scope and fixed quote.");
+        toast.success("Project brief transmitted. Expect response within 4 hours.");
         setSubmitted(true);
       } else {
         if (result.fieldErrors) {
-          setErrors(result.fieldErrors);
-          // Move focus to the first invalid field so keyboard and screen-reader
-          // users land on the problem instead of being left at the submit button.
-          const firstInvalid = ["name", "email", "phone", "message"].find(
-            (field) => result.fieldErrors?.[field]?.length
-          );
-          if (firstInvalid) {
-            requestAnimationFrame(() => {
-              document.getElementById(firstInvalid)?.focus();
-            });
-          }
+          setFieldErrors(result.fieldErrors);
         }
-        toast.error(result.error || "Please fix the highlighted fields.");
+        toast.error(result.error || "Please check the required fields and submit again.");
       }
     } catch {
-      toast.error("Submission failed. Please try messaging us on WhatsApp.");
+      toast.error("Transmission failed. Please reach our engineering desk directly on WhatsApp.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="pt-28 pb-32 min-h-screen relative overflow-hidden select-none">
-      {/* Background glow orb */}
-      <div
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[500px] rounded-full blur-[140px] pointer-events-none opacity-20"
-        style={{
-          background: "radial-gradient(circle, #8B5CF6 0%, #22D3EE 50%, transparent 70%)",
-        }}
-        aria-hidden="true"
-      />
+    <div className="pt-32 pb-36 min-h-screen bg-canvas">
+      <div className="container-editorial">
+        {/* Breadcrumb nav */}
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 font-mono text-xs text-olive mb-10">
+          <Link href="/" className="hover:text-charcoal transition-colors">
+            HOME
+          </Link>
+          <span className="text-stone">/</span>
+          <span className="text-charcoal uppercase">CONTACT</span>
+        </nav>
 
-      <div className="max-w-7xl mx-auto px-6 md:px-8 relative z-10">
-        {/* Monospace section label */}
-        <div className="flex items-center gap-3 mb-4">
-          <span className="w-6 h-[1px] bg-violet-500/40 inline-block" aria-hidden="true" />
-          <span className="font-mono text-xs uppercase tracking-widest text-zinc-500">
-            01 / CONTACT
-          </span>
+        {/* Hero */}
+        <div className="mb-16 md:mb-20 max-w-4xl">
+          <div className="inline-flex items-center gap-2 mb-4">
+            <span className="w-1.5 h-1.5 bg-charcoal inline-block" />
+            <p className="mono-label text-olive tracking-widest text-[11px] uppercase">
+              PROJECT INQUIRY // DIRECT ENGINEERING ACCESS
+            </p>
+          </div>
+
+          <h1 className="font-display font-medium text-4xl sm:text-5xl md:text-6xl text-charcoal tracking-tight leading-[1.08] mb-6">
+            Discuss a project. <br className="hidden sm:inline" />
+            <span className="text-charcoal/70">Receive a fixed-price scope.</span>
+          </h1>
+
+          <p className="text-base sm:text-lg text-olive leading-relaxed font-sans max-w-2xl">
+            Tell us about the repetitive tasks or operational bottlenecks slowing your business down. We will analyze feasibility and respond with a technical scoping blueprint within 4 business hours.
+          </p>
         </div>
 
-        {/* Two-column layout on desktop */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start mt-6">
-          {/* Left Column: Direct channels */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+          {/* Left Column: Direct Inquiries & Contact Channels */}
           <div className="lg:col-span-5 space-y-8">
-            <div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-[-0.04em] text-white mb-4 leading-[1.05]">
-                Let&apos;s talk.
-              </h1>
-              <p className="text-base sm:text-lg text-zinc-400 leading-relaxed font-normal">
-                Pick whatever&apos;s fastest for you. Direct developer access, zero sales pitches.
+            <div className="border border-stone bg-white p-8 space-y-6">
+              <span className="mono-label text-[10px] text-olive uppercase block border-b border-stone/70 pb-3">
+                DIRECT COMMUNICATION
+              </span>
+
+              <div className="space-y-4 text-xs font-sans">
+                <div>
+                  <span className="mono-label text-[9px] text-olive uppercase block mb-1">
+                    OFFICIAL WHATSAPP DESK
+                  </span>
+                  <Link
+                    href={waUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 font-mono font-medium text-charcoal text-sm hover:text-olive transition-colors"
+                  >
+                    <MessageCircle className="w-4 h-4 text-emerald-700" />
+                    <span>+91 88409 36715 (Click to Chat)</span>
+                  </Link>
+                  <p className="text-[11px] text-olive mt-1">
+                    Direct line to senior engineering. Immediate replies during GST & IST hours.
+                  </p>
+                </div>
+
+                <div className="pt-4 border-t border-stone/60">
+                  <span className="mono-label text-[9px] text-olive uppercase block mb-1">
+                    OFFICIAL EMAIL
+                  </span>
+                  <a
+                    href="mailto:support@neuralwaves.in"
+                    className="inline-flex items-center gap-2 font-mono font-medium text-charcoal text-sm hover:text-olive transition-colors"
+                  >
+                    <Mail className="w-4 h-4 text-charcoal" />
+                    <span>support@neuralwaves.in</span>
+                  </a>
+                  <p className="text-[11px] text-olive mt-1">
+                    Send RFPs, technical documents, or architecture requirements.
+                  </p>
+                </div>
+
+                <div className="pt-4 border-t border-stone/60">
+                  <span className="mono-label text-[9px] text-olive uppercase block mb-1">
+                    OPERATING MARKETS
+                  </span>
+                  <span className="font-mono text-charcoal font-medium">United Arab Emirates & India</span>
+                  <p className="text-[11px] text-olive mt-1">
+                    Serving Dubai, Abu Dhabi, Sharjah, and major Indian enterprise hubs.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Privacy & Confidentiality Guarantee */}
+            <div className="border border-stone bg-canvas/60 p-6 space-y-2 text-xs font-sans text-olive">
+              <div className="flex items-center gap-2 text-charcoal font-medium font-mono text-[11px]">
+                <ShieldCheck className="w-4 h-4" />
+                <span>CONFIDENTIALITY ASSURANCE</span>
+              </div>
+              <p className="leading-relaxed">
+                All business metrics, workflows, and contact information shared remain strictly confidential. We never share customer data or use inquiries for unsolicited sales marketing.
               </p>
-            </div>
-
-            <div className="space-y-4 pt-2">
-              {/* WhatsApp card */}
-              <Link
-                href={waBaseUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex items-center justify-between p-5 rounded-2xl border border-white/[0.08] bg-gradient-to-br from-white/[0.04] to-white/[0.01] hover:border-emerald-500/40 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(16,185,129,0.12)] transition-all duration-300"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
-                    <MessageCircle size={22} className="text-emerald-400" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-white text-base">WhatsApp</span>
-                      <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">FASTEST</span>
-                    </div>
-                    <span className="text-xs text-zinc-400">Average reply: &lt; 15 mins</span>
-                  </div>
-                </div>
-                <ArrowRight size={18} className="text-zinc-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
-              </Link>
-
-              {/* Email card */}
-              <a
-                href={`mailto:${siteConfig.email}`}
-                className="group flex items-center justify-between p-5 rounded-2xl border border-white/[0.08] bg-gradient-to-br from-white/[0.04] to-white/[0.01] hover:border-violet-500/40 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(139,92,246,0.12)] transition-all duration-300"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shrink-0">
-                    <Mail size={22} className="text-violet-400" />
-                  </div>
-                  <div>
-                    <span className="font-medium text-white text-base block">Email</span>
-                    <span className="text-xs text-zinc-400 font-mono">{siteConfig.email}</span>
-                  </div>
-                </div>
-                <ArrowRight size={18} className="text-zinc-500 group-hover:text-violet-400 group-hover:translate-x-1 transition-all" />
-              </a>
-
-              {/* Calendar card (Schedule call toggle) */}
-              <button
-                type="button"
-                onClick={() => setShowCalendar((prev) => !prev)}
-                className={`w-full text-left group flex items-center justify-between p-5 rounded-2xl border transition-all duration-300 ${
-                  showCalendar
-                    ? "border-cyan-500/50 bg-[#0A1218] shadow-[0_8px_30px_rgba(34,211,238,0.15)] ring-1 ring-cyan-500/30"
-                    : "border-white/[0.08] bg-gradient-to-br from-white/[0.04] to-white/[0.01] hover:border-cyan-500/40 hover:-translate-y-0.5"
-                }`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
-                    <Calendar size={22} className="text-cyan-400" />
-                  </div>
-                  <div>
-                    <span className="font-medium text-white text-base block">Schedule Call</span>
-                    <span className="text-xs text-zinc-400">15-minute video scope session</span>
-                  </div>
-                </div>
-                <span className="text-xs font-mono text-cyan-400 group-hover:underline">
-                  {showCalendar ? "Close" : "Choose Slot"}
-                </span>
-              </button>
-
-              {/* Phone card */}
-              <a
-                href={telHref}
-                className="group flex items-center justify-between p-5 rounded-2xl border border-white/[0.08] bg-gradient-to-br from-white/[0.04] to-white/[0.01] hover:border-white/20 hover:-translate-y-0.5 transition-all duration-300"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-white/[0.05] border border-white/[0.1] flex items-center justify-center shrink-0">
-                    <Phone size={20} className="text-zinc-300" />
-                  </div>
-                  <div>
-                    <span className="font-medium text-white text-base block">Phone</span>
-                    <span className="text-xs text-zinc-400 font-mono">{siteConfig.phone}</span>
-                  </div>
-                </div>
-                <ArrowRight size={18} className="text-zinc-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
-              </a>
-            </div>
-
-            {/* SLA / Commitment note */}
-            <div className="p-4 rounded-xl border border-white/[0.06] bg-white/[0.02] flex items-center gap-3 text-xs text-zinc-400">
-              <Clock size={16} className="text-violet-400 shrink-0" />
-              <span>We reply to all inquiries within 4 business hours. No spam, ever.</span>
             </div>
           </div>
 
-          {/* Right Column: Contact form / Interactive In-App Scheduler */}
+          {/* Right Column: Inquiry Form */}
           <div className="lg:col-span-7">
-            {showCalendar ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="rounded-2xl border border-white/[0.08] bg-[#0A0A0F] p-6 sm:p-8 shadow-2xl overflow-hidden space-y-6"
-              >
-                {/* Header bar */}
-                <div className="flex items-center justify-between pb-4 border-b border-white/[0.06]">
-                  <div>
-                    <h3 className="font-semibold text-white text-lg flex items-center gap-2">
-                      <Calendar size={18} className="text-cyan-400" />
-                      15-Minute Scope Session
-                    </h3>
-                    <p className="text-xs text-zinc-400 mt-0.5">
-                      Direct developer discussion • Dubai GST (UTC+4)
-                    </p>
+            <div className="border border-stone bg-white p-8 sm:p-12">
+              <div className="flex items-center justify-between pb-4 border-b border-stone/80 mb-8 text-[11px] font-mono text-olive">
+                <span className="text-charcoal font-medium uppercase">PROJECT SPECIFICATION FORM</span>
+                <span>UNDER 4-HR RESPONSE</span>
+              </div>
+
+              {submitted ? (
+                <div className="py-12 text-center space-y-4">
+                  <div className="w-12 h-12 bg-charcoal text-white flex items-center justify-center mx-auto">
+                    <CheckCircle2 size={24} />
                   </div>
-                  <button
-                    onClick={() => setShowCalendar(false)}
-                    className="text-xs font-mono text-zinc-400 hover:text-white px-3 py-1.5 rounded-lg border border-white/[0.08] hover:bg-white/[0.04] transition-colors"
-                  >
-                    Back to Form
-                  </button>
-                </div>
-
-                {hasCustomCalUrl && useIframeEmbed ? (
-                  <div className="w-full h-[520px] rounded-xl overflow-hidden bg-white/[0.01]">
-                    <iframe
-                      src={`${configuredCalUrl}?embed=true`}
-                      width="100%"
-                      height="100%"
-                      frameBorder="0"
-                      title="Schedule with NeuralWaves"
-                      className="w-full h-full"
-                    />
-                  </div>
-                ) : (
-                  /* Native In-App Slot Selector */
-                  <div className="space-y-6">
-                    {/* Day selector */}
-                    <div>
-                      <span className="font-mono text-xs uppercase tracking-wider text-zinc-400 block mb-3">
-                        1. Select Business Day
-                      </span>
-                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                        {availableDays.map((day) => (
-                          <button
-                            key={day.label}
-                            type="button"
-                            onClick={() => setSelectedDay(day.label)}
-                            className={`p-3 rounded-xl border text-center transition-all ${
-                              selectedDay === day.label
-                                ? "border-cyan-500/60 bg-cyan-500/10 text-white font-medium shadow-[0_0_16px_rgba(34,211,238,0.15)]"
-                                : "border-white/[0.08] bg-white/[0.02] text-zinc-400 hover:text-white hover:border-white/20"
-                            }`}
-                          >
-                            <span className="block text-[11px] font-mono text-zinc-500 uppercase">
-                              {day.dayName}
-                            </span>
-                            <span className="text-xs font-semibold block mt-0.5">
-                              {day.label.split(", ")[1]}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Time slot selector */}
-                    <div>
-                      <span className="font-mono text-xs uppercase tracking-wider text-zinc-400 block mb-3">
-                        2. Select Dubai Time Slot (GST)
-                      </span>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                        {TIME_SLOTS.map((slot) => (
-                          <button
-                            key={slot}
-                            type="button"
-                            onClick={() => setSelectedSlot(slot)}
-                            className={`py-3 px-4 rounded-xl border text-center font-mono text-xs transition-all ${
-                              selectedSlot === slot
-                                ? "border-violet-500/60 bg-violet-500/10 text-white font-semibold shadow-[0_0_16px_rgba(139,92,246,0.15)]"
-                                : "border-white/[0.08] bg-white/[0.02] text-zinc-400 hover:text-white hover:border-white/20"
-                            }`}
-                          >
-                            {slot}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Selected summary banner */}
-                    <div className="p-4 rounded-xl border border-violet-500/20 bg-violet-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div>
-                        <span className="font-mono text-[10px] uppercase tracking-wider text-violet-400 block">
-                          Selected Slot
-                        </span>
-                        <span className="text-sm font-semibold text-white">
-                          {selectedDay} at {selectedSlot} GST
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-                        <Sparkles size={14} className="text-violet-400" />
-                        {/* There is no calendar integration: the chosen slot is
-                            passed along with the enquiry and a meeting link is
-                            sent by a human. The previous "Google Meet link
-                            generated" text claimed automation that does not exist. */}
-                        <span>We&apos;ll confirm this slot by email</span>
-                      </div>
-                    </div>
-
-                    {/* Action buttons */}
-                    <div className="pt-2 flex flex-col sm:flex-row gap-3">
-                      <button
-                        type="button"
-                        onClick={() => handleSlotSelectionConfirm("whatsapp")}
-                        className="btn-glow flex-1 py-3 px-5 rounded-xl text-xs font-semibold uppercase tracking-wider text-white flex items-center justify-center gap-2"
-                      >
-                        <MessageCircle size={15} className="text-emerald-400" />
-                        Book via WhatsApp
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleSlotSelectionConfirm("form")}
-                        className="btn-ghost-border flex-1 py-3 px-5 rounded-xl text-xs font-mono uppercase tracking-wider text-zinc-300 hover:text-white flex items-center justify-center gap-1.5"
-                      >
-                        Confirm in Form
-                        <ChevronRight size={14} />
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </motion.div>
-            ) : submitted ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="rounded-2xl border border-emerald-500/30 bg-[#0E1512] p-10 sm:p-12 text-center space-y-6 shadow-2xl"
-              >
-                <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-400">
-                  <CheckCircle2 size={36} />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-semibold text-white">Got it.</h3>
-                  <p className="text-base text-zinc-300 max-w-md mx-auto">
-                    We&apos;ll review your requirements and reply within 4 hours with a scope and fixed quote.
+                  <h3 className="font-display font-medium text-3xl text-charcoal">
+                    Inquiry Received
+                  </h3>
+                  <p className="text-sm text-olive max-w-md mx-auto font-sans leading-relaxed">
+                    Thank you. Our engineering team has logged your submission in our CRM. We will review your process details and reply with an initial architecture overview and quote within 4 business hours.
                   </p>
+                  <div className="pt-6">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSubmitted(false);
+                        setFormData({
+                          name: "",
+                          email: "",
+                          phone: "",
+                          company: "",
+                          country: "UAE",
+                          service: "chatbots",
+                          budget: "AED 3,500 – 7,500",
+                          message: "",
+                          honeypot: "",
+                        });
+                      }}
+                      className="text-xs font-mono text-charcoal underline hover:text-olive cursor-pointer"
+                    >
+                      Submit additional brief →
+                    </button>
+                  </div>
                 </div>
-                <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Honeypot field for bot spam prevention */}
+                  <div className="hidden" aria-hidden="true">
+                    <input
+                      type="text"
+                      name="website"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={formData.honeypot}
+                      onChange={(e) => setFormData({ ...formData, honeypot: e.target.value })}
+                    />
+                  </div>
+
+                  {/* Name & Email */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="form-name" className="mono-label block text-[10px] text-olive uppercase mb-1.5">
+                        Your Name *
+                      </label>
+                      <input
+                        id="form-name"
+                        type="text"
+                        required
+                        placeholder="Rashid Al-Nuaimi / Vikram Mehta"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className="w-full bg-canvas/40 border border-stone px-3.5 py-2.5 text-xs text-charcoal placeholder:text-olive/50 focus:border-charcoal focus:bg-white focus:outline-none"
+                      />
+                      {fieldErrors.name && (
+                        <span className="text-[10px] text-red-600 block mt-1">{fieldErrors.name[0]}</span>
+                      )}
+                    </div>
+
+                    <div>
+                      <label htmlFor="form-email" className="mono-label block text-[10px] text-olive uppercase mb-1.5">
+                        Work Email *
+                      </label>
+                      <input
+                        id="form-email"
+                        type="email"
+                        required
+                        placeholder="you@company.com"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="w-full bg-canvas/40 border border-stone px-3.5 py-2.5 text-xs text-charcoal placeholder:text-olive/50 focus:border-charcoal focus:bg-white focus:outline-none"
+                      />
+                      {fieldErrors.email && (
+                        <span className="text-[10px] text-red-600 block mt-1">{fieldErrors.email[0]}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Phone & Company */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="form-phone" className="mono-label block text-[10px] text-olive uppercase mb-1.5">
+                        Phone / WhatsApp *
+                      </label>
+                      <input
+                        id="form-phone"
+                        type="tel"
+                        required
+                        placeholder="+971 50 123 4567 / +91 98..."
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        className="w-full bg-canvas/40 border border-stone px-3.5 py-2.5 text-xs text-charcoal placeholder:text-olive/50 focus:border-charcoal focus:bg-white focus:outline-none"
+                      />
+                      {fieldErrors.phone && (
+                        <span className="text-[10px] text-red-600 block mt-1">{fieldErrors.phone[0]}</span>
+                      )}
+                    </div>
+
+                    <div>
+                      <label htmlFor="form-company" className="mono-label block text-[10px] text-olive uppercase mb-1.5">
+                        Company / Website (Optional)
+                      </label>
+                      <input
+                        id="form-company"
+                        type="text"
+                        placeholder="e.g. Elysian Properties / company.ae"
+                        value={formData.company}
+                        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                        className="w-full bg-canvas/40 border border-stone px-3.5 py-2.5 text-xs text-charcoal placeholder:text-olive/50 focus:border-charcoal focus:bg-white focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Country & Project Type */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="form-country" className="mono-label block text-[10px] text-olive uppercase mb-1.5">
+                        Market / Country *
+                      </label>
+                      <select
+                        id="form-country"
+                        value={formData.country}
+                        onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                        className="w-full bg-canvas/40 border border-stone px-3.5 py-2.5 text-xs text-charcoal focus:border-charcoal focus:bg-white focus:outline-none"
+                      >
+                        <option value="UAE">United Arab Emirates (UAE)</option>
+                        <option value="India">India</option>
+                        <option value="Other">Other International</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label htmlFor="form-service" className="mono-label block text-[10px] text-olive uppercase mb-1.5">
+                        Project Type *
+                      </label>
+                      <select
+                        id="form-service"
+                        value={formData.service}
+                        onChange={(e) => setFormData({ ...formData, service: e.target.value })}
+                        className="w-full bg-canvas/40 border border-stone px-3.5 py-2.5 text-xs text-charcoal focus:border-charcoal focus:bg-white focus:outline-none"
+                      >
+                        <option value="chatbots">AI Chatbots & WhatsApp Automation</option>
+                        <option value="agents">AI Agents & Intelligent Workflows</option>
+                        <option value="dashboards">Web Applications & Admin Dashboards</option>
+                        <option value="custom">Custom Enterprise Architecture</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Budget Range */}
+                  <div>
+                    <label htmlFor="form-budget" className="mono-label block text-[10px] text-olive uppercase mb-1.5">
+                      Budget Range (Optional)
+                    </label>
+                    <select
+                      id="form-budget"
+                      value={formData.budget}
+                      onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+                      className="w-full bg-canvas/40 border border-stone px-3.5 py-2.5 text-xs text-charcoal focus:border-charcoal focus:bg-white focus:outline-none"
+                    >
+                      <option value="AED 2,500 – 3,500">AED 2,500 – 3,500 (Starter / Single Channel)</option>
+                      <option value="AED 3,500 – 7,500">AED 3,500 – 7,500 (Growth / CRM Integrated)</option>
+                      <option value="AED 7,500 – 15,000">AED 7,500 – 15,000 (Business Dashboard & Agents)</option>
+                      <option value="AED 15,000+">AED 15,000+ (Multi-Tenant Enterprise)</option>
+                    </select>
+                  </div>
+
+                  {/* Project Description */}
+                  <div>
+                    <label htmlFor="form-message" className="mono-label block text-[10px] text-olive uppercase mb-1.5">
+                      Project Description *
+                    </label>
+                    <textarea
+                      id="form-message"
+                      rows={4}
+                      required
+                      placeholder="Describe what manual process, spreadsheet, or workflow friction you want automated..."
+                      value={formData.message}
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      className="w-full bg-canvas/40 border border-stone px-3.5 py-2.5 text-xs text-charcoal placeholder:text-olive/50 focus:border-charcoal focus:bg-white focus:outline-none resize-none"
+                    />
+                    {fieldErrors.message && (
+                      <span className="text-[10px] text-red-600 block mt-1">{fieldErrors.message[0]}</span>
+                    )}
+                  </div>
+
+                  {/* Submit Button */}
                   <button
-                    onClick={() => {
-                      setSubmitted(false);
-                      setFormData({
-                        name: "",
-                        email: "",
-                        phone: "",
-                        company: "",
-                        service: "chatbots",
-                        message: "",
-                        honeypot: "",
-                      });
-                    }}
-                    className="btn-ghost-border px-6 py-2.5 rounded-xl text-xs font-mono uppercase tracking-wider text-zinc-300 hover:text-white"
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full btn-editorial-primary text-center justify-center py-4 text-xs font-mono tracking-wider cursor-pointer"
                   >
-                    Send another message
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Transmitting Project Brief...
+                      </>
+                    ) : (
+                      <>
+                        Submit Project Inquiry
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </>
+                    )}
                   </button>
-                  <Link
-                    href={waBaseUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-glow px-6 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider text-white"
-                  >
-                    Message on WhatsApp
-                  </Link>
-                </div>
-              </motion.div>
-            ) : (
-              <form
-                onSubmit={handleSubmit}
-                className="rounded-2xl border border-white/[0.08] bg-gradient-to-br from-white/[0.04] to-white/[0.01] p-8 sm:p-10 shadow-2xl space-y-6 relative"
-                noValidate
-              >
-                {/* Honeypot field for bot protection */}
-                <input
-                  type="text"
-                  name="website"
-                  tabIndex={-1}
-                  autoComplete="off"
-                  className="hidden sr-only"
-                  aria-hidden="true"
-                />
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {/* Name */}
-                  <div className="space-y-2">
-                    <label htmlFor="name" className="mono-label block text-[11px] text-zinc-400">
-                      Your Name <span className="text-violet-400">*</span>
-                    </label>
-                    <input
-                      id="name"
-                      aria-describedby={errors.name ? "name-error" : undefined}
-                      aria-invalid={errors.name ? true : undefined}
-                      name="name"
-                      type="text"
-                      required
-                      placeholder="Tariq Mansoor"
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, name: e.target.value }))
-                      }
-                      className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none transition-colors"
-                    />
-                    {errors.name && (
-                      <p id="name-error" role="alert" className="text-xs text-red-400">
-                        {errors.name[0]}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Email */}
-                  <div className="space-y-2">
-                    <label htmlFor="email" className="mono-label block text-[11px] text-zinc-400">
-                      Work Email <span className="text-violet-400">*</span>
-                    </label>
-                    <input
-                      id="email"
-                      aria-describedby={errors.email ? "email-error" : undefined}
-                      aria-invalid={errors.email ? true : undefined}
-                      name="email"
-                      type="email"
-                      required
-                      placeholder="tariq@company.ae"
-                      value={formData.email}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, email: e.target.value }))
-                      }
-                      className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none transition-colors"
-                    />
-                    {errors.email && (
-                      <p id="email-error" role="alert" className="text-xs text-red-400">
-                        {errors.email[0]}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {/* Phone */}
-                  <div className="space-y-2">
-                    <label htmlFor="phone" className="mono-label block text-[11px] text-zinc-400">
-                      Phone / WhatsApp <span className="text-violet-400">*</span>
-                    </label>
-                    <input
-                      id="phone"
-                      aria-describedby={errors.phone ? "phone-error" : undefined}
-                      aria-invalid={errors.phone ? true : undefined}
-                      name="phone"
-                      type="tel"
-                      required
-                      placeholder="+91-8840936715"
-                      value={formData.phone}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, phone: e.target.value }))
-                      }
-                      className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none transition-colors"
-                    />
-                    {errors.phone && (
-                      <p id="phone-error" role="alert" className="text-xs text-red-400">
-                        {errors.phone[0]}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Company */}
-                  <div className="space-y-2">
-                    <label htmlFor="company" className="mono-label block text-[11px] text-zinc-400">
-                      Company / Organization
-                    </label>
-                    <input
-                      id="company"
-                      name="company"
-                      type="text"
-                      placeholder="Skyline Properties"
-                      value={formData.company || ""}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, company: e.target.value }))
-                      }
-                      className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none transition-colors"
-                    />
-                  </div>
-                </div>
-
-                {/* Service Selection */}
-                <div className="space-y-2">
-                  <label htmlFor="service" className="mono-label block text-[11px] text-zinc-400">
-                    What are you looking to build? <span className="text-violet-400">*</span>
-                  </label>
-                  <select
-                    id="service"
-                    name="service"
-                    value={formData.service}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        service: e.target.value as ContactFormData["service"],
-                      }))
-                    }
-                    className="w-full bg-[#0F0F14] border border-white/[0.08] focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none transition-colors"
-                  >
-                    {/* Prices intentionally omitted: this list was a third,
-                        drifting copy of the price list (it said "from AED 2,500"
-                        for dashboards while the pricing page said 3,500).
-                        /pricing is the single source of truth for figures. */}
-                    <option value="chatbots">AI Chatbots &amp; WhatsApp Automation</option>
-                    <option value="dashboards">Web &amp; Admin Dashboards</option>
-                    <option value="agents">AI Agents for Business</option>
-                    <option value="not_sure">Not Sure / Multi-System Architecture</option>
-                  </select>
-                </div>
-
-                {/* Message / Brief */}
-                <div className="space-y-2">
-                  <label htmlFor="message" className="mono-label block text-[11px] text-zinc-400">
-                    Project Brief &amp; Scope <span className="text-violet-400">*</span>
-                  </label>
-                  <textarea
-                    id="message"
-                    aria-describedby={errors.message ? "message-error" : undefined}
-                    aria-invalid={errors.message ? true : undefined}
-                    name="message"
-                    required
-                    rows={4}
-                    placeholder="Tell us about the workflow you want automated, systems to integrate, and timeline..."
-                    value={formData.message}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, message: e.target.value }))
-                    }
-                    className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none transition-colors resize-none"
-                  />
-                  {errors.message && (
-                    <p id="message-error" role="alert" className="text-xs text-red-400">
-                      {errors.message[0]}
-                    </p>
-                  )}
-                </div>
-
-                {/* Submit button */}
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full btn-glow py-3.5 px-6 rounded-xl text-xs font-semibold uppercase tracking-wider text-white flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin text-white" />
-                      Sending Scope Request...
-                    </>
-                  ) : (
-                    <>
-                      Send Scope Request
-                      <ArrowRight size={14} />
-                    </>
-                  )}
-                </button>
-
-                <p className="text-[11px] text-center text-zinc-500 font-mono">
-                  Fixed quotes sent in &lt; 4 hours. No obligation.
-                </p>
-              </form>
-            )}
+                  <p className="text-[10px] font-mono text-olive text-center pt-2">
+                    Direct review by senior developer · No spam · Fixed quote within 4 hours
+                  </p>
+                </form>
+              )}
+            </div>
           </div>
         </div>
       </div>

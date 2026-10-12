@@ -1,263 +1,99 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { useSiteConfig, toDialable } from "@/lib/hooks/use-site-config";
 import Link from "next/link";
-import { motion, useMotionValue, useTransform, useSpring, useScroll } from "framer-motion";
-import { MessageCircle, ChevronDown, ArrowRight } from "lucide-react";
-import { CountUp } from "@/components/ui/reveal";
+import { ArrowUpRight, ArrowRight } from "lucide-react";
+import { WaveVisual } from "@/components/ui/wave-visual";
 
-// Admin-controlled WhatsApp number, resolved at runtime so edits in the
-// admin panel take effect. This was a hardcoded literal in seven files.
-const FALLBACK_WA_NUMBER = "918840936715";
+interface HeroSectionProps {
+  shippedCount?: number;
+}
 
-/**
- * `shippedCount` is passed from the server page so the hero states the real
- * number of shipped builds. It previously hardcoded "12+" while the site showed
- * four case studies, two of them demos.
- */
-export function HeroSection({ shippedCount = 0 }: { shippedCount?: number } = {}) {
-  const siteConfig = useSiteConfig({
-    whatsappNumber: FALLBACK_WA_NUMBER,
-    email: "",
-    phone: "",
-    calendarUrl: "",
-    address: "",
-    linkedin: "",
-  });
-  const waUrl = `https://wa.me/${toDialable(siteConfig.whatsappNumber)}?text=Hi%20NeuralWaves%2C%20I%20need%20help%20with%20automation`;
-  const heroRef = useRef<HTMLElement>(null);
-
-  // Mouse parallax motion values
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  const springConfig = { damping: 30, stiffness: 100 };
-  const smoothMouseX = useSpring(mouseX, springConfig);
-  const smoothMouseY = useSpring(mouseY, springConfig);
-
-  // Parallax shift for orb 1 (±10px) and orb 2 (opposite ±8px)
-  const orb1X = useTransform(smoothMouseX, [-1, 1], [-12, 12]);
-  const orb1Y = useTransform(smoothMouseY, [-1, 1], [-12, 12]);
-  const orb2X = useTransform(smoothMouseX, [-1, 1], [10, -10]);
-  const orb2Y = useTransform(smoothMouseY, [-1, 1], [10, -10]);
-
-  // Scroll opacity for chevron indicator
-  const { scrollY } = useScroll();
-  const chevronOpacity = useTransform(scrollY, [0, 100], [0.6, 0]);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const { innerWidth, innerHeight } = window;
-      // Normalized between -1 and 1
-      mouseX.set((e.clientX / innerWidth) * 2 - 1);
-      mouseY.set((e.clientY / innerHeight) * 2 - 1);
-    };
-
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [mouseX, mouseY]);
-
+export function HeroSection({ shippedCount: _shippedCount = 0 }: HeroSectionProps) {
   return (
     <section
-      ref={heroRef}
-      className="relative min-h-[92vh] sm:min-h-screen flex items-center justify-center overflow-hidden pt-28 pb-20 select-none"
+      className="relative pt-32 md:pt-40 pb-16 md:pb-24 border-b border-stone/80 overflow-hidden"
       aria-label="Hero"
     >
-      {/* ── Layer 1 & 2: Background orbs with Framer Motion drift & mouse parallax ── */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-        {/* Orb 1: Violet (blur 140px, drifts ±40px, 14s loop) */}
-        <motion.div
-          style={{ x: orb1X, y: orb1Y }}
-          className="absolute left-1/2 top-1/4 -translate-x-1/2 -translate-y-1/2 will-change-transform"
-        >
-          <motion.div
-            animate={{
-              x: [-40, 40, -40],
-              y: [-25, 30, -25],
-              scale: [1, 1.08, 1],
-            }}
-            transition={{
-              duration: 14,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-            className="w-[620px] h-[520px] rounded-full blur-[140px] opacity-25"
-            style={{
-              background: "radial-gradient(circle, #8B5CF6 0%, #6D28D9 50%, transparent 75%)",
-            }}
-          />
-        </motion.div>
+      <div className="container-editorial">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+          {/* Left Column: Editorial Headline & Copy */}
+          <div className="lg:col-span-7 flex flex-col justify-center">
+            {/* Eyebrow / Technical Classification */}
+            <div className="inline-flex items-center gap-2 mb-6">
+              <span className="w-1.5 h-1.5 bg-charcoal inline-block" />
+              <p className="mono-label text-olive tracking-widest text-[11px] uppercase">
+                AI ENGINEERING · AUTOMATION · DIGITAL SYSTEMS
+              </p>
+            </div>
 
-        {/* Orb 2: Cyan (smaller, opposite drift phase, blur 120px, 8% opacity) */}
-        <motion.div
-          style={{ x: orb2X, y: orb2Y }}
-          className="absolute left-[48%] top-[35%] -translate-x-1/2 -translate-y-1/2 will-change-transform"
-        >
-          <motion.div
-            animate={{
-              x: [35, -35, 35],
-              y: [20, -25, 20],
-              scale: [1.06, 0.95, 1.06],
-            }}
-            transition={{
-              duration: 12,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 1,
-            }}
-            className="w-[450px] h-[380px] rounded-full blur-[120px] opacity-[0.14]"
-            style={{
-              background: "radial-gradient(circle, #22D3EE 0%, #0284C7 60%, transparent 75%)",
-            }}
-          />
-        </motion.div>
-      </div>
+            {/* Main Editorial Headline */}
+            <h1 className="font-display font-medium text-4xl sm:text-5xl md:text-6xl lg:text-[4rem] text-charcoal tracking-tight leading-[1.08] mb-6">
+              Build less busywork. <br className="hidden sm:inline" />
+              <span className="text-charcoal/80">Build a better business.</span>
+            </h1>
 
-      {/* ── Layer 3: Grid overlay with radial mask ── */}
-      <div
-        className="absolute inset-0 pointer-events-none hero-grid-mask"
-        aria-hidden="true"
-      />
+            {/* Supporting Copy */}
+            <p className="text-base sm:text-lg md:text-xl text-olive leading-relaxed max-w-xl mb-10 font-sans">
+              We design and deploy AI systems, intelligent workflows, and custom software that
+              help businesses operate with greater speed and clarity.
+            </p>
 
-      {/* ── Layer 4: Noise texture overlay at 4% opacity with mix-blend-overlay ── */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-[0.04] mix-blend-overlay"
-        style={{
-          backgroundImage:
-            "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
-        }}
-        aria-hidden="true"
-      />
+            {/* CTA Group */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
+              <Link
+                href="/contact"
+                className="btn-editorial-primary text-center group"
+                id="hero-primary-cta"
+              >
+                Discuss a Project
+                <ArrowUpRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </Link>
+              <Link
+                href="/work"
+                className="btn-editorial-secondary text-center group"
+                id="hero-secondary-cta"
+              >
+                Explore Our Work
+                <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </div>
 
-      {/* ── Main Hero Content ── */}
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
-        {/* Badge: Live indicator dot (pulsing green) + "Available for Q4 2026 projects" */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] backdrop-blur-md mb-8 hover:border-white/20 transition-colors"
-        >
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-          </span>
-          <span className="font-mono text-xs tracking-wider uppercase text-zinc-300">
-            Available for Q4 2026 projects
-          </span>
-        </motion.div>
-
-        {/* Headline: text-[72px] md:text-[96px], tracking -0.04em, leading 0.95, weight 600 */}
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1, ease: [0.21, 0.47, 0.32, 0.98] }}
-          className="text-[64px] sm:text-[76px] md:text-[96px] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-6"
-        >
-          AI that{" "}
-          <span className="animated-gradient-text inline-block">
-            ships.
-          </span>
-        </motion.h1>
-
-        {/* Subhead: max-width 560px, text-lg text-zinc-400, + small mono line below */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2, ease: [0.21, 0.47, 0.32, 0.98] }}
-          className="max-w-[560px] mx-auto mb-10 space-y-3"
-        >
-          <p className="text-lg text-zinc-400 leading-relaxed font-normal">
-            Chatbots, dashboards, and AI agents for UAE businesses. Fixed price. Delivered in days.
-          </p>
-          <p className="font-mono text-xs text-zinc-500 tracking-wider">
-            • 50% upfront • Delivered in days
-          </p>
-        </motion.div>
-
-        {/* CTA buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3, ease: [0.21, 0.47, 0.32, 0.98] }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto mb-16"
-        >
-          {/* "See pricing" with gradient border, glow shadow, scale 1.02 on hover */}
-          <Link
-            href="/pricing"
-            className="group relative p-[1px] rounded-xl overflow-hidden transition-transform duration-200 hover:scale-[1.02] w-full sm:w-auto"
-          >
-            <span
-              className="absolute inset-0 bg-gradient-to-r from-violet-500 via-cyan-400 to-violet-500 transition-opacity duration-300 opacity-80 group-hover:opacity-100"
-              aria-hidden="true"
-            />
-            <span className="relative flex items-center justify-center gap-2 px-7 py-3.5 rounded-[11px] bg-[#0A0A0F] group-hover:bg-violet-950/40 text-sm font-medium text-white transition-all duration-200 shadow-[0_0_24px_rgba(139,92,246,0.35)] group-hover:shadow-[0_0_40px_rgba(139,92,246,0.6)]">
-              See pricing
-              <ArrowRight size={16} className="text-violet-400 group-hover:translate-x-0.5 transition-transform" />
-            </span>
-          </Link>
-
-          {/* "WhatsApp us" glass with backdrop blur, hover glow */}
-          <Link
-            href={waUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl text-sm font-medium text-zinc-200 bg-white/[0.05] border border-white/[0.1] backdrop-blur-xl hover:bg-white/[0.1] hover:border-violet-500/40 hover:text-white transition-all duration-200 w-full sm:w-auto hover:shadow-[0_0_24px_rgba(255,255,255,0.06)]"
-          >
-            <MessageCircle size={17} className="text-emerald-400" />
-            WhatsApp us
-          </Link>
-        </motion.div>
-
-        {/* 3 Mini stats in a row: monospace labels, count-up on mount */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-          className="grid grid-cols-3 gap-4 sm:gap-12 pt-6 border-t border-white/[0.06] w-full max-w-xl text-center"
-        >
-          <div className="flex flex-col items-center">
-            <span className="font-mono text-xl sm:text-2xl font-semibold text-white">
-              <CountUp value={shippedCount} suffix="" />
-            </span>
-            <span className="font-mono text-[11px] uppercase tracking-wider text-zinc-500 mt-1">
-              projects shipped
-            </span>
+            {/* Technical Operating Parameters */}
+            <div className="mt-12 pt-8 border-t border-stone/80 grid grid-cols-2 sm:grid-cols-3 gap-6 text-xs text-olive">
+              <div>
+                <span className="mono-label block text-[10px] text-olive/70 mb-1">TARGET REGIONS</span>
+                <span className="font-sans font-medium text-charcoal">UAE & India</span>
+              </div>
+              <div>
+                <span className="mono-label block text-[10px] text-olive/70 mb-1">DEPLOYMENT</span>
+                <span className="font-sans font-medium text-charcoal">Meta Cloud · OpenAI · Cloudflare</span>
+              </div>
+              <div>
+                <span className="mono-label block text-[10px] text-olive/70 mb-1">IP OWNERSHIP</span>
+                <span className="font-sans font-medium text-charcoal">100% Client Retained</span>
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-col items-center border-x border-white/[0.06] px-2 sm:px-4">
-            <span className="font-mono text-xl sm:text-2xl font-semibold text-white">
-              Fixed
-            </span>
-            <span className="font-mono text-[11px] uppercase tracking-wider text-zinc-500 mt-1">
-              price, no hourly
-            </span>
-          </div>
+          {/* Right Column: Custom NeuralWaves WaveVisual */}
+          <div className="lg:col-span-5 relative">
+            <div className="relative">
+              {/* Outer architectural corner accents */}
+              <div className="absolute -top-2 -left-2 w-4 h-4 border-t-2 border-l-2 border-charcoal/40 pointer-events-none z-10" />
+              <div className="absolute -top-2 -right-2 w-4 h-4 border-t-2 border-r-2 border-charcoal/40 pointer-events-none z-10" />
+              <div className="absolute -bottom-2 -left-2 w-4 h-4 border-b-2 border-l-2 border-charcoal/40 pointer-events-none z-10" />
+              <div className="absolute -bottom-2 -right-2 w-4 h-4 border-b-2 border-r-2 border-charcoal/40 pointer-events-none z-10" />
 
-          <div className="flex flex-col items-center">
-            <span className="font-mono text-xl sm:text-2xl font-semibold text-white">
-              UAE
-            </span>
-            <span className="font-mono text-[11px] uppercase tracking-wider text-zinc-500 mt-1">
-              market focus
-            </span>
-          </div>
-        </motion.div>
+              <WaveVisual />
+            </div>
 
-        {/* Scroll indicator: subtle animated chevron, fades on scroll */}
-        <motion.div
-          style={{ opacity: chevronOpacity }}
-          className="mt-12 flex flex-col items-center gap-1.5 pointer-events-none"
-          aria-hidden="true"
-        >
-          <motion.div
-            animate={{ y: [0, 5, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <ChevronDown size={18} className="text-zinc-500" />
-          </motion.div>
-        </motion.div>
+            {/* Technical caption below visual */}
+            <div className="mt-3 flex items-center justify-between text-[11px] font-mono text-olive px-1">
+              <span>FIG. 01 — DYNAMIC INTELLIGENCE MODEL</span>
+              <span>POINTER RESPONSIVE</span>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
